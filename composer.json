@@ -5,7 +5,8 @@
 
   "autoload": {
     "psr-4": {
-      "Src\\" : "src/"
+      "Src\\" : "src/",
+      "robotrade\\" : "library/PHP-API"
     }
   }
 }
