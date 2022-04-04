@@ -3,6 +3,7 @@
 namespace Src\Test;
 
 use robotrade\Api;
+use Src\Aeron;
 
 class TestAeronFormatData
 {
@@ -22,7 +23,7 @@ class TestAeronFormatData
 
     }
 
-    public function orderBook(array $data = []) :array
+    public function orderBook(array $data = []): bool|string
     {
 
         if (empty($data))
@@ -45,11 +46,11 @@ class TestAeronFormatData
                 'timestamp' => 1645184308000,
             ];
 
-        return array_merge($this->commonPart('orderbook'), ['data' => $data,]);
+        return Aeron::messageEncode(array_merge($this->commonPart('orderbook'), ['data' => $data]));
 
     }
 
-    public function balances(array $data = []) :array
+    public function balances(array $data = []): bool|string
     {
 
         if (empty($data))
@@ -66,7 +67,7 @@ class TestAeronFormatData
                 ]
             ];
 
-        return array_merge($this->commonPart('balances'), ['data' => $data,]);
+        return Aeron::messageEncode(array_merge($this->commonPart('balances'), ['data' => $data]));
 
     }
 
