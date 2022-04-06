@@ -2,8 +2,8 @@
 
 namespace Src\Test;
 
-use robotrade\Api;
 use Src\Aeron;
+use Src\Api;
 
 class TestAeronFormatData
 {
