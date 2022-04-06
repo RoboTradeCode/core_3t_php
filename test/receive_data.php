@@ -150,7 +150,7 @@ while(true) {
 
     sleep(1);
 
-    foreach ($datas['orderbooks'] as $data) {
+    foreach ($datas as $data) {
 
         $data = Aeron::messageDecode($data);
 
