@@ -1,11 +1,28 @@
 <?php
 
 use Src\Aeron;
+use Src\Test\TestAgentFormatData;
 
 require dirname(__DIR__) . '/index.php';
 
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
+
+/* Посылаем команду агенту, чтобы прислал конфиг */
+$publisher = new AeronPublisher("aeron:ipc");
+
+do {
+
+    $code = $publisher->offer(
+        Aeron::messageEncode(
+            (new TestAgentFormatData('binance'))->sendAgentGetFullConfig()
+        )
+    );
+
+    echo 'Try to send command get_full_config. Code: ' . $code . PHP_EOL;
+
+} while($code > 0);
+/* End */
 
 function handler(string $message)
 {
@@ -14,49 +31,31 @@ function handler(string $message)
 
     $data = Aeron::messageDecode($message);
 
-    if ($data && $data['event'] == 'data') {
+    if ($data && $data['event'] == 'data' && $data['node'] == 'gate') {
 
         $memcached->set(
-            $data['key'],
-            $data['data'],
-            0,
-            0
+            $data['exchange'] . '_' . $data['action'],
+            $data['data']
         );
 
-        echo  $data['timestamp'] . ' [OK] Data was saved to memcache with key ' . $data['key'] . PHP_EOL;
-
-    } else
-        echo '[ERROR] data broken' . PHP_EOL;
+    }
 
 }
 
-$local_ip = getHostByName(getHostName());
-
-$publisher_port = AERON_PUBLISHER_PORT;
-$subscriber_port = AERON_SUBSCRIBER_PORT;
-
-$db = (new DB())->connectToDB(MYSQL_HOST, MYSQL_PORT, MYSQL_DB, MYSQL_USER, MYSQL_PASSWORD);
-
-/* Select servers list from DB */
-$sth = $db->prepare("SELECT * FROM `servers_list` WHERE `role` = 'trade_server'");
-$sth->execute();
-
-$servers_list = [];
-
-while ($row = $sth->fetch(PDO::FETCH_ASSOC)) $servers_list[] = $row;
+$aeron_configs = (new TestAgentFormatData('binance'))->aeron_configs_destinations();
 
 $subscriber = new AeronSubscriber('handler', 'aeron:udp?control-mode=manual');
 
-$subscriber->addDestination("aeron:udp?endpoint=$local_ip:$subscriber_port|control=$local_ip:$publisher_port");
+foreach ($aeron_configs as $aeron_config) {
 
-foreach ($servers_list as $server) {
-    if ($server['private_ip'] !== $local_ip) {
-        $subscriber_port++;
-        $subscriber->addDestination("aeron:udp?endpoint=$local_ip:$subscriber_port|control={$server['external_ip']}:$publisher_port");
-    }
+    $subscriber->addDestination($aeron_config);
+
 }
 
 while (true) {
+
     $subscriber->poll();
+
     usleep(10);
+
 }

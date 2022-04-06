@@ -19,7 +19,7 @@ class TestAeronFormatData
 
         $this->algo = $algo;
 
-        $this->robotrade_api = new Api($this->exchange, $algo, $node, $instance);
+        $this->robotrade_api = new Api($exchange, $algo, $node, $instance);
 
     }
 
