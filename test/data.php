@@ -6,6 +6,6 @@ $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
 $memcached->set('foo', 100);
-var_dump($memcached->get('foo'));
+var_dump($memcached->fetchAll());
 
 $memcached->flush();
