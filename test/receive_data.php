@@ -157,7 +157,7 @@ while(true) {
         if ($data && $data['event'] == 'data' && $data['node'] == 'gate') {
 
             $memcached->set(
-                $data['exchange'] . '_' . $data['action'],
+                $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
                 $data['data']
             );
 
