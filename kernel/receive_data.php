@@ -3,7 +3,7 @@
 use Src\Aeron;
 use Src\Test\TestAeronFormatData;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/index.php';
 
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
