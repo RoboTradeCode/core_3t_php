@@ -19,7 +19,7 @@ do {
         )
     );
 
-    echo 'Try to send command get_full_config. Code: ' . $code . PHP_EOL;
+    echo 'Try to send command get_full_config to Agent. Code: ' . $code . PHP_EOL;
 
 } while($code > 0);
 /* End */
