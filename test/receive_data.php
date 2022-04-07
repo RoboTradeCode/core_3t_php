@@ -2,6 +2,7 @@
 
 use Src\Aeron;
 use Src\Test\TestAeronFormatData;
+use Src\Test\TestAgentFormatData;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -144,6 +145,19 @@ $datas = [
             'total' => 452.28,
         ]
     ]),
+    $huobi->balances([
+        'BTC' => [
+            'free' => 0.015,
+            'used' => 0,
+            'total' => 0.015,
+        ],
+        'USDT' => [
+            'free' => 100.28,
+            'used' => 0,
+            'total' => 452.28,
+        ]
+    ]),
+    (new TestAgentFormatData('binance'))->configAndMarketInfoFromAgent()
 ];
 
 while(true) {
@@ -152,14 +166,30 @@ while(true) {
 
     foreach ($datas as $data) {
 
-        $data = Aeron::messageDecode($data);
+        if ($data = Aeron::messageDecode($data)) {
 
-        if ($data && $data['event'] == 'data' && $data['node'] == 'gate') {
+            if ($data['event'] == 'data' && $data['node'] == 'gate') {
 
-            $memcached->set(
-                $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
-                $data['data']
-            );
+                $memcached->set(
+                    $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
+                    $data['data']
+                );
+
+            } elseif (
+                $data['event'] == 'get' && $data['node'] == 'agent' &&
+                $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes']
+            ) {
+
+                $memcached->set(
+                    'config',
+                    $data['data']
+                );
+
+            } else {
+
+                echo '[ERROR] data broken' . PHP_EOL;
+
+            }
 
         }
 

@@ -8,21 +8,74 @@ require dirname(__DIR__) . '/index.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-/* Посылаем команду агенту, чтобы прислал конфиг */
-$publisher = new AeronPublisher("aeron:ipc");
+function handler_get_config(string $message)
+{
 
-do {
+    global $memcached, $core_config;
 
-    $code = $publisher->offer(
-        Aeron::messageEncode(
-            (new TestAgentFormatData('binance'))->sendAgentGetFullConfig()
-        )
-    );
+    if ($data = Aeron::messageDecode($message)) {
 
-    echo 'Try to send command get_full_config to Agent. Code: ' . $code . PHP_EOL;
+        if (
+            $data['event'] == 'config' && $data['node'] == 'gate' &&
+            $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes'] && $data['data']['core_config']
+        ) {
 
-} while($code > 0);
-/* End */
+            $core_config = $data['data']['core_config'];
+
+            $memcached->set(
+                'config',
+                $data['data']
+            );
+
+        } else {
+
+            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'no') . PHP_EOL;
+
+        }
+
+    }
+
+}
+
+$subscriber = new AeronSubscriber('handler_get_config', 'aeron:ipc');
+
+while (true) {
+
+    usleep(100000);
+
+    $subscriber->poll();
+
+    if (!isset($core_config)) {
+
+        $publisher = new AeronPublisher("aeron:ipc");
+
+        do {
+
+            usleep(1000000);
+
+            $code = $publisher->offer(
+                Aeron::messageEncode(
+                    (new TestAgentFormatData('binance'))->sendAgentGetFullConfig()
+                )
+            );
+
+            echo 'Try to send command get_full_config to Agent. Code: ' . $code . PHP_EOL;
+
+        } while($code > 0);
+
+        unset($publisher);
+
+    } else {
+
+        echo '[OK] Can config get' . PHP_EOL;
+
+        unset($subscriber);
+
+        break;
+
+    }
+
+}
 
 function handler(string $message)
 {
@@ -39,7 +92,7 @@ function handler(string $message)
             );
 
         } elseif (
-            $data['event'] == 'get' && $data['node'] == 'agent' &&
+            $data['event'] == 'config' && $data['node'] == 'agent' &&
             $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes']
         ) {
 
@@ -50,7 +103,7 @@ function handler(string $message)
 
         } else {
 
-            echo '[ERROR] data broken' . PHP_EOL;
+            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'no') . PHP_EOL;
 
         }
 
@@ -58,13 +111,17 @@ function handler(string $message)
 
 }
 
-$aeron_configs = (new TestAgentFormatData('binance'))->aeron_configs_destinations();
-
 $subscriber = new AeronSubscriber('handler', 'aeron:udp?control-mode=manual');
 
-foreach ($aeron_configs as $aeron_config) {
+$subscriber->addDestination('aeron:ipc');
 
-    $subscriber->addDestination($aeron_config);
+foreach ($core_config['aeron']['subscribers'] as $core_subscribers) {
+
+    foreach ($core_subscribers['destinations'] as $destination) {
+
+        $subscriber->addDestination($destination);
+
+    }
 
 }
 
