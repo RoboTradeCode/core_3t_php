@@ -29,9 +29,7 @@ function handler(string $message)
 
     global $memcached;
 
-    $data = Aeron::messageDecode($message);
-
-    if ($data) {
+    if ($data = Aeron::messageDecode($message)) {
 
         if ($data['event'] == 'data' && $data['node'] == 'gate') {
 
@@ -40,12 +38,24 @@ function handler(string $message)
                 $data['data']
             );
 
-        } elseif ($data['event'] == 'get' && $data['node'] == 'agent') {
+        } elseif (
+            $data['event'] == 'get' && $data['node'] == 'agent' &&
+            $data['data']['market_info'] && $data['data']['config']
+        ) {
 
             $memcached->set(
                 'config',
-                $data['data']
+                $data['data']['config']
             );
+
+            $memcached->set(
+                'market_info',
+                $data['data']['market_info']
+            );
+
+        } else {
+
+            echo '[ERROR] data broken' . PHP_EOL;
 
         }
 
