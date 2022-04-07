@@ -40,17 +40,12 @@ function handler(string $message)
 
         } elseif (
             $data['event'] == 'get' && $data['node'] == 'agent' &&
-            $data['data']['market_info'] && $data['data']['config']
+            $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes']
         ) {
 
             $memcached->set(
                 'config',
-                $data['data']['config']
-            );
-
-            $memcached->set(
-                'market_info',
-                $data['data']['market_info']
+                $data['data']
             );
 
         } else {
