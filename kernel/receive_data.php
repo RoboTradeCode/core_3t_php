@@ -36,14 +36,14 @@ function handler(string $message)
         if ($data['event'] == 'data' && $data['node'] == 'gate') {
 
             $memcached->set(
-                $data['exchange'] . '_' . $data['action'],
+                $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
                 $data['data']
             );
 
         } elseif ($data['event'] == 'get' && $data['node'] == 'agent') {
 
             $memcached->set(
-                $data['config'],
+                'config',
                 $data['data']
             );
 
