@@ -31,12 +31,23 @@ function handler(string $message)
 
     $data = Aeron::messageDecode($message);
 
-    if ($data && $data['event'] == 'data' && $data['node'] == 'gate') {
+    if ($data) {
 
-        $memcached->set(
-            $data['exchange'] . '_' . $data['action'],
-            $data['data']
-        );
+        if ($data['event'] == 'data' && $data['node'] == 'gate') {
+
+            $memcached->set(
+                $data['exchange'] . '_' . $data['action'],
+                $data['data']
+            );
+
+        } elseif ($data['event'] == 'get' && $data['node'] == 'agent') {
+
+            $memcached->set(
+                $data['config'],
+                $data['data']
+            );
+
+        }
 
     }
 
