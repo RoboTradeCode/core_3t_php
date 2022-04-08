@@ -2,16 +2,19 @@
 
 use Src\Aeron;
 use Src\Test\TestAgentFormatData;
+use Src\Test\TestLogFormat;
 
 require dirname(__DIR__) . '/index.php';
 
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
+$publisher = new AeronPublisher("aeron:ipc");
+
 function handler_get_config(string $message)
 {
 
-    global $memcached, $core_config;
+    global $memcached, $core_config, $publisher;
 
     if ($data = Aeron::messageDecode($message)) {
 
@@ -29,7 +32,15 @@ function handler_get_config(string $message)
 
         } else {
 
-            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'no') . PHP_EOL;
+            $message = '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null');
+
+            echo $message . PHP_EOL;
+
+            $publisher->offer(
+                Aeron::messageEncode(
+                    (new TestLogFormat('binance'))->sendLog($message)
+                )
+            );
 
         }
 
@@ -47,8 +58,6 @@ while (true) {
 
     if (!isset($core_config)) {
 
-        $publisher = new AeronPublisher("aeron:ipc");
-
         do {
 
             usleep(1000000);
@@ -62,8 +71,6 @@ while (true) {
             echo 'Try to send command get_full_config to Agent. Code: ' . $code . PHP_EOL;
 
         } while($code > 0);
-
-        unset($publisher);
 
     } else {
 
@@ -80,7 +87,7 @@ while (true) {
 function handler(string $message)
 {
 
-    global $memcached;
+    global $memcached, $publisher;
 
     if ($data = Aeron::messageDecode($message)) {
 
@@ -103,7 +110,15 @@ function handler(string $message)
 
         } else {
 
-            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'no') . PHP_EOL;
+            $message = '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null');
+
+            echo $message . PHP_EOL;
+
+            $publisher->offer(
+                Aeron::messageEncode(
+                    (new TestLogFormat('binance'))->sendLog($message)
+                )
+            );
 
         }
 
