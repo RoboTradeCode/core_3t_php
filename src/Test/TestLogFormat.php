@@ -23,11 +23,11 @@ class TestLogFormat
     {
 
         return [
-            'event' => 'log',
+            'event' => 'send',
             'exchange' => $this->exchange,
             'node' => 'core',
             'instance' => '1',
-            'action' => 'send_log',
+            'action' => 'log',
             'message' => $message,
             'algo' => 'cross_3t_php',
             'timestamp' => $this->robotrade_api->getMicrotime(),

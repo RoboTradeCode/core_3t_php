@@ -1,6 +1,7 @@
 <?php
 
 use Src\Aeron;
+use Src\Api;
 use Src\Test\TestAgentFormatData;
 use Src\Test\TestLogFormat;
 
@@ -11,10 +12,12 @@ $memcached->addServer('localhost', 11211);
 
 $publisher = new AeronPublisher("aeron:ipc");
 
+$robotrade_api = new Api('binance', 'cross_3t_php', 'core', '1');
+
 function handler_get_config(string $message)
 {
 
-    global $memcached, $core_config, $publisher;
+    global $memcached, $core_config, $publisher, $robotrade_api;
 
     if ($data = Aeron::messageDecode($message)) {
 
@@ -36,11 +39,7 @@ function handler_get_config(string $message)
 
             echo $message . PHP_EOL;
 
-            $publisher->offer(
-                Aeron::messageEncode(
-                    (new TestLogFormat('binance'))->sendLog($message)
-                )
-            );
+            $publisher->offer($robotrade_api->error('get_aeron_data', null, $message));
 
         }
 
@@ -87,7 +86,7 @@ while (true) {
 function handler(string $message)
 {
 
-    global $memcached, $publisher;
+    global $memcached, $publisher, $robotrade_api;
 
     if ($data = Aeron::messageDecode($message)) {
 
@@ -114,11 +113,7 @@ function handler(string $message)
 
             echo $message . PHP_EOL;
 
-            $publisher->offer(
-                Aeron::messageEncode(
-                    (new TestLogFormat('binance'))->sendLog($message)
-                )
-            );
+            $publisher->offer($robotrade_api->error('get_aeron_data', null, $message));
 
         }
 
