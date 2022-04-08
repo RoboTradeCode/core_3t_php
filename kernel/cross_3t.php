@@ -26,9 +26,11 @@ while (!isset($config)) {
 
 }
 
-$cross_3t = new Cross3T([]);
+//$cross_3t = new Cross3T([]);
 
 while (true) {
+
+    sleep(1);
 
     $memcached_data = $memcached->getMulti($memcached->getAllKeys());
 
@@ -46,6 +48,6 @@ while (true) {
 
     print_r(array_keys($memcached->getMulti($memcached->getAllKeys())));
 
-    $cross_3t->run($balances, $orderbooks, $rates, $server, $data['symbol']);
+    //$cross_3t->run($balances, $orderbooks, $rates, $server, $data['symbol']);
 
 }

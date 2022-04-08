@@ -3,7 +3,6 @@
 use Src\Aeron;
 use Src\Api;
 use Src\Test\TestAgentFormatData;
-use Src\Test\TestLogFormat;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -139,6 +138,6 @@ while (true) {
 
     $subscriber->poll();
 
-    usleep(10);
+    usleep(100000);
 
 }
