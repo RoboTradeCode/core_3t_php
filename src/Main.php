@@ -5,7 +5,59 @@ namespace Src;
 class Main
 {
 
-    public function DealAmount($max_deal_amount, $mainAsset_decimals, $mainAsset_id, $stepOne_amountAsset, $stepOne_priceAsset, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepThree_amountAsset, $stepThree_priceAsset, $stepOne_buy_price, $stepOne_sell_price, $stepOne_buy_amount, $stepOne_sell_amount, $stepTwo_buy_price, $stepTwo_sell_price, $stepTwo_buy_amount, $stepTwo_sell_amount, $stepThree_buy_price, $stepThree_sell_price, $stepThree_buy_amount, $stepThree_sell_amount)
+    public function reformatAndSeparateData(array $memcached_data): array
+    {
+
+        foreach ($memcached_data as $key => $data) {
+
+            if (isset($data)) {
+
+                $parts = explode('_', $key);
+
+                $exchange = $parts[0];
+                $action = $parts[1];
+                $value = $parts[2] ?? null;
+
+                if ($action == 'balances') {
+                    $balances[$exchange] = $data;
+                } elseif ($action == 'orderbook' && $value) {
+                    $orderbooks[$value][$exchange] = $data;
+                } else {
+                    $undefined[$key] = $data;
+                }
+
+            }
+
+        }
+
+        return [
+            'balances' => $balances ?? [],
+            'orderbooks' => $orderbooks ?? [],
+            'undefined' => $undefined ?? [],
+        ];
+
+    }
+
+    public function proofConfigOnUpdate(array &$config, array &$memcached_data): bool
+    {
+
+        if (isset($memcached_data['config'])) {
+
+            $config = $memcached_data['config'];
+
+            unset($memcached_data['config']);
+
+            echo '[Ok] Config is update' . PHP_EOL;
+
+            return true;
+
+        }
+
+        return false;
+
+    }
+
+    public function DealAmount($max_deal_amount, $mainAsset_decimals, $mainAsset_id, $stepOne_amountAsset, $stepOne_priceAsset, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepThree_amountAsset, $stepThree_priceAsset, $stepOne_buy_price, $stepOne_sell_price, $stepOne_buy_amount, $stepOne_sell_amount, $stepTwo_buy_price, $stepTwo_sell_price, $stepTwo_buy_amount, $stepTwo_sell_amount, $stepThree_buy_price, $stepThree_sell_price, $stepThree_buy_amount, $stepThree_sell_amount): array
     {
         //Step 1
         $deal_amount_stepOne = ($stepOne_amountAsset == $mainAsset_id) ? $stepOne_sell_amount : $stepOne_buy_amount * $stepOne_buy_price;
@@ -24,13 +76,13 @@ class Main
         elseif ($stepThree_priceAsset == $stepTwo_priceAsset && $stepThree_amountAsset == $stepOne_amountAsset) $deal_amount_stepThree = $stepThree_buy_amount * $stepThree_buy_price / $stepTwo_sell_price / $stepOne_sell_price;
         elseif ($stepThree_priceAsset == $stepTwo_amountAsset && $stepThree_amountAsset == $stepOne_amountAsset) $deal_amount_stepThree = $stepThree_buy_amount * $stepThree_buy_price * $stepTwo_buy_price / $stepOne_sell_price;
 
-        $deal_amount_min = round(min($deal_amount_stepOne, $deal_amount_stepTwo, $deal_amount_stepThree, $max_deal_amount), $mainAsset_decimals);
+        $deal_amount_min = round(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0, $max_deal_amount), $mainAsset_decimals);
 
         return [
             "min" => $deal_amount_min,
             "step_one" => round($deal_amount_stepOne, $mainAsset_decimals),
-            "step_two" => round($deal_amount_stepTwo, $mainAsset_decimals),
-            "step_three" => round($deal_amount_stepThree, $mainAsset_decimals)
+            "step_two" => round($deal_amount_stepTwo ?? 0, $mainAsset_decimals),
+            "step_three" => round($deal_amount_stepThree ?? 0, $mainAsset_decimals)
         ];
     }
 
@@ -43,7 +95,7 @@ class Main
      * @param string $base_or_quote
      * @return array|false
      */
-    public function MarketOrder(array $orderbook, float $amount, string $bidask, string $base_or_quote)
+    public function MarketOrder(array $orderbook, float $amount, string $bidask, string $base_or_quote): bool|array
     {
 
         if ($bidask != "bids" && $bidask != "asks") return false;
@@ -95,7 +147,7 @@ class Main
         else return $result;
     }
 
-    public function getResult($orderbook, $markets, $deal_amount, $rater, $fee, $combinations, $stepOne_amountAsset, $stepOne_amount_decimals, $stepOne_sell_price, $stepOne_price_decimals, $stepOne_buy_price, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepTwo_amount_decimals, $stepTwo_sell_price, $stepTwo_price_decimals, $stepTwo_buy_price, $stepThree_amountAsset, $stepThree_sell_price, $stepThree_price_decimals, $stepThree_buy_price, $stepThree_amount_decimals, $step_one_dom_position, $step_two_dom_position, $step_three_dom_position, $stepOne_sell_amount, $stepOne_buy_amount, $stepTwo_sell_amount, $stepTwo_buy_amount, $stepThree_sell_amount, $stepThree_buy_amount, $max_deal_amount)
+    public function getResult($orderbook, $markets, $deal_amount, $rater, $fee, $combinations, $stepOne_amountAsset, $stepOne_amount_decimals, $stepOne_sell_price, $stepOne_price_decimals, $stepOne_buy_price, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepTwo_amount_decimals, $stepTwo_sell_price, $stepTwo_price_decimals, $stepTwo_buy_price, $stepThree_amountAsset, $stepThree_sell_price, $stepThree_price_decimals, $stepThree_buy_price, $stepThree_amount_decimals, $step_one_dom_position, $step_two_dom_position, $step_three_dom_position, $stepOne_sell_amount, $stepOne_buy_amount, $stepTwo_sell_amount, $stepTwo_buy_amount, $stepThree_sell_amount, $stepThree_buy_amount, $max_deal_amount): array
     {
         $status = true;
         $reason = "";
@@ -407,42 +459,35 @@ class Main
      * @param array $plus_results
      * @return array
      */
-    public function getBestResult(array $plus_results)
+    public function getBestResult(array $plus_results): array
     {
         $plus_results = array_values($plus_results);
         $best_results = array_column($plus_results, "result_in_main_asset");
         $best_key = array_keys($best_results, max($best_results));
-        $best_result = $plus_results[$best_key["0"]];
 
-        return $best_result;
+        return $plus_results[$best_key["0"]];
     }
 
-    public function CalcVisualizationHeader(array $orderbooks, string $current_symbol)
+    public function CalcVisualizationHeader(array $orderbooks, string $current_symbol): string
     {
 
         $date = date("d.m.y H:i:s", time());
 
-//        echo '<h2>Orderbooks</h2><pre>';
-//        print_r($orderbooks);
-//        echo '<pre>';
-
-        $html = <<<HTML
+        return <<<HTML
          <style> body {font-family: monospace;} table {border-collapse: collapse;} td, th {border: 1px solid #000; padding: 5px;} th {font-weight: bold;}</style>
          <i>Current symbol: <b>$current_symbol</b>. Generated: $date</i><br /><br />
 
         <table>
         <tr><th>#</th><th>Triangle</th><th>Step 1</th><th>Step 2</th><th>Step 3</th><th>Result</th></tr>
         HTML;
-
-        return $html;
     }
 
-    public function CalcVisualizationBody($i, $step_one_dom_position, $step_two_dom_position, $step_three_dom_position, $result, $waves_deal_amount, $deal_amount, $fee, $combinations, $stepOne_sell_amount, $stepTwo_sell_amount, $stepOne_buy_amount, $stepTwo_buy_amount, $stepThree_buy_amount, $stepThree_sell_amount, $stepOne_amountAsset, $stepOne_amount_decimals, $stepOne_sell_price, $stepOne_price_decimals, $stepOne_buy_price, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepTwo_amount_decimals, $stepTwo_sell_price, $stepTwo_price_decimals, $stepTwo_buy_price, $stepThree_amountAsset, $stepThree_sell_price, $stepThree_price_decimals, $stepThree_buy_price, $stepThree_amount_decimals)
+    public function CalcVisualizationBody($i, $step_one_dom_position, $step_two_dom_position, $step_three_dom_position, $result, $waves_deal_amount, $deal_amount, $fee, $combinations, $stepOne_sell_amount, $stepTwo_sell_amount, $stepOne_buy_amount, $stepTwo_buy_amount, $stepThree_buy_amount, $stepThree_sell_amount, $stepOne_amountAsset, $stepOne_amount_decimals, $stepOne_sell_price, $stepOne_price_decimals, $stepOne_buy_price, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepTwo_amount_decimals, $stepTwo_sell_price, $stepTwo_price_decimals, $stepTwo_buy_price, $stepThree_amountAsset, $stepThree_sell_price, $stepThree_price_decimals, $stepThree_buy_price, $stepThree_amount_decimals): string
     {
 
         $table = "<tr><td>$i</td>";
 
-        $calculations = "<td><strong>{$combinations["main_asset_name"]} -> {$combinations["asset_one_name"]} -> {$combinations["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($deal_amount) . " {$combinations["main_asset_name"]}<br />Max: {$waves_deal_amount}<br />Fee: " . $this->format($fee) . "</small></td>";
+        $calculations = "<td><strong>{$combinations["main_asset_name"]} -> {$combinations["asset_one_name"]} -> {$combinations["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($deal_amount) . " {$combinations["main_asset_name"]}<br />Max: $waves_deal_amount<br />Fee: " . $this->format($fee) . "</small></td>";
 
         // Step 1
         $calculations .= "<td>Market: {$result["step_one"]["amountAssetName"]} -> {$result["step_one"]["priceAssetName"]} ({$result["step_one"]["orderType"]})<br />Position: $step_one_dom_position<br />Sell: " . $this->format($stepOne_sell_price) . " (" . $this->format($stepOne_sell_amount) . ")<br />Buy: " . $this->format($stepOne_buy_price) . " (" . $this->format($stepOne_buy_amount) . ")<br />Result: <span style=\"color: red;\">-" . $this->format($deal_amount) . " {$combinations["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($result["step_one"]["result"]) . " {$combinations["asset_one_name"]}</span></td>";
@@ -463,7 +508,7 @@ class Main
         return $table;
     }
 
-    public function CalcVisualizationDelimeter($reason)
+    public function CalcVisualizationDelimeter($reason): string
     {
         $html = '<tr><td colspan="6" style="background-color: grey; color: #fff; text-align: center;">' . $reason . '</td></tr>';
         $html .= '<tr><td colspan="6" style="border-left: 0; border-right: 0;">&nbsp;</td></tr>';
@@ -471,14 +516,12 @@ class Main
         return $html;
     }
 
-    public function CalcVisualizationFooter()
+    public function CalcVisualizationFooter(): string
     {
-        $html = '</table>';
-
-        return $html;
+        return '</table>';
     }
 
-    public function format($float, $decimals = 8)
+    public function format($float, $decimals = 8): string
     {
         return number_format($float, $decimals, ".", "");
     }

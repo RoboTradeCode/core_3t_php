@@ -12,18 +12,12 @@ class Cross3T extends Main
 
         $this->config = $config;
 
-        $this->markets = $this->getMarketsJson();
-
-        if ($this->markets === false) die('Failed to get markets') . PHP_EOL;
-
         $this->combinations = json_decode(file_get_contents(dirname(__DIR__) . '/cache/triangles.json'), true);
 
     }
 
-    public function run($balances, $orderbooks, $rates, $server, $current_symbol): bool
+    public function run($balances, $orderbooks, $rates, $current_symbol): bool
     {
-
-        $msg_time = round((hrtime(true) - $orderbooks[$current_symbol]['timestamp']) / 1000); // dev only
 
         $combinations = $this->combinations[$current_symbol];
 
@@ -404,7 +398,7 @@ class Cross3T extends Main
                 /* dev only */
                 echo "Symbol: $current_symbol, combinations: " . count($this->combinations[$current_symbol]) .
                     " out of " . count($this->combinations["total"]) .
-                    ", msg time: $msg_time μs, $operations_count operations in $cycle_time μs" . PHP_EOL;
+                    ", $operations_count operations in $cycle_time μs" . PHP_EOL;
             }
 
         }
