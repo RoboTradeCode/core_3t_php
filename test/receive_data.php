@@ -67,6 +67,18 @@ $datas = [
         'symbol' => 'ETH/BTC',
         'timestamp' => 1645184308000,
     ]),
+    $kuna->balances([
+        'BTC' => [
+            'free' => 0.01,
+            'used' => 0.001,
+            'total' => 0.011,
+        ],
+        'USDT' => [
+            'free' => 400.21,
+            'used' => 52,
+            'total' => 452.21,
+        ]
+    ]),
     $huobi->orderbook([
         'bids' => [
             [46139.25, 0.142856],
@@ -120,30 +132,6 @@ $datas = [
         ],
         'symbol' => 'ETH/BTC',
         'timestamp' => 1645184308000,
-    ]),
-    $kuna->balances([
-        'BTC' => [
-            'free' => 0.01,
-            'used' => 0.001,
-            'total' => 0.011,
-        ],
-        'USDT' => [
-            'free' => 400.21,
-            'used' => 52,
-            'total' => 452.21,
-        ]
-    ]),
-    $huobi->balances([
-        'BTC' => [
-            'free' => 0.015,
-            'used' => 0,
-            'total' => 0.015,
-        ],
-        'USDT' => [
-            'free' => 100.28,
-            'used' => 0,
-            'total' => 452.28,
-        ]
     ]),
     $huobi->balances([
         'BTC' => [
