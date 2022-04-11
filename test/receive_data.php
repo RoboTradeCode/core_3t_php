@@ -164,7 +164,7 @@ while(true) {
                 );
 
             } elseif (
-                $data['event'] == 'get' && $data['node'] == 'agent' &&
+                $data['event'] == 'config' && $data['node'] == 'agent' &&
                 $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes']
             ) {
 

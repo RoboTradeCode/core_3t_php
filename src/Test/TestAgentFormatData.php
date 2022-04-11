@@ -55,7 +55,7 @@ class TestAgentFormatData
             'timestamp' => $this->robotrade_api->getMicrotime(),
             'data' => [
                 'markets' => TestConfigFormat::marketsConfigurator(),
-                //'assets_labels' => TestConfigFormat::assetsLabelConfigurator(),
+                'assets_labels' => TestConfigFormat::assetsLabelConfigurator(),
                 'routes' => TestConfigFormat::routeConfigurator(),
                 'core_config' => TestConfigFormat::coreConfigConfigurator(),
             ]
