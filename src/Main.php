@@ -5,58 +5,6 @@ namespace Src;
 class Main
 {
 
-    public function reformatAndSeparateData(array $memcached_data): array
-    {
-
-        foreach ($memcached_data as $key => $data) {
-
-            if (isset($data)) {
-
-                $parts = explode('_', $key);
-
-                $exchange = $parts[0];
-                $action = $parts[1];
-                $value = $parts[2] ?? null;
-
-                if ($action == 'balances') {
-                    $balances[$exchange] = $data;
-                } elseif ($action == 'orderbook' && $value) {
-                    $orderbooks[$value][$exchange] = $data;
-                } else {
-                    $undefined[$key] = $data;
-                }
-
-            }
-
-        }
-
-        return [
-            'balances' => $balances ?? [],
-            'orderbooks' => $orderbooks ?? [],
-            'undefined' => $undefined ?? [],
-        ];
-
-    }
-
-    public function proofConfigOnUpdate(array &$config, array &$memcached_data): bool
-    {
-
-        if (isset($memcached_data['config'])) {
-
-            $config = $memcached_data['config'];
-
-            unset($memcached_data['config']);
-
-            echo '[Ok] Config is update' . PHP_EOL;
-
-            return true;
-
-        }
-
-        return false;
-
-    }
-
     public function DealAmount($max_deal_amount, $mainAsset_decimals, $mainAsset_id, $stepOne_amountAsset, $stepOne_priceAsset, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepThree_amountAsset, $stepThree_priceAsset, $stepOne_buy_price, $stepOne_sell_price, $stepOne_buy_amount, $stepOne_sell_amount, $stepTwo_buy_price, $stepTwo_sell_price, $stepTwo_buy_amount, $stepTwo_sell_amount, $stepThree_buy_price, $stepThree_sell_price, $stepThree_buy_amount, $stepThree_sell_amount): array
     {
         //Step 1

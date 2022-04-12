@@ -16,6 +16,77 @@ class Cross3T extends Main
 
     }
 
+    public function filterBalanceByMinDealAmount(array &$balances)
+    {
+
+        foreach ($balances as $exchange => $balance) {
+
+            foreach ($balance as $asset => $value) {
+
+                if ($value['free'] <= $this->config['min_deal_amounts'][$asset]) {
+
+                    unset($balances[$exchange][$asset]);
+
+                }
+
+            }
+
+        }
+
+    }
+
+    public function reformatAndSeparateData(array $memcached_data): array
+    {
+
+        foreach ($memcached_data as $key => $data) {
+
+            if (isset($data)) {
+
+                $parts = explode('_', $key);
+
+                $exchange = $parts[0];
+                $action = $parts[1];
+                $value = $parts[2] ?? null;
+
+                if ($action == 'balances') {
+                    $balances[$exchange] = $data;
+                } elseif ($action == 'orderbook' && $value) {
+                    $orderbooks[$value][$exchange] = $data;
+                } else {
+                    $undefined[$key] = $data;
+                }
+
+            }
+
+        }
+
+        return [
+            'balances' => $balances ?? [],
+            'orderbooks' => $orderbooks ?? [],
+            'undefined' => $undefined ?? [],
+        ];
+
+    }
+
+    public function proofConfigOnUpdate(array &$config, array &$memcached_data): bool
+    {
+
+        if (isset($memcached_data['config'])) {
+
+            $config = $memcached_data['config'];
+
+            unset($memcached_data['config']);
+
+            echo '[Ok] Config is update' . PHP_EOL;
+
+            return true;
+
+        }
+
+        return false;
+
+    }
+
     public function run($balances, $orderbooks, $rates, $current_symbol): bool
     {
 

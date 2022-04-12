@@ -32,6 +32,26 @@ while (!isset($config)) {
 
 }
 
+$config = [
+    'min_deal_amounts' => [
+        'BTC' => 0.001,
+        'ETH' => 0.01,
+        'USDT' => 20
+    ],
+    'max_deal_amounts' => [
+        'BTC' => 0.01,
+        'ETH' => 0.1,
+        'USDT' => 200
+    ],
+    'routes' => [
+        [
+            ['source_asset' => 'ETH', 'common_symbol' => 'ETH/USDT', 'operation' => 'sell'],
+            ['source_asset' => 'USDT', 'common_symbol' => 'BTC/USDT', 'operation' => 'buy'],
+            ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
+        ],
+    ]
+];
+
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
 
@@ -56,14 +76,21 @@ while (true) {
     $orderbooks = $all_data['orderbooks'];
     $undefined = $all_data['undefined'];
 
-    if (isset($balances))
+    // если есть все необходимые данные
+    if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
+
+        // проверка на минимальный баланс
+        $cross_3t->filterBalanceByMinDealAmount($balances);
+
         print_r($balances) . PHP_EOL;
-
-    if (isset($orderbooks))
-        print_r($orderbooks) . PHP_EOL;
-
-    if (isset($config))
+        //print_r($orderbooks) . PHP_EOL;
         print_r($config) . PHP_EOL;
+
+    } else {
+
+        echo '[WARNING] $balances or $orderbooks or $configis is empty' . PHP_EOL;
+
+    }
 
     if (!empty($undefined)) {
 
