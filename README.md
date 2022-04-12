@@ -12,12 +12,94 @@
 - test - папка, содержащая тестовые файлы для работы и проверки кода
 - index.php - главный файл, подключеймый во всех файлах проекта
 
+## Установка необходимого окружения и проекта
+1. Сделать предварительные команды
+```shell
+sudo apt update && sudo apt upgrade -y
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:ondrej/php
+sudo apt-get update
+```
+
+2. Проверить, что php установился (минимальная версия PHP 8)
+```shell
+php -v
+```
+
+3. Далее установить библиотеки.
+(Если версия не php8.0, а, к примеру, php 8.1.1, то использовать команды установленной версии, вместо представленных ниже. Пример: ```sudo apt install php8.1-common```)
+```shell
+sudo apt install php8.0-common
+sudo apt install php8.0-cli
+sudo apt install php8.0-fpm
+sudo apt install php8.0-mysql
+sudo apt install php8.0-dev libmemcache-dev
+sudo apt install php8.0-memcache
+```
+
+4. Необходимо установить memcached
+```shell
+sudo apt install memcached
+```
+
+5. Проверить работает ли memcached 
+```shell
+sudo service memcached status
+```
+Если не работает, то можно обратиться к статьям, чтобы решить проблему
+(https://habr.com/ru/post/108274/)
+(https://sheensay.ru/memcached-install-config#kak-ustanovit-server-memcached)
+или побробовать следующие команды
+```shell
+sudo apt update
+sudo apt install memcached
+sudo apt install libmemcached-tools
+sudo systemctl start memcached
+sudo apt-get install php8.0-memcache
+```
+
+6. Установка composer
+```shell
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+```
+
+7. Проверить версию (она обязательно должна быть не меньше 2.0.0)
+Если версия ниже 2.0.0, обратиться к статье (https://coderteam.ru/blog/obnovlyaemsya-do-composer-2-na-ubuntu/)
+Хотя, есть вероятность, что и в первой версии тоже будет работать.
+```shell
+composer
+```
+
+8. Клонирование репозитория (Если ссылка не подходит, скопировать ее, на гитхаб в репозитории -> code -> https -> копирование значок)
+```shell
+git clone https://github.com/RoboTradeCode/core_3t_php.git
+```
+
+9. перейти в папку core_3t_php
+```shell
+cd core_3t_php/
+```
+
 ## Установка зависимостей
 ```shell
 composer install
 ```
 
-## Инструкция установки Core
+## Инструкция запуска Core для тестовой проверки Gate
+1. Первый шаг - запуск получения данных от гейта.
+```shell
+php kernel/test_receive_data_c.php
+```
+2. Запустить сам алгоритм cross_3t_php.
+```shell
+php kernel/test_c.php
+```
+
+
+## Инструкция запуска Core в production
 0. Перед запуском ядра, необходимо, чтобы был запущен агент.
 
 1. Первый шаг - запуск получения данных от агента и гейта.
