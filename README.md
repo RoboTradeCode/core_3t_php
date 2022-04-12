@@ -93,7 +93,7 @@ composer install
 ```shell
 php kernel/test_receive_data_c.php
 ```
-2. Запустить сам алгоритм cross_3t_php.
+2. Запустить тестовый алгоритм.
 ```shell
 php kernel/test_c.php
 ```
