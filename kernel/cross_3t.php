@@ -48,6 +48,6 @@ while (true) {
 
     print_r(array_keys($memcached->getMulti($memcached->getAllKeys())));
 
-    //$cross_3t->run($balances, $orderbooks, $rates, $server, $data['symbol']);
+    //$cross_3t->run($balances, $orderbooks, $rates, $data['symbol']);
 
 }

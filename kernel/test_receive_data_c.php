@@ -17,7 +17,7 @@ function handler(string $message)
     if ($data = Aeron::messageDecode($message)) {
 
         // если event как data, а node как gate
-        if ($data['event'] == 'data' && $data['node'] == 'gate') {
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
             // записать в memcached
             $memcached->set(

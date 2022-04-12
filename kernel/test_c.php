@@ -22,7 +22,7 @@ while (true) {
     $memcached_data = $memcached->getMulti($memcached->getAllKeys());
 
     // отправка publisher
-    $publisher->offer($robotrade_api->error('get_aeron_data', null, 'Here Message'));
+    //$publisher->offer($robotrade_api->error('get_aeron_data', null, 'Here Message'));
 
     print_r(array_keys($memcached_data));
 

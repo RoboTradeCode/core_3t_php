@@ -9,7 +9,7 @@ require dirname(__DIR__) . '/index.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-$publisher = new AeronPublisher("aeron:ipc");
+$publisher = new AeronPublisher('aeron:ipc');
 
 $robotrade_api = new Api('binance', 'cross_3t_php', 'core', '1');
 
@@ -22,7 +22,8 @@ function handler_get_config(string $message)
 
         if (
             $data['event'] == 'config' && $data['node'] == 'gate' &&
-            $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes'] && $data['data']['core_config']
+            isset($data['data']['markets']) && isset($data['data']['assets_labels']) &&
+            isset($data['data']['routes']) && isset($data['data']['core_config'])
         ) {
 
             $core_config = $data['data']['core_config'];
@@ -89,7 +90,7 @@ function handler(string $message)
 
     if ($data = Aeron::messageDecode($message)) {
 
-        if ($data['event'] == 'data' && $data['node'] == 'gate') {
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
             $memcached->set(
                 $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
@@ -98,7 +99,7 @@ function handler(string $message)
 
         } elseif (
             $data['event'] == 'config' && $data['node'] == 'agent' &&
-            $data['data']['markets'] && $data['data']['assets_labels'] && $data['data']['routes']
+            isset($data['data']['markets']) && isset($data['data']['assets_labels']) && isset($data['data']['routes'])
         ) {
 
             $memcached->set(
