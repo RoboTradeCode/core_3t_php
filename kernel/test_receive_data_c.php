@@ -19,9 +19,23 @@ function handler(string $message)
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
+            if ($data['action'] == 'orderbook') {
+
+                $key = $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'];
+
+            } elseif ($data['action'] == 'order_created') {
+
+                $key = $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['id'];
+
+            } else {
+
+                $key = $data['exchange'] . '_' . $data['action'];
+
+            }
+
             // записать в memcached
             $memcached->set(
-                $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
+                $key,
                 $data['data']
             );
 
