@@ -77,6 +77,11 @@ $datas = [
             'free' => 400.21,
             'used' => 52,
             'total' => 452.21,
+        ],
+        'ETH' => [
+            'free' => 0.18,
+            'used' => 0.05,
+            'total' => 0.23,
         ]
     ]),
     $huobi->orderbook([
@@ -143,6 +148,11 @@ $datas = [
             'free' => 100.28,
             'used' => 0,
             'total' => 100.28,
+        ],
+        'ETH' => [
+            'free' => 0.15,
+            'used' => 0,
+            'total' => 0.15,
         ]
     ]),
     (new TestAgentFormatData('binance'))->configAndMarketInfoFromAgent()
