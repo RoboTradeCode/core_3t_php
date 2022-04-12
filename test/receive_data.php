@@ -142,7 +142,7 @@ $datas = [
         'USDT' => [
             'free' => 100.28,
             'used' => 0,
-            'total' => 452.28,
+            'total' => 100.28,
         ]
     ]),
     (new TestAgentFormatData('binance'))->configAndMarketInfoFromAgent()
