@@ -69,6 +69,10 @@ while (true) {
                     ' Symbol: ' . $memcached_datum['symbol'] .
                     PHP_EOL;
 
+            } elseif ($action == 'balances') {
+
+                echo '[OK] Balances get from memcached: ' .  PHP_EOL;
+
             } else {
 
                 echo '[WARNING] data undefined. Key: ' . $key .

@@ -39,9 +39,11 @@ function handler(string $message)
                 $data['data']
             );
 
+            echo '[OK] Data saved. Node: ' . $data['node'] . ' Key: ' . $key . PHP_EOL;
+
         } else {
 
-            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+            echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
 
