@@ -27,7 +27,7 @@ sudo apt-get update
 sudo apt install php8.0
 ```
 
-2. Проверить, что php установился (версия должна быть PHP 8)
+2. Проверить, что php установился (версия должна быть PHP 8.0)
 ```shell
 php -v
 ```
