@@ -24,15 +24,15 @@ sudo apt update && sudo apt upgrade -y
 sudo apt-get install software-properties-common
 sudo add-apt-repository ppa:ondrej/php
 sudo apt-get update
+sudo apt install php8.0
 ```
 
-2. Проверить, что php установился (минимальная версия PHP 8)
+2. Проверить, что php установился (версия должна быть PHP 8)
 ```shell
 php -v
 ```
 
 3. Далее установить библиотеки.
-(Если версия не php8.0, а, к примеру, php 8.1.1, то использовать команды установленной версии, вместо представленных ниже. Пример: ```sudo apt install php8.1-common```)
 ```shell
 sudo apt install php8.0-common
 sudo apt install php8.0-cli
