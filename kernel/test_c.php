@@ -2,7 +2,7 @@
 
 use Src\Api;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/index.php';
 
 // memcached подключение
 $memcached = new Memcached();
@@ -12,7 +12,7 @@ $memcached->addServer('localhost', 11211);
 $robotrade_api = new Api('binance', 'test_php', 'core', '1');
 
 // нужен publisher, отправлять команды по aeron в гейт
-$publisher = new AeronPublisher('aeron:ipc');
+$publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['stream_id']);
 
 while (true) {
 

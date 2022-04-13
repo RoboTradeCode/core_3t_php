@@ -50,9 +50,7 @@ function handler(string $message)
 }
 
 // subscriber подключение
-$subscriber = new AeronSubscriber('handler', 'aeron:udp?control-mode=manual');
-
-$subscriber->addDestination('aeron:ipc');
+$subscriber = new AeronSubscriber('handler', GATE_SUBSCRIBER['channel'], GATE_SUBSCRIBER['stream_id']);
 
 while (true) {
 
