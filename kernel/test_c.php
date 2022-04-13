@@ -33,27 +33,31 @@ while (true) {
 
             if  ($action == 'orderbook' && $value) {
 
-                $price = $memcached_datum['bids'][0][0] * 0.9;
+                if ($value == 'BTC/USDT') {
 
-                $amount = 0.00055;
+                    $price = $memcached_datum['bids'][0][0] * 0.9;
 
-                $publisher->offer(
-                    $robotrade_api->createOrder(
-                        $memcached_datum['symbol'],
-                        'limit',
-                        'buy',
-                        $amount,
-                        $price,
-                        'test gate for created order'
-                    )
-                );
+                    $amount = 0.00055;
 
-                echo '[OK] Send Gate to create order. Price: ' . $price .
-                    ' Amount: ' . $amount .
-                    ' Symbol: ' . $memcached_datum['symbol'] .
-                    ' Side: ' . 'buy' .
-                    ' Type: ' . 'limit' .
-                    PHP_EOL;
+                    $publisher->offer(
+                        $robotrade_api->createOrder(
+                            $memcached_datum['symbol'],
+                            'limit',
+                            'buy',
+                            $amount,
+                            $price,
+                            'test gate for created order'
+                        )
+                    );
+
+                    echo '[OK] Send Gate to create order. Price: ' . $price .
+                        ' Amount: ' . $amount .
+                        ' Symbol: ' . $memcached_datum['symbol'] .
+                        ' Side: ' . 'buy' .
+                        ' Type: ' . 'limit' .
+                        PHP_EOL;
+
+                }
 
             } elseif ($action == 'order' && $value) {
 
