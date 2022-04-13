@@ -14,6 +14,10 @@
 - index.php - главный файл, подключеймый во всех файлах проекта
 
 ## Установка необходимого окружения и проекта
+0. Необходимо, чтобы aeron уже был установлен для php 8.0
+(https://github.com/RoboTradeCode/aeron-php)
+
+
 1. Сделать предварительные команды
 ```shell
 sudo apt update && sudo apt upgrade -y
