@@ -7,6 +7,9 @@ class Cross3T extends Main
 
     private array $config;
 
+    /**
+     * @param array $config Вся конфигурация приходящяя от агента
+     */
     public function __construct(array $config)
     {
 
@@ -16,7 +19,13 @@ class Cross3T extends Main
 
     }
 
-    public function filterBalanceByMinDealAmount(array &$balances)
+    /**
+     * Фильтрует баланс, чтобы он был в диапазоне min_deal_amount и max_deal_amount
+     *
+     * @param array $balances Балансы со всех бирж, взятые из memcached
+     * @return void
+     */
+    public function filterBalanceByMinAndMAxDealAmount(array &$balances)
     {
 
         foreach ($balances as $exchange => $balance) {
@@ -27,6 +36,10 @@ class Cross3T extends Main
 
                     unset($balances[$exchange][$asset]);
 
+                } elseif ($value['free'] >= $this->config['max_deal_amounts'][$asset]) {
+
+                    $balances[$exchange][$asset]['free'] = $this->config['max_deal_amounts'][$asset];
+
                 }
 
             }
@@ -35,6 +48,12 @@ class Cross3T extends Main
 
     }
 
+    /**
+     * Возвращает данные из memcached в определенном формате и отделенные по ордербукам, балансам и т. д.
+     *
+     * @param array $memcached_data Сырые данные, взятые напрямую из memcached
+     * @return array[]
+     */
     public function reformatAndSeparateData(array $memcached_data): array
     {
 
@@ -68,6 +87,13 @@ class Cross3T extends Main
 
     }
 
+    /**
+     * Проверяет пришел ли новый конфиг и обновляет текущий на новый
+     *
+     * @param array $config Текущая конфигурация
+     * @param array $memcached_data Сырые данные, взятые напрямую из memcached
+     * @return bool
+     */
     public function proofConfigOnUpdate(array &$config, array &$memcached_data): bool
     {
 
