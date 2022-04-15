@@ -33,6 +33,7 @@ while (!isset($config)) {
 }
 
 $config = [
+    'exchange' => 'kuna',
     'min_deal_amounts' => [
         'BTC' => 0.001,
         'ETH' => 0.01,
@@ -60,9 +61,10 @@ while (true) {
     sleep(1);
 
     // берем все данные из memcached
-    $memcached_data = $memcached->getMulti($memcached->getAllKeys());
+    $all_keys = $memcached->getAllKeys();
+    $memcached_data = $memcached->getMulti($all_keys);
 
-    print_r(array_keys($memcached_data));
+    print_r($all_keys);
 
     // проверяем конфиг на обновление, если появился новый конфиг, обновить его, удалить данные конфига из memcached
     if ($cross_3t->proofConfigOnUpdate($config, $memcached_data))
@@ -79,12 +81,21 @@ while (true) {
     // если есть все необходимые данные
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
 
-        // проверка на минимальный баланс
-        $cross_3t->filterBalanceByMinDealAmount($balances);
+        // проверка на минимальный и по максимальному баланс
+        $cross_3t->filterBalanceByMinAndMAxDealAmount($balances);
 
-        print_r($balances) . PHP_EOL;
+        foreach ($config['routes'] as $route) {
+
+            $best_orderbooks = $cross_3t->findBestOrderbooks($route, $balances, $orderbooks);
+
+            print_r($best_orderbooks); echo PHP_EOL;
+            echo PHP_EOL;
+
+        }
+
+        //print_r($balances) . PHP_EOL;
         //print_r($orderbooks) . PHP_EOL;
-        print_r($config) . PHP_EOL;
+        //print_r($config) . PHP_EOL;
 
     } else {
 

@@ -20,6 +20,92 @@ class Cross3T extends Main
     }
 
     /**
+     * Метод находит самые выгодные ордербуки со всех бирж
+     *
+     * @param array $route Треугольник, приходящи й от конфигуратора
+     * @param array $balances Балансы, с разных бирж
+     * @param array $orderbooks Ордербуки, с разных бирж
+     * @return array Лучшие найденные ордербуки
+     */
+    public function findBestOrderbooks(array $route, array $balances, array $orderbooks): array
+    {
+
+        foreach ($route as $source) {
+
+            $deal_amount_potential = $balances[$this->config['exchange']][$source['source_asset']]['free'] ?? $this->config['max_deal_amounts'][$source['source_asset']];
+
+            $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
+
+            $potential_amounts = [];
+
+            foreach ($orderbooks[$source['common_symbol']] as $exchange => $orderbook) {
+
+                $amount = 0;
+
+                if ($operation == 'bids') {
+
+                    $base_asset_amount = 0;
+
+                    foreach ($orderbook[$operation] as $price_and_amount) {
+
+                        if (($base_asset_amount + $price_and_amount[1]) < $deal_amount_potential) {
+
+                            $amount += $price_and_amount[0] * $price_and_amount[1];
+
+                            $base_asset_amount += $price_and_amount[1];
+
+                        } else {
+
+                            $amount += $price_and_amount[0] * ($deal_amount_potential - $base_asset_amount);
+
+                            break;
+
+                        }
+
+                    }
+
+                } else {
+
+                    $quote_asset_amount = 0;
+
+                    foreach ($orderbook[$operation] as $price_and_amount) {
+
+                        if (($quote_asset_amount + $price_and_amount[0] * $price_and_amount[1]) < $deal_amount_potential) {
+
+                            $amount += $price_and_amount[1];
+
+                            $quote_asset_amount += $price_and_amount[0] * $price_and_amount[1];
+
+                        } else {
+
+                            $amount += ($deal_amount_potential - $quote_asset_amount) / $price_and_amount[0];
+
+                            break;
+
+                        }
+
+                    }
+
+                }
+
+                $potential_amounts[$exchange] = $amount;
+
+            }
+
+            $bes_exchange = array_keys($potential_amounts, min($potential_amounts))[0];
+
+            $best_orderbooks[$source['common_symbol']] = [
+                $operation => $orderbooks[$source['common_symbol']][$bes_exchange][$operation],
+                'exchange' => $bes_exchange
+            ];
+
+        }
+
+        return $best_orderbooks ?? [];
+
+    }
+
+    /**
      * Фильтрует баланс, чтобы он был в диапазоне min_deal_amount и max_deal_amount
      *
      * @param array $balances Балансы со всех бирж, взятые из memcached
