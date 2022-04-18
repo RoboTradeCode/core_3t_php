@@ -59,19 +59,25 @@ while (true) {
 
                 }
 
-            } elseif ($action == 'order' && $value) {
+            } elseif ($action == 'order') {
 
-                $publisher->offer(
-                    $robotrade_api->cancelOrder(
-                        $memcached_datum['id'],
-                        $memcached_datum['symbol'],
-                        'test gate for cancel order'
-                    )
-                );
+                foreach ($memcached_datum as $order) {
 
-                echo '[OK] Send Gate to cancel order. Id: ' . $memcached_datum['id'] .
-                    ' Symbol: ' . $memcached_datum['symbol'] .
-                    PHP_EOL;
+                    $publisher->offer(
+                        $robotrade_api->cancelOrder(
+                            $order['id'],
+                            $order['symbol'],
+                            'test gate for cancel order'
+                        )
+                    );
+
+                    echo '[OK] Send Gate to cancel order. Id: ' . $order['id'] .
+                        ' Symbol: ' . $order['symbol'] .
+                        PHP_EOL;
+
+                }
+
+                $memcached->delete($key);
 
             } elseif ($action == 'balances') {
 
