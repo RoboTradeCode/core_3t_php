@@ -209,7 +209,7 @@ class Cross3T extends Main
                 $keys,
                 preg_filter(
                     '/^/',
-                    $exchange . '_orderbook',
+                    $exchange . '_orderbook_',
                     array_column($this->config['markets'], 'common_symbol')
                 ),
                 [$exchange . '_balances'], // добавить еще к массиву ключ баланса
