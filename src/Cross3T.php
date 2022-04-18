@@ -92,11 +92,11 @@ class Cross3T extends Main
 
             }
 
-            $bes_exchange = array_keys($potential_amounts, min($potential_amounts))[0];
+            $best_exchange = array_keys($potential_amounts, max($potential_amounts))[0];
 
             $best_orderbooks[$source['common_symbol']] = [
-                $operation => $orderbooks[$source['common_symbol']][$bes_exchange][$operation],
-                'exchange' => $bes_exchange
+                $operation => $orderbooks[$source['common_symbol']][$best_exchange][$operation],
+                'exchange' => $best_exchange
             ];
 
         }
