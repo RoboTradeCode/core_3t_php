@@ -92,8 +92,28 @@ function handler(string $message)
 
         if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
+            if ($data['action'] == 'orderbook') {
+
+                $key = $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'];
+
+            } elseif ($data['action'] == 'order' || $data['action'] == 'order_created') {
+
+                $key = $data['exchange'] . '_order';
+
+                $orders = $memcached->get($key);
+
+                $orders[][$data['data']['id']] = $data['data'];
+
+                $data['data'] = $orders;
+
+            } else {
+
+                $key = $data['exchange'] . '_' . $data['action'];
+
+            }
+
             $memcached->set(
-                $data['exchange'] . '_' . $data['action'] . (($data['action'] == 'orderbook') ? '_' . $data['data']['symbol'] : ''),
+                $key,
                 $data['data']
             );
 
