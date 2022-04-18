@@ -56,6 +56,8 @@ class TestConfigFormat
                 'common_symbol' => 'BTC/USDT',
                 'price_increment' => 0.1,
                 'amount_increment' => 0.00000001,
+                'min_amount' => 0.00001,
+                'max_amount' => 9000,
                 'assets' => [
                     'base' => 'BTC',
                     'quote' => 'USDT',
@@ -66,6 +68,8 @@ class TestConfigFormat
                 'common_symbol' => 'ETH/USDT',
                 'price_increment' => 0.01,
                 'amount_increment' => 0.0000001,
+                'min_amount' => 0.0001,
+                'max_amount' => 9000,
                 'assets' => [
                     'base' => 'ETH',
                     'quote' => 'USDT',
@@ -76,6 +80,8 @@ class TestConfigFormat
                 'common_symbol' => 'ETH/BTC',
                 'price_increment' => 0.000001,
                 'amount_increment' => 0.0000001,
+                'min_amount' => 0.0001,
+                'max_amount' => 100000,
                 'assets' => [
                     'base' => 'ETH',
                     'quote' => 'BTC',
