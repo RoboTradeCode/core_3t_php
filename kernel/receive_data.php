@@ -102,7 +102,7 @@ function handler(string $message)
 
                 $orders = $memcached->get($key);
 
-                $orders[][$data['data']['id']] = $data['data'];
+                $orders[$data['data']['id']] = $data['data'];
 
                 $data['data'] = $orders;
 
