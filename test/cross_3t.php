@@ -34,6 +34,7 @@ while (!isset($config)) {
 
 $config = [
     'exchange' => 'kuna',
+    'exchanges' => ['ftx'],
     'min_deal_amounts' => [
         'BTC' => 0.001,
         'ETH' => 0.01,
@@ -43,6 +44,44 @@ $config = [
         'BTC' => 0.01,
         'ETH' => 0.1,
         'USDT' => 200
+    ],
+    'markets' => [
+        [
+            'exchange_symbol' => 'ETH-BTC',
+            'common_symbol' => 'ETH/BTC',
+            'price_increment' => 0.000001,
+            'amount_increment' => 0.0000001,
+            'min_amount' => 0.0001,
+            'max_amount' => 100000,
+            'assets' => [
+                'base' => 'ETH',
+                'quote' => 'BTC',
+            ]
+        ],
+        [
+            'exchange_symbol' => 'BTC-USDT',
+            'common_symbol' => 'BTC/USDT',
+            'price_increment' => 0.1,
+            'amount_increment' => 0.00000001,
+            'min_amount' => 0.00001,
+            'max_amount' => 9000,
+            'assets' => [
+                'base' => 'BTC',
+                'quote' => 'USDT',
+            ]
+        ],
+        [
+            'exchange_symbol' => 'ETH-USDT',
+            'common_symbol' => 'ETH/USDT',
+            'price_increment' => 0.01,
+            'amount_increment' => 0.0000001,
+            'min_amount' => 0.0001,
+            'max_amount' => 9000,
+            'assets' => [
+                'base' => 'ETH',
+                'quote' => 'USDT',
+            ]
+        ]
     ],
     'routes' => [
         [
@@ -61,7 +100,8 @@ while (true) {
     sleep(1);
 
     // берем все данные из memcached
-    $all_keys = $memcached->getAllKeys();
+    $all_keys = $cross_3t->getAllMemcachedKeys();
+
     $memcached_data = $memcached->getMulti($all_keys);
 
     print_r($all_keys);

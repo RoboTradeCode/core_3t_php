@@ -199,6 +199,27 @@ class Cross3T extends Main
 
     }
 
+    public function getAllMemcachedKeys(): array
+    {
+
+        $keys = [];
+
+        foreach ($this->config['exchanges'] as  $exchange)
+            $keys = array_merge(
+                $keys,
+                preg_filter(
+                    '/^/',
+                    $exchange . '_',
+                    array_column($this->config['markets'], 'common_symbol')
+                ),
+                [$exchange . '_balances'], // добавить еще к массиву ключ баланса
+                [$exchange . '_orders'] // добавить еще к массиву ключ для получения ордеров
+            );
+
+        return $keys;
+
+    }
+
     public function run($balances, $orderbooks, $rates, $current_symbol): bool
     {
 
