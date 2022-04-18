@@ -1,5 +1,11 @@
 <?php
 
+// Биржа, которая тестируется гейтом
+const EXCHANGE = 'ftx';
+
+// Тестируемая пара для проверки корректности постановки оредров и их отмены (Важно: пока только BTC/USDT)
+const SYMBOL = 'BTC/USDT';
+
 // publisher, который подключается к subscriber в гейте, для посылания команд
 const GATE_PUBLISHER = [
     'channel' => 'aeron:ipc',

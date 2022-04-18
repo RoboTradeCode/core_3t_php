@@ -18,8 +18,14 @@ while (true) {
 
     sleep(10);
 
+    $keys = [
+        EXCHANGE . '_orderbook_' . SYMBOL,
+        EXCHANGE . '_balances',
+        EXCHANGE . '_orders',
+    ];
+
     // берет все данные из memcached
-    $memcached_data = $memcached->getMulti($memcached->getAllKeys());
+    $memcached_data = $memcached->getMulti($keys);
 
     foreach ($memcached_data as $key => $memcached_datum) {
 
