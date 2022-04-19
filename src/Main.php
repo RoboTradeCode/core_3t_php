@@ -5,24 +5,32 @@ namespace Src;
 class Main
 {
 
-    public function DealAmount($max_deal_amount, $mainAsset_decimals, $mainAsset_id, $stepOne_amountAsset, $stepOne_priceAsset, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepThree_amountAsset, $stepThree_priceAsset, $stepOne_buy_price, $stepOne_sell_price, $stepOne_buy_amount, $stepOne_sell_amount, $stepTwo_buy_price, $stepTwo_sell_price, $stepTwo_buy_amount, $stepTwo_sell_amount, $stepThree_buy_price, $stepThree_sell_price, $stepThree_buy_amount, $stepThree_sell_amount): array
+    public function DealAmount(
+        $mainAsset_id,
+        $mainAsset_decimals,
+        $stepOneInfo,
+        $stepTwoInfo,
+        $stepThreeInfo,
+        $max_deal_amount
+    ): array
     {
+
         //Step 1
-        $deal_amount_stepOne = ($stepOne_amountAsset == $mainAsset_id) ? $stepOne_sell_amount : $stepOne_buy_amount * $stepOne_buy_price;
+        $deal_amount_stepOne = ($stepOneInfo['amountAsset'] == $mainAsset_id) ? $stepOneInfo['sell_amount'] : $stepOneInfo['buy_amount'] * $stepOneInfo['buy_price'];
 
         //Step 2
-        if ($stepTwo_amountAsset == $stepOne_amountAsset) $deal_amount_stepTwo = $stepTwo_sell_amount * $stepOne_buy_price;
-        elseif ($stepTwo_amountAsset == $stepOne_priceAsset) $deal_amount_stepTwo = $stepTwo_sell_amount / $stepOne_sell_price;
-        elseif ($stepTwo_priceAsset == $stepOne_amountAsset) $deal_amount_stepTwo = $stepTwo_buy_amount * $stepTwo_buy_price * $stepOne_buy_price;
-        elseif ($stepTwo_priceAsset == $stepOne_priceAsset) $deal_amount_stepTwo = $stepTwo_buy_amount * $stepTwo_buy_price / $stepOne_sell_price;
+        if ($stepTwoInfo['amountAsset'] == $stepOneInfo['amountAsset']) $deal_amount_stepTwo = $stepTwoInfo['sell_amount'] * $stepOneInfo['buy_price'];
+        elseif ($stepTwoInfo['amountAsset'] == $stepOneInfo['priceAsset']) $deal_amount_stepTwo = $stepTwoInfo['sell_amount'] / $stepOneInfo['sell_price'];
+        elseif ($stepTwoInfo['priceAsset'] == $stepOneInfo['amountAsset']) $deal_amount_stepTwo = $stepTwoInfo['buy_amount'] * $stepTwoInfo['buy_price'] * $stepOneInfo['buy_price'];
+        elseif ($stepTwoInfo['priceAsset'] == $stepOneInfo['priceAsset']) $deal_amount_stepTwo = $stepTwoInfo['buy_amount'] * $stepTwoInfo['buy_price'] / $stepOneInfo['sell_price'];
 
         //Step 3
-        if ($stepThree_amountAsset == $stepTwo_amountAsset && $stepThree_priceAsset == $stepOne_amountAsset) $deal_amount_stepThree = $stepThree_sell_amount * $stepTwo_buy_price / $stepOne_sell_price;
-        elseif ($stepThree_amountAsset == $stepTwo_amountAsset && $stepThree_priceAsset == $stepOne_priceAsset) $deal_amount_stepThree = $stepThree_sell_amount * $stepTwo_buy_price * $stepOne_buy_price;
-        elseif ($stepThree_amountAsset == $stepTwo_priceAsset && $stepThree_priceAsset == $stepOne_priceAsset) $deal_amount_stepThree = $stepThree_sell_amount / $stepTwo_sell_price * $stepOne_buy_price;
-        elseif ($stepThree_priceAsset == $stepTwo_priceAsset && $stepThree_amountAsset == $stepOne_priceAsset) $deal_amount_stepThree = $stepThree_buy_amount * $stepThree_buy_price / $stepTwo_sell_price * $stepOne_buy_price;
-        elseif ($stepThree_priceAsset == $stepTwo_priceAsset && $stepThree_amountAsset == $stepOne_amountAsset) $deal_amount_stepThree = $stepThree_buy_amount * $stepThree_buy_price / $stepTwo_sell_price / $stepOne_sell_price;
-        elseif ($stepThree_priceAsset == $stepTwo_amountAsset && $stepThree_amountAsset == $stepOne_amountAsset) $deal_amount_stepThree = $stepThree_buy_amount * $stepThree_buy_price * $stepTwo_buy_price / $stepOne_sell_price;
+        if ($stepThreeInfo['amountAsset'] == $stepTwoInfo['amountAsset'] && $stepThreeInfo['priceAsset'] == $stepOneInfo['amountAsset']) $deal_amount_stepThree = $stepThreeInfo['sell_amount'] * $stepTwoInfo['buy_price'] / $stepOneInfo['sell_price'];
+        elseif ($stepThreeInfo['amountAsset'] == $stepTwoInfo['amountAsset'] && $stepThreeInfo['priceAsset'] == $stepOneInfo['priceAsset']) $deal_amount_stepThree = $stepThreeInfo['sell_amount'] * $stepTwoInfo['buy_price'] * $stepOneInfo['buy_price'];
+        elseif ($stepThreeInfo['amountAsset'] == $stepTwoInfo['priceAsset'] && $stepThreeInfo['priceAsset'] == $stepOneInfo['priceAsset']) $deal_amount_stepThree = $stepThreeInfo['sell_amount'] / $stepTwoInfo['sell_price'] * $stepOneInfo['buy_price'];
+        elseif ($stepThreeInfo['priceAsset'] == $stepTwoInfo['priceAsset'] && $stepThreeInfo['amountAsset'] == $stepOneInfo['priceAsset']) $deal_amount_stepThree = $stepThreeInfo['buy_amount'] * $stepThreeInfo['buy_price'] / $stepTwoInfo['sell_price'] * $stepOneInfo['buy_price'];
+        elseif ($stepThreeInfo['priceAsset'] == $stepTwoInfo['priceAsset'] && $stepThreeInfo['amountAsset'] == $stepOneInfo['amountAsset']) $deal_amount_stepThree = $stepThreeInfo['buy_amount'] * $stepThreeInfo['buy_price'] / $stepTwoInfo['sell_price'] / $stepOneInfo['sell_price'];
+        elseif ($stepThreeInfo['priceAsset'] == $stepTwoInfo['amountAsset'] && $stepThreeInfo['amountAsset'] == $stepOneInfo['amountAsset']) $deal_amount_stepThree = $stepThreeInfo['buy_amount'] * $stepThreeInfo['buy_price'] * $stepTwoInfo['buy_price'] / $stepOneInfo['sell_price'];
 
         $deal_amount_min = round(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0, $max_deal_amount), $mainAsset_decimals);
 
@@ -32,17 +40,9 @@ class Main
             "step_two" => round($deal_amount_stepTwo ?? 0, $mainAsset_decimals),
             "step_three" => round($deal_amount_stepThree ?? 0, $mainAsset_decimals)
         ];
+
     }
 
-    /**
-     * Сalculates a market order in a DOM
-     *
-     * @param array $orderbook
-     * @param float $amount
-     * @param string $bidask
-     * @param string $base_or_quote
-     * @return array|false
-     */
     public function MarketOrder(array $orderbook, float $amount, string $bidask, string $base_or_quote): bool|array
     {
 
@@ -84,7 +84,6 @@ class Main
 
                 $result[$bidask]["price"] = $current_price;
 
-                //echo "Step $i) $bidask:  price:  " . $current_price . ", amount: $current_amount, amount base sum: $base_amount_max, quote sum: $quote_amount_max, current: $quote_amount) \n";
             }
         }
 
@@ -93,15 +92,26 @@ class Main
 
         if (!isset($result[$bidask]["amount"]) || $result[$bidask]["amount"] == 0) return false;
         else return $result;
+
     }
 
-    public function getResult($orderbook, $markets, $deal_amount, $rater, $fee, $combinations, $stepOne_amountAsset, $stepOne_amount_decimals, $stepOne_sell_price, $stepOne_price_decimals, $stepOne_buy_price, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepTwo_amount_decimals, $stepTwo_sell_price, $stepTwo_price_decimals, $stepTwo_buy_price, $stepThree_amountAsset, $stepThree_sell_price, $stepThree_price_decimals, $stepThree_buy_price, $stepThree_amount_decimals, $step_one_dom_position, $step_two_dom_position, $step_three_dom_position, $stepOne_sell_amount, $stepOne_buy_amount, $stepTwo_sell_amount, $stepTwo_buy_amount, $stepThree_sell_amount, $stepThree_buy_amount, $max_deal_amount): array
+    public function getResult(
+        $orderbook,
+        $balances,
+        $combinations,
+        $deal_amount,
+        $stepOneInfo,
+        $stepTwoInfo,
+        $stepThreeInfo,
+        $max_deal_amount
+    ): array
     {
+
         $status = true;
         $reason = "";
 
         /* STEP 1 */
-        if ($stepOne_amountAsset == $combinations["main_asset_name"]) {
+        if ($stepOneInfo['amountAsset'] == $combinations["main_asset_name"]) {
 
             $market_amount_step_one = $this->MarketOrder($orderbook["step_one"], $deal_amount, "bids", "base");
 
@@ -114,21 +124,21 @@ class Main
 
             $stepOne = [
                 "orderType" => "sell",
-                "dom_position" => $step_one_dom_position,
+                "dom_position" => $stepOneInfo['dom_position'],
                 "amountAsset" => $combinations["main_asset_name"],
                 "priceAsset" => $combinations["asset_one_name"],
                 "amountAssetName" => $combinations["main_asset_name"],
                 "priceAssetName" => $combinations["asset_one_name"],
                 "amount" => $deal_amount,
-                "price" => $stepOne_sell_price,
+                "price" => $stepOneInfo['sell_price'],
                 "result" => $market_amount_step_one["bids"]["amount"]
 
             ];
 
             // Balance check (step 1, sell)
-            if ($deal_amount > $rater[$combinations["main_asset_name"]]["free"]) {
+            if ($deal_amount > $balances[$combinations["main_asset_name"]]["free"]) {
                 $status = false;
-                $reason = "Not enough balance (step 1, sell). Asset: {$combinations["main_asset_name"]} ({$rater[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
+                $reason = "Not enough balance (step 1, sell). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
             }
 
         } else {
@@ -146,20 +156,20 @@ class Main
 
             $stepOne = [
                 "orderType" => "buy",
-                "dom_position" => $step_one_dom_position,
+                "dom_position" => $stepOneInfo['dom_position'],
                 "amountAsset" => $combinations["asset_one_name"],
                 "priceAsset" => $combinations["main_asset_name"],
                 "amountAssetName" => $combinations["asset_one_name"],
                 "priceAssetName" => $combinations["main_asset_name"],
-                "amount" => $deal_amount / $stepOne_buy_price,
-                "price" => $stepOne_buy_price,
+                "amount" => $deal_amount / $stepOneInfo['buy_price'],
+                "price" => $stepOneInfo['buy_price'],
                 "result" => $step_one_result
             ];
 
             // Balance check (step 1, buy)
-            if ($deal_amount > $rater[$combinations["main_asset_name"]]["free"]) {
+            if ($deal_amount > $balances[$combinations["main_asset_name"]]["free"]) {
                 $status = false;
-                $reason = "Not enough balance (step 1, buy). Asset: {$combinations["main_asset_name"]} ({$rater[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
+                $reason = "Not enough balance (step 1, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
             }
 
         }
@@ -168,7 +178,7 @@ class Main
         $stepOne["result"] = (FEE_TYPE === "percentages") ? $stepOne["result"] - $stepOne["result"] / 100 * FEE_TAKER : $stepOne["result"];
 
         // Amount limit check (step 1)
-        $min_amount_step_one = $markets[$combinations["step_one_symbol"]]["limits"]["amount"]["min"] ?? 0;
+        $min_amount_step_one = $orderbook["step_one"]["limits"]["amount"]["min"] ?? 0;
 
         if ($min_amount_step_one > $stepOne["amount"]) {
             return [
@@ -178,7 +188,7 @@ class Main
         }
 
         // Cost limit check (step 1)
-        $cost_limit_step_one = $markets[$combinations["step_one_symbol"]]["limits"]["cost"]["min"] ?? 0;
+        $cost_limit_step_one = $orderbook["step_one"]["limits"]["cost"]["min"] ?? 0;
 
         if ($cost_limit_step_one > $stepOne["amount"] * $stepOne["price"]) {
             return [
@@ -187,9 +197,8 @@ class Main
             ];
         }
 
-
         /* STEP 2 */
-        if ($stepTwo_amountAsset == $combinations["asset_one_name"]) {
+        if ($stepTwoInfo['amountAsset'] == $combinations["asset_one_name"]) {
 
             $market_amount_step_two = $this->MarketOrder($orderbook["step_two"], $stepOne["result"], "bids", "base");
 
@@ -204,20 +213,20 @@ class Main
 
             $stepTwo = [
                 "orderType" => "sell",
-                "dom_position" => $step_two_dom_position,
+                "dom_position" => $stepTwoInfo['dom_position'],
                 "amountAsset" => $combinations["asset_one_name"],
                 "priceAsset" => $combinations["asset_two_name"],
                 "amountAssetName" => $combinations["asset_one_name"],
                 "priceAssetName" => $combinations["asset_two_name"],
                 "amount" => $step_two_amount,
-                "price" => $stepTwo_sell_price,
+                "price" => $stepTwoInfo['sell_price'],
                 "result" => $market_amount_step_two["bids"]["amount"]
             ];
 
             // Balance check (step 1, sell)
-            if ($stepOne["result"] > $rater[$stepTwo_amountAsset]["free"]) {
+            if ($stepOne["result"] > $balances[$stepTwoInfo['amountAsset']]["free"]) {
                 $status = false;
-                $reason = "Not enough balance (step 2, sell). Asset: {$stepTwo["amountAssetName"]} ({$rater[$stepTwo_amountAsset]["free"]} < {$stepOne["result"]})";
+                $reason = "Not enough balance (step 2, sell). Asset: {$stepTwo["amountAssetName"]} ({$balances[$stepTwoInfo['amountAsset']]["free"]} < {$stepOne["result"]})";
             }
 
         } else {
@@ -235,26 +244,26 @@ class Main
 
             $stepTwo = [
                 "orderType" => "buy",
-                "dom_position" => $step_two_dom_position,
+                "dom_position" => $stepTwoInfo['dom_position'],
                 "amountAsset" => $combinations["asset_two_name"],
                 "priceAsset" => $combinations["asset_one_name"],
                 "amountAssetName" => $combinations["asset_two_name"],
                 "priceAssetName" => $combinations["asset_one_name"],
-                "amount" => $stepOne["result"] / $stepTwo_buy_price,
-                "price" => $stepTwo_buy_price,
+                "amount" => $stepOne["result"] / $stepTwoInfo['buy_price'],
+                "price" => $stepTwoInfo['buy_price'],
                 "result" => $step_two_result
             ];
 
             // Balance check (step 2, buy)
-            if ($stepOne["result"] > $rater[$stepTwo_priceAsset]["free"]) {
+            if ($stepOne["result"] > $balances[$stepTwoInfo['priceAsset']]["free"]) {
                 $status = false;
-                $reason = "Not enough balance (step 2, buy). Asset: {$stepTwo["priceAssetName"]} ({$rater[$stepTwo_priceAsset]["free"]} < {$stepOne["result"]})";
+                $reason = "Not enough balance (step 2, buy). Asset: {$stepTwo["priceAssetName"]} ({$balances[$stepTwoInfo['priceAsset']]["free"]} < {$stepOne["result"]})";
             }
 
         }
 
         // Amount limit check (step 2)
-        $min_amount_step_two = $markets[$combinations["step_two_symbol"]]["limits"]["amount"]["min"] ?? 0;
+        $min_amount_step_two = $orderbook["step_two"]["limits"]["amount"]["min"] ?? 0;
 
         if ($min_amount_step_two > $stepTwo["amount"]) {
             return [
@@ -264,7 +273,7 @@ class Main
         }
 
         // Cost limit check (step 2)
-        $cost_limit_step_two = $markets[$combinations["step_two_symbol"]]["limits"]["cost"]["min"] ?? 0;
+        $cost_limit_step_two = $orderbook["step_two"]["limits"]["cost"]["min"] ?? 0;
 
         if ($cost_limit_step_two > $stepTwo["amount"] * $stepTwo["price"]) {
             return [
@@ -277,7 +286,7 @@ class Main
         $stepTwo["result"] = (FEE_TYPE === "percentages") ? $stepTwo["result"] - $stepTwo["result"] / 100 * FEE_TAKER : $stepTwo["result"];
 
         /* STEP 3 */
-        if ($stepThree_amountAsset != $combinations["main_asset_name"]) {
+        if ($stepThreeInfo['amountAsset'] != $combinations["main_asset_name"]) {
 
             $market_amount_step_three = $this->MarketOrder($orderbook["step_three"], $stepTwo["result"], "bids", "base");
 
@@ -292,20 +301,20 @@ class Main
 
             $stepThree = [
                 "orderType" => "sell",
-                "dom_position" => $step_three_dom_position,
+                "dom_position" => $stepThreeInfo['dom_position'],
                 "amountAsset" => $combinations["asset_two_name"],
                 "priceAsset" => $combinations["main_asset_name"],
                 "amountAssetName" => $combinations["asset_two_name"],
                 "priceAssetName" => $combinations["main_asset_name"],
                 "amount" => $step_three_amount,
-                "price" => $stepThree_sell_price,
+                "price" => $stepThreeInfo['sell_price'],
                 "result" => $market_amount_step_three["bids"]["amount"]
             ];
 
             // Balance check (step 2, sell)
-            if ($stepTwo["result"] > $rater[$stepThree_amountAsset]["free"]) {
+            if ($stepTwo["result"] > $balances[$stepThreeInfo['amountAsset']]["free"]) {
                 $status = false;
-                $reason = "Not enough balance (step 3, sell). Asset: {$stepThree["amountAssetName"]} ({$rater[$stepThree_amountAsset]["free"]} < {$stepTwo["result"]})";
+                $reason = "Not enough balance (step 3, sell). Asset: {$stepThree["amountAssetName"]} ({$balances[$stepThreeInfo['amountAsset']]["free"]} < {$stepTwo["result"]})";
             }
 
         } else {
@@ -323,26 +332,27 @@ class Main
 
             $stepThree = [
                 "orderType" => "buy",
-                "dom_position" => $step_three_dom_position,
+                "dom_position" => $stepThreeInfo['dom_position'],
                 "amountAsset" => $combinations["main_asset_name"],
                 "priceAsset" => $combinations["asset_two_name"],
                 "amountAssetName" => $combinations["main_asset_name"],
                 "priceAssetName" => $combinations["asset_two_name"],
-                "amount" => $stepTwo["result"] / $stepThree_buy_price,
-                "price" => $stepThree_buy_price,
+                "amount" => $stepTwo["result"] / $stepThreeInfo['buy_price'],
+                "price" => $stepThreeInfo['buy_price'],
                 "result" => $step_three_result
 
             ];
 
             // Balance check (step 2, buy)
-            if ($step_three_result > $rater[$combinations["main_asset_name"]]["free"]) {
+            if ($step_three_result > $balances[$combinations["main_asset_name"]]["free"]) {
                 $status = false;
-                $reason = "Not enough balance (step 3, buy). Asset: {$combinations["main_asset_name"]} ({$rater[$combinations["main_asset_name"]]["free"]} < $step_three_result)";
+                $reason = "Not enough balance (step 3, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $step_three_result)";
             }
+
         }
 
         //Amount limit check (step 3)
-        $min_amount_step_three = $markets[$combinations["step_three_symbol"]]["limits"]["amount"]["min"] ?? 0;
+        $min_amount_step_three = $orderbook["step_three"]["limits"]["amount"]["min"] ?? 0;
 
         if ($min_amount_step_three > $stepThree["amount"]) {
             return [
@@ -352,7 +362,7 @@ class Main
         }
 
         // Cost limit check (step 3)
-        $cost_limit_step_three = $markets[$combinations["step_three_symbol"]]["limits"]["cost"]["min"] ?? 0;
+        $cost_limit_step_three = $orderbook["step_three"]["limits"]["cost"]["min"] ?? 0;
 
         if ($cost_limit_step_three > $stepThree["amount"] * $stepThree["price"]) {
             return [
@@ -366,28 +376,25 @@ class Main
 
         $result = round(($stepThree["result"] - $deal_amount), 8);
 
-        $result_in_main_asset = ($combinations["main_asset_name"] === MAIN_ASSET) ? $result : round(1 / $rater[$combinations["main_asset_name"]]["rate"] * $result, 8);
-
         $expected_data = [
-            "fee" => $fee,
-            "stepOne_sell_price" => $stepOne_sell_price,
-            "stepOne_sell_amount" => $stepOne_sell_amount,
-            "stepOne_buy_price" => $stepOne_buy_price,
-            "stepOne_buy_amount" => $stepOne_buy_amount,
-            "stepTwo_sell_price" => $stepTwo_sell_price,
-            "stepTwo_sell_amount" => $stepTwo_sell_amount,
-            "stepTwo_buy_price" => $stepTwo_buy_price,
-            "stepTwo_buy_amount" => $stepTwo_buy_amount,
-            "stepThree_sell_price" => $stepThree_sell_price,
-            "stepThree_sell_amount" => $stepThree_sell_amount,
-            "stepThree_buy_price" => $stepThree_buy_price,
-            "stepThree_buy_amount" => $stepThree_buy_amount,
+            "fee" => FEE_TAKER,
+            "stepOne_sell_price" => $stepOneInfo['sell_price'],
+            "stepOne_sell_amount" => $stepOneInfo['sell_amount'],
+            "stepOne_buy_price" => $stepOneInfo['buy_price'],
+            "stepOne_buy_amount" => $stepOneInfo['buy_amount'],
+            "stepTwo_sell_price" => $stepTwoInfo['sell_price'],
+            "stepTwo_sell_amount" => $stepTwoInfo['sell_amount'],
+            "stepTwo_buy_price" => $stepTwoInfo['buy_price'],
+            "stepTwo_buy_amount" => $stepTwoInfo['buy_amount'],
+            "stepThree_sell_price" => $stepThreeInfo['sell_price'],
+            "stepThree_sell_amount" => $stepThreeInfo['sell_amount'],
+            "stepThree_buy_price" => $stepThreeInfo['buy_price'],
+            "stepThree_buy_amount" => $stepThreeInfo['buy_amount'],
             "max_deal_amount" => $max_deal_amount
         ];
 
         return [
             "result" => $result,
-            "result_in_main_asset" => $result_in_main_asset,
             "status" => $status,
             "reason" => $reason,
             "deal_amount" => $deal_amount,
@@ -399,6 +406,7 @@ class Main
             "step_three" => $stepThree,
             "expected_data" => $expected_data
         ];
+
     }
 
     /**
