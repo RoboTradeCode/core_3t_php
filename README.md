@@ -40,6 +40,7 @@ sudo apt install php8.0-fpm
 sudo apt install php8.0-mysql
 sudo apt install php8.0-dev libmemcache-dev
 sudo apt install php8.0-memcache
+sudo apt install php8.0-memcached
 ```
 
 4. Необходимо установить memcached
@@ -100,21 +101,40 @@ composer install
 Чтобы получить такой файл нужно скопировать ```test_aeron_config_c.example.php``` в эту же папку и убрать ```.example```
 
 В ней есть две константы
-```shell
+```php
+// Биржа, которая тестируется гейтом
+const EXCHANGE = 'ftx';
+
+// Тестируемая пара для проверки корректности постановки оредров и их отмены (Важно: пока только BTC/USDT)
+const SYMBOL = 'BTC/USDT';
+
+// publisher, который подключается к subscriber в гейте, для посылания команд
 const GATE_PUBLISHER = [
     'channel' => 'aeron:ipc',
     'stream_id' => 1001
 ];
 
-const GATE_SUBSCRIBER = [
+// subscriber, который подключается к publisher в гейте, для принятия ордербуков
+const GATE_SUBSCRIBERS_ORDERBOOKS = [
     'channel' => 'aeron:ipc',
     'stream_id' => 1001
 ];
-```
-GATE_PUBLISHER - настройки для Publisher, который будет отправлять команды (к примеру отмена ордера) в subscriber в gate. Задаем channel и stream_id.
-GATE_SUBSCRIBER - настройки для Subscriber, который будет принимать данные (к примеру ордербук) от publisher от gate. Задаем channel и stream_id.
 
-Исправлять можно только aeron:ipc и 1001 на свои значения, если параметры соединения по Aeron отличаются от представленных.
+// subscriber, который подключается к publisher в гейте, для принятия балансов
+const GATE_SUBSCRIBERS_BALANCES = [
+    'channel' => 'aeron:ipc',
+    'stream_id' => 1002
+];
+
+// subscriber, который подключается к publisher в гейте, для принятия ордеров
+const GATE_SUBSCRIBERS_ORDERS = [
+    'channel' => 'aeron:ipc',
+    'stream_id' => 1003
+];
+```
+
+GATE_PUBLISHER - настройки для Publisher, который будет отправлять команды (к примеру отмена ордера) в subscriber в gate. Задаем channel и stream_id.
+GATE_SUBSCRIBERS_ORDERBOOKS, GATE_SUBSCRIBERS_BALANCES, GATE_SUBSCRIBERS_ORDERS- настройки для Subscribers, которые будут принимать данные (ордербуки, балансы, ордера) от publishers от gate. Задаем для каждого  свой channel и stream_id.
 
 _**Последовательность запуска:**_
 

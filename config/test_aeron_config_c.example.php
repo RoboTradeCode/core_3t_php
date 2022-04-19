@@ -12,17 +12,19 @@ const GATE_PUBLISHER = [
     'stream_id' => 1001
 ];
 
-// subscriber, который подключается к publisher в гейте, для принятия данных
+// subscriber, который подключается к publisher в гейте, для принятия ордербуков
 const GATE_SUBSCRIBERS_ORDERBOOKS = [
     'channel' => 'aeron:ipc',
     'stream_id' => 1001
 ];
 
+// subscriber, который подключается к publisher в гейте, для принятия балансов
 const GATE_SUBSCRIBERS_BALANCES = [
     'channel' => 'aeron:ipc',
     'stream_id' => 1002
 ];
 
+// subscriber, который подключается к publisher в гейте, для принятия ордеров
 const GATE_SUBSCRIBERS_ORDERS = [
     'channel' => 'aeron:ipc',
     'stream_id' => 1003
