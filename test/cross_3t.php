@@ -34,7 +34,7 @@ while (!isset($config)) {
 
 $config = [
     'exchange' => 'kuna',
-    'exchanges' => ['ftx'],
+    'exchanges' => ['kuna', 'huobi'],
     'min_deal_amounts' => [
         'BTC' => 0.001,
         'ETH' => 0.01,
@@ -102,7 +102,7 @@ while (true) {
     // берем все данные из memcached
     $all_keys = $cross_3t->getAllMemcachedKeys();
 
-    $memcached_data = $memcached->getMulti($all_keys);
+    $memcached_data = $memcached->getMulti($all_keys) ?? [];
 
     print_r($all_keys);
 
