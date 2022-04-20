@@ -55,10 +55,15 @@ $orderbook = [
                 'max' => 100.0,
             ]
         ],
-        'precision' => [
-            'amount' => 8,
-            'price' => 8,
-        ],
+        'price_increment' => 0.00000001,
+        'amount_increment' => 0.00000001,
+        'amountAsset' => 'ETH',
+        'priceAsset' => 'BTC',
+        'sell_price' => 0.07431,
+        'buy_price' => 0.07439746,
+        'sell_amount' => 3.1505174,
+        'buy_amount' => 0.00086418,
+        'dom_position' => 1
     ],
     'step_two' => [
         'bids' => [
@@ -90,10 +95,15 @@ $orderbook = [
                 'max' => 500000.0
             ],
         ],
-        'precision' => [
-            'amount' => 8,
-            'price' => 4,
-        ]
+        'price_increment' => 0.0001,
+        'amount_increment' => 0.00000001,
+        'amountAsset' => 'ETH',
+        'priceAsset' => 'USDT',
+        'sell_price' => 2925.3012,
+        'buy_price' => 2925.9623,
+        'sell_amount' => 0.01883708,
+        'buy_amount' => 0.10254971,
+        'dom_position' => 1
     ],
     'step_three' => [
         'bids' => [
@@ -125,10 +135,15 @@ $orderbook = [
                 'max' => 500000.0,
             ],
         ],
-        'precision' => [
-            'amount' => 8,
-            'price' => 2,
-        ]
+        'price_increment' => 0.01,
+        'amount_increment' => 0.00000001,
+        'amountAsset' => 'BTC',
+        'priceAsset' => 'USDT',
+        'sell_price' => 39319.32,
+        'buy_price' => 39324.35,
+        'sell_amount' => 0.029533,
+        'buy_amount' => 0.00405,
+        'dom_position' => 1
     ],
 ];
 
@@ -160,42 +175,10 @@ $combinations = [
     'step_three_symbol' => 'BTC/USDT',
 ];
 
-$stepOneInfo = [
-    'amountAsset' => 'ETH',
-    'priceAsset' => 'BTC',
-    'sell_price' => 0.07431,
-    'buy_price' => 0.07439746,
-    'sell_amount' => 3.1505174,
-    'buy_amount' => 0.00086418,
-    'dom_position' => 1
-];
-
-$stepTwoInfo = [
-    'amountAsset' => 'ETH',
-    'priceAsset' => 'USDT',
-    'sell_price' => 2925.3012,
-    'buy_price' => 2925.9623,
-    'sell_amount' => 0.01883708,
-    'buy_amount' => 0.10254971,
-    'dom_position' => 1
-];
-
-$stepThreeInfo = [
-    'amountAsset' => 'BTC',
-    'priceAsset' => 'USDT',
-    'sell_price' => 39319.32,
-    'buy_price' => 39324.35,
-    'sell_amount' => 0.029533,
-    'buy_amount' => 0.00405,
-    'dom_position' => 1
-];
-
 $deal_amount = $bot->DealAmount(
+    $orderbook,
     $combinations['main_asset_name'],
     $combinations['main_asset_amount_precision'],
-    $stepOneInfo,
-    $stepTwoInfo,
-    $stepThreeInfo,
     $max_deal_amount
 );
 
@@ -208,9 +191,6 @@ $result = $bot->getResult(
     $balances,
     $combinations,
     $deal_amount['min'] * 10, // тут 10 необходимо убирать (здесь он для тестов)
-    $stepOneInfo,
-    $stepTwoInfo,
-    $stepThreeInfo,
     $max_deal_amount
 );
 
