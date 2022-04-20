@@ -8,22 +8,6 @@ $bot = new Main();
 
 $max_deal_amount = 0.03;
 
-/*
-$deal_amount = ["min" => 0, "step_one" => 0, "step_two" => 0, "step_three" => 0];
-
-if ($bot->format($deal_amount["step_one"]) < $bot->format($max_deal_amount)) {
-
-    $stepOne_buy_price = (isset($orderbook["step_one"]["asks"][$step_one_dom_position]["0"])) ? $orderbook["step_one"]["asks"][$step_one_dom_position]["0"] : 0;
-    $stepOne_sell_price = (isset($orderbook["step_one"]["bids"][$step_one_dom_position]["0"])) ? $orderbook["step_one"]["bids"][$step_one_dom_position]["0"] : 0;
-
-    $stepOne_buy_amount += (isset($orderbook["step_one"]["asks"][$step_one_dom_position]["1"])) ? $orderbook["step_one"]["asks"][$step_one_dom_position]["1"] : 0;
-    $stepOne_sell_amount += (isset($orderbook["step_one"]["bids"][$step_one_dom_position]["1"])) ? $orderbook["step_one"]["bids"][$step_one_dom_position]["1"] : 0;
-
-    $step_one_dom_position++;
-
-}
-*/
-
 $orderbook = [
     'step_one' => [
         'bids' => [
@@ -167,7 +151,7 @@ $balances = [
 
 $combinations = [
     'main_asset_name' => 'BTC',
-    'main_asset_amount_precision' => 8,
+    'main_asset_amount_precision' => 0.00000001,
     'asset_one_name' => 'ETH',
     'asset_two_name' => 'USDT',
     'step_one_symbol' => 'ETH/BTC',
@@ -195,3 +179,8 @@ $result = $bot->getResult(
 );
 
 print_r($result);
+
+/*
+max_deal_amount, deal_amount, $combinations['main_asset_name'], $combinations['main_asset_amount_precision'], step_one
+указываются в одной и той же валюте!
+*/

@@ -30,23 +30,21 @@ class Main
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook['step_three']['buy_amount'] * $orderbook['step_three']['buy_price'] / $orderbook['step_two']['sell_price'] / $orderbook['step_one']['sell_price'];
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook['step_three']['buy_amount'] * $orderbook['step_three']['buy_price'] * $orderbook['step_two']['buy_price'] / $orderbook['step_one']['sell_price'];
 
-        $deal_amount_min = round(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0, $max_deal_amount), $mainAsset_decimals);
+        $deal_amount_min = $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0, $max_deal_amount), $mainAsset_decimals);
 
         return [
             "min" => $deal_amount_min,
-            "step_one" => round($deal_amount_stepOne, $mainAsset_decimals),
-            "step_two" => round($deal_amount_stepTwo ?? 0, $mainAsset_decimals),
-            "step_three" => round($deal_amount_stepThree ?? 0, $mainAsset_decimals)
+            "step_one" => $this->incrementNumber($deal_amount_stepOne, $mainAsset_decimals),
+            "step_two" => $this->incrementNumber($deal_amount_stepTwo ?? 0, $mainAsset_decimals),
+            "step_three" => $this->incrementNumber($deal_amount_stepThree ?? 0, $mainAsset_decimals)
         ];
 
     }
 
-    public function MarketOrder(array $orderbook, float $amount, string $bidask, string $base_or_quote): bool|array
+    public function MarketOrder(array $orderbook, float $amount, string $bidask): bool|array
     {
 
         if ($bidask != "bids" && $bidask != "asks") return false;
-
-        if ($base_or_quote != "base" && $base_or_quote != "quote") return false;
 
         if (isset($orderbook[$bidask]) && count($orderbook[$bidask]) > 0) $dom_count = count($orderbook[$bidask]);
         else return false;
@@ -63,12 +61,12 @@ class Main
             $quote_amount_max += $quote_amount;
             $base_amount_max += $current_amount;
 
-            if (($base_or_quote === "base" && $base_amount_sum < $amount) || ($base_or_quote === "quote" && $quote_amount_sum < $amount)) {
+            if (($bidask == "bids" && $base_amount_sum < $amount) || ($bidask == "asks" && $quote_amount_sum < $amount)) {
 
                 $quote_amount_sum += $quote_amount;
                 $base_amount_sum += $current_amount;
 
-                if ($base_or_quote === "base") {
+                if ($bidask == "bids") {
 
                     if (($base_amount_max - $amount) > 0 && $i == 0) $result[$bidask]["amount"] = $amount * $current_price;
                     else $result[$bidask]["amount"] = ($amount - $base_amount_max) * $current_price + $quote_amount_sum;
@@ -108,7 +106,7 @@ class Main
         /* STEP 1 */
         if ($orderbook['step_one']['amountAsset'] == $combinations["main_asset_name"]) {
 
-            $market_amount_step_one = $this->MarketOrder($orderbook["step_one"], $deal_amount, "bids", "base");
+            $market_amount_step_one = $this->MarketOrder($orderbook["step_one"], $deal_amount, "bids");
 
             if ($market_amount_step_one === false) {
                 return [
@@ -124,7 +122,7 @@ class Main
                 "priceAsset" => $combinations["asset_one_name"],
                 "amountAssetName" => $combinations["main_asset_name"],
                 "priceAssetName" => $combinations["asset_one_name"],
-                "amount" => $deal_amount,
+                "amount" => $this->incrementNumber($deal_amount, $orderbook["step_one"]['amount_increment']),
                 "price" => $orderbook['step_one']['sell_price'],
                 "result" => $market_amount_step_one["bids"]["amount"]
 
@@ -138,7 +136,7 @@ class Main
 
         } else {
 
-            $market_amount_step_one = $this->MarketOrder($orderbook["step_one"], $deal_amount, "asks", "quote");
+            $market_amount_step_one = $this->MarketOrder($orderbook["step_one"], $deal_amount, "asks");
 
             if ($market_amount_step_one === false) {
                 return [
@@ -147,8 +145,6 @@ class Main
                 ];
             }
 
-            $step_one_result = $market_amount_step_one["asks"]["amount"];
-
             $stepOne = [
                 "orderType" => "buy",
                 "dom_position" => $orderbook['step_one']['dom_position'],
@@ -156,9 +152,9 @@ class Main
                 "priceAsset" => $combinations["main_asset_name"],
                 "amountAssetName" => $combinations["asset_one_name"],
                 "priceAssetName" => $combinations["main_asset_name"],
-                "amount" => $deal_amount / $orderbook['step_one']['buy_price'],
+                "amount" => $this->incrementNumber($deal_amount / $orderbook['step_one']['buy_price'], $orderbook["step_one"]['amount_increment']),
                 "price" => $orderbook['step_one']['buy_price'],
-                "result" => $step_one_result
+                "result" => $market_amount_step_one["asks"]["amount"],
             ];
 
             // Balance check (step 1, buy)
@@ -170,7 +166,10 @@ class Main
         }
 
         // Subtract fee (step 1)
-        $stepOne["result"] = (FEE_TYPE === "percentages") ? $stepOne["result"] - $stepOne["result"] / 100 * FEE_TAKER : $stepOne["result"];
+        $stepOne["result"] = $this->incrementNumber(
+            (FEE_TYPE === "percentages") ? $stepOne["result"] - $stepOne["result"] / 100 * FEE_TAKER : $stepOne["result"],
+            $orderbook["step_one"]['amount_increment']
+        );
 
         // Amount limit check (step 1)
         $min_amount_step_one = $orderbook["step_one"]["limits"]["amount"]["min"] ?? 0;
@@ -195,7 +194,7 @@ class Main
         /* STEP 2 */
         if ($orderbook['step_two']['amountAsset'] == $combinations["asset_one_name"]) {
 
-            $market_amount_step_two = $this->MarketOrder($orderbook["step_two"], $stepOne["result"], "bids", "base");
+            $market_amount_step_two = $this->MarketOrder($orderbook["step_two"], $stepOne["result"], "bids");
 
             if ($market_amount_step_two === false) {
                 return [
@@ -204,8 +203,6 @@ class Main
                 ];
             }
 
-            $step_two_amount = $stepOne["result"];
-
             $stepTwo = [
                 "orderType" => "sell",
                 "dom_position" => $orderbook['step_two']['dom_position'],
@@ -213,7 +210,7 @@ class Main
                 "priceAsset" => $combinations["asset_two_name"],
                 "amountAssetName" => $combinations["asset_one_name"],
                 "priceAssetName" => $combinations["asset_two_name"],
-                "amount" => $step_two_amount,
+                "amount" => $this->incrementNumber($stepOne["result"], $orderbook["step_two"]['amount_increment']),
                 "price" => $orderbook['step_two']['sell_price'],
                 "result" => $market_amount_step_two["bids"]["amount"]
             ];
@@ -226,7 +223,7 @@ class Main
 
         } else {
 
-            $market_amount_step_two = $this->MarketOrder($orderbook["step_two"], $stepOne["result"], "asks", "quote");
+            $market_amount_step_two = $this->MarketOrder($orderbook["step_two"], $stepOne["result"], "asks");
 
             if ($market_amount_step_two === false) {
                 return [
@@ -235,8 +232,6 @@ class Main
                 ];
             }
 
-            $step_two_result = $market_amount_step_two["asks"]["amount"];
-
             $stepTwo = [
                 "orderType" => "buy",
                 "dom_position" => $orderbook['step_two']['dom_position'],
@@ -244,9 +239,9 @@ class Main
                 "priceAsset" => $combinations["asset_one_name"],
                 "amountAssetName" => $combinations["asset_two_name"],
                 "priceAssetName" => $combinations["asset_one_name"],
-                "amount" => $stepOne["result"] / $orderbook['step_two']['buy_price'],
+                "amount" => $this->incrementNumber($stepOne["result"] / $orderbook['step_two']['buy_price'], $orderbook["step_two"]['amount_increment']),
                 "price" => $orderbook['step_two']['buy_price'],
-                "result" => $step_two_result
+                "result" => $market_amount_step_two["asks"]["amount"]
             ];
 
             // Balance check (step 2, buy)
@@ -278,12 +273,15 @@ class Main
         }
 
         // Subtract fee (step 2)
-        $stepTwo["result"] = (FEE_TYPE === "percentages") ? $stepTwo["result"] - $stepTwo["result"] / 100 * FEE_TAKER : $stepTwo["result"];
+        $stepTwo["result"] = $this->incrementNumber(
+            (FEE_TYPE === "percentages") ? $stepTwo["result"] - $stepTwo["result"] / 100 * FEE_TAKER : $stepTwo["result"],
+            $orderbook["step_one"]['amount_increment']
+        );
 
         /* STEP 3 */
         if ($orderbook['step_three']['amountAsset'] != $combinations["main_asset_name"]) {
 
-            $market_amount_step_three = $this->MarketOrder($orderbook["step_three"], $stepTwo["result"], "bids", "base");
+            $market_amount_step_three = $this->MarketOrder($orderbook["step_three"], $stepTwo["result"], "bids");
 
             if ($market_amount_step_three === false) {
                 return [
@@ -292,8 +290,6 @@ class Main
                 ];
             }
 
-            $step_three_amount = $stepTwo["result"];
-
             $stepThree = [
                 "orderType" => "sell",
                 "dom_position" => $orderbook['step_three']['dom_position'],
@@ -301,7 +297,7 @@ class Main
                 "priceAsset" => $combinations["main_asset_name"],
                 "amountAssetName" => $combinations["asset_two_name"],
                 "priceAssetName" => $combinations["main_asset_name"],
-                "amount" => $step_three_amount,
+                "amount" => $this->incrementNumber($stepTwo["result"], $orderbook["step_three"]['amount_increment']),
                 "price" => $orderbook['step_three']['sell_price'],
                 "result" => $market_amount_step_three["bids"]["amount"]
             ];
@@ -314,7 +310,7 @@ class Main
 
         } else {
 
-            $market_amount_step_three = $this->MarketOrder($orderbook["step_three"], $stepTwo["result"], "asks", "quote");
+            $market_amount_step_three = $this->MarketOrder($orderbook["step_three"], $stepTwo["result"], "asks");
 
             if ($market_amount_step_three === false) {
                 return [
@@ -332,7 +328,7 @@ class Main
                 "priceAsset" => $combinations["asset_two_name"],
                 "amountAssetName" => $combinations["main_asset_name"],
                 "priceAssetName" => $combinations["asset_two_name"],
-                "amount" => $stepTwo["result"] / $orderbook['step_three']['buy_price'],
+                "amount" => $this->incrementNumber($stepTwo["result"] / $orderbook['step_three']['buy_price'], $orderbook["step_three"]['amount_increment']),
                 "price" => $orderbook['step_three']['buy_price'],
                 "result" => $step_three_result
 
@@ -367,29 +363,13 @@ class Main
         }
 
         // Subtract fee (step 3)
-        $stepThree["result"] = (FEE_TYPE === "percentages") ? $stepThree["result"] - $stepThree["result"] / 100 * FEE_TAKER : $stepThree["result"];
-
-        $result = round(($stepThree["result"] - $deal_amount), 8);
-
-        $expected_data = [
-            "fee" => FEE_TAKER,
-            "stepOne_sell_price" => $orderbook['step_one']['sell_price'],
-            "stepOne_sell_amount" => $orderbook['step_one']['sell_amount'],
-            "stepOne_buy_price" => $orderbook['step_one']['buy_price'],
-            "stepOne_buy_amount" => $orderbook['step_one']['buy_amount'],
-            "stepTwo_sell_price" => $orderbook['step_two']['sell_price'],
-            "stepTwo_sell_amount" => $orderbook['step_two']['sell_amount'],
-            "stepTwo_buy_price" => $orderbook['step_two']['buy_price'],
-            "stepTwo_buy_amount" => $orderbook['step_two']['buy_amount'],
-            "stepThree_sell_price" => $orderbook['step_three']['sell_price'],
-            "stepThree_sell_amount" => $orderbook['step_three']['sell_amount'],
-            "stepThree_buy_price" => $orderbook['step_three']['buy_price'],
-            "stepThree_buy_amount" => $orderbook['step_three']['buy_amount'],
-            "max_deal_amount" => $max_deal_amount
-        ];
+        $stepThree["result"] = $this->incrementNumber(
+            (FEE_TYPE === "percentages") ? $stepThree["result"] - $stepThree["result"] / 100 * FEE_TAKER : $stepThree["result"],
+            $orderbook["step_one"]['amount_increment']
+        );
 
         return [
-            "result" => $result,
+            "result" => round(($stepThree["result"] - $deal_amount), 8),
             "status" => $status,
             "reason" => $reason,
             "deal_amount" => $deal_amount,
@@ -399,7 +379,22 @@ class Main
             "step_one" => $stepOne,
             "step_two" => $stepTwo,
             "step_three" => $stepThree,
-            "expected_data" => $expected_data
+            "expected_data" => [
+                "fee" => FEE_TAKER,
+                "stepOne_sell_price" => $orderbook['step_one']['sell_price'],
+                "stepOne_sell_amount" => $orderbook['step_one']['sell_amount'],
+                "stepOne_buy_price" => $orderbook['step_one']['buy_price'],
+                "stepOne_buy_amount" => $orderbook['step_one']['buy_amount'],
+                "stepTwo_sell_price" => $orderbook['step_two']['sell_price'],
+                "stepTwo_sell_amount" => $orderbook['step_two']['sell_amount'],
+                "stepTwo_buy_price" => $orderbook['step_two']['buy_price'],
+                "stepTwo_buy_amount" => $orderbook['step_two']['buy_amount'],
+                "stepThree_sell_price" => $orderbook['step_three']['sell_price'],
+                "stepThree_sell_amount" => $orderbook['step_three']['sell_amount'],
+                "stepThree_buy_price" => $orderbook['step_three']['buy_price'],
+                "stepThree_buy_amount" => $orderbook['step_three']['buy_amount'],
+                "max_deal_amount" => $max_deal_amount
+            ]
         ];
 
     }
@@ -475,6 +470,11 @@ class Main
     public function format($float, $decimals = 8): string
     {
         return number_format($float, $decimals, ".", "");
+    }
+
+    public function incrementNumber(float $number, float $increment): float
+    {
+        return $increment * floor($number / $increment);
     }
 
 }
