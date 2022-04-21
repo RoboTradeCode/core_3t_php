@@ -5,8 +5,58 @@ namespace Src;
 class Main
 {
 
+    public function getOrderbookInfo(
+        array &$orderbook_info,
+        array $orderbook,
+        array $deal_amount,
+        float $max_deal_amount
+    ): void
+    {
+
+        //Step 1
+        if ($deal_amount["step_one"] < $max_deal_amount) {
+
+            $orderbook_info['step_one']['buy_price'] = (isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"])) ? $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"] : 0;
+            $orderbook_info['step_one']['sell_price'] = (isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"])) ? $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"] : 0;
+
+            $orderbook_info['step_one']['buy_amount'] += (isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"])) ? $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"] : 0;
+            $orderbook_info['step_one']['sell_amount'] += (isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"])) ? $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"] : 0;
+
+            $orderbook_info['step_one']['dom_position']++;
+
+        }
+
+        //Step 2
+        if ($deal_amount["step_two"] < $max_deal_amount) {
+
+            $orderbook_info['step_two']['buy_price'] = (isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"])) ? $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"] : 0;
+            $orderbook_info['step_two']['sell_price'] = (isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"])) ? $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"] : 0;
+
+            $orderbook_info['step_two']['buy_amount'] += (isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"])) ? $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"] : 0;
+            $orderbook_info['step_two']['sell_amount'] += (isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"])) ? $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"] : 0;
+
+            $orderbook_info['step_two']['dom_position']++;
+
+        }
+
+        //Step 3
+        if ($deal_amount["step_three"] < $max_deal_amount) {
+
+            $orderbook_info['step_three']['buy_price'] = (isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"])) ? $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"] : 0;
+            $orderbook_info['step_three']['sell_price'] = (isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"])) ? $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"] : 0;
+
+            $orderbook_info['step_three']['buy_amount'] += (isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"])) ? $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"] : 0;
+            $orderbook_info['step_three']['sell_amount'] += (isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"])) ? $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"] : 0;
+
+            $orderbook_info['step_three']['dom_position']++;
+
+        }
+
+    }
+
     public function DealAmount(
         $orderbook,
+        $orderbook_info,
         $mainAsset_id,
         $mainAsset_decimals,
         $max_deal_amount
@@ -14,21 +64,21 @@ class Main
     {
 
         //Step 1
-        $deal_amount_stepOne = ($orderbook['step_one']['amountAsset'] == $mainAsset_id) ? $orderbook['step_one']['sell_amount'] : $orderbook['step_one']['buy_amount'] * $orderbook['step_one']['buy_price'];
+        $deal_amount_stepOne = ($orderbook['step_one']['amountAsset'] == $mainAsset_id) ? $orderbook_info['step_one']['sell_amount'] : $orderbook_info['step_one']['buy_amount'] * $orderbook_info['step_one']['buy_price'];
 
         //Step 2
-        if ($orderbook['step_two']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepTwo = $orderbook['step_two']['sell_amount'] * $orderbook['step_one']['buy_price'];
-        elseif ($orderbook['step_two']['amountAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepTwo = $orderbook['step_two']['sell_amount'] / $orderbook['step_one']['sell_price'];
-        elseif ($orderbook['step_two']['priceAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepTwo = $orderbook['step_two']['buy_amount'] * $orderbook['step_two']['buy_price'] * $orderbook['step_one']['buy_price'];
-        elseif ($orderbook['step_two']['priceAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepTwo = $orderbook['step_two']['buy_amount'] * $orderbook['step_two']['buy_price'] / $orderbook['step_one']['sell_price'];
+        if ($orderbook['step_two']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepTwo = $orderbook_info['step_two']['sell_amount'] * $orderbook_info['step_one']['buy_price'];
+        elseif ($orderbook['step_two']['amountAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepTwo = $orderbook_info['step_two']['sell_amount'] / $orderbook_info['step_one']['sell_price'];
+        elseif ($orderbook['step_two']['priceAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepTwo = $orderbook_info['step_two']['buy_amount'] * $orderbook_info['step_two']['buy_price'] * $orderbook_info['step_one']['buy_price'];
+        elseif ($orderbook['step_two']['priceAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepTwo = $orderbook_info['step_two']['buy_amount'] * $orderbook_info['step_two']['buy_price'] / $orderbook_info['step_one']['sell_price'];
 
         //Step 3
-        if ($orderbook['step_three']['amountAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['priceAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook['step_three']['sell_amount'] * $orderbook['step_two']['buy_price'] / $orderbook['step_one']['sell_price'];
-        elseif ($orderbook['step_three']['amountAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['priceAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepThree = $orderbook['step_three']['sell_amount'] * $orderbook['step_two']['buy_price'] * $orderbook['step_one']['buy_price'];
-        elseif ($orderbook['step_three']['amountAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['priceAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepThree = $orderbook['step_three']['sell_amount'] / $orderbook['step_two']['sell_price'] * $orderbook['step_one']['buy_price'];
-        elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepThree = $orderbook['step_three']['buy_amount'] * $orderbook['step_three']['buy_price'] / $orderbook['step_two']['sell_price'] * $orderbook['step_one']['buy_price'];
-        elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook['step_three']['buy_amount'] * $orderbook['step_three']['buy_price'] / $orderbook['step_two']['sell_price'] / $orderbook['step_one']['sell_price'];
-        elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook['step_three']['buy_amount'] * $orderbook['step_three']['buy_price'] * $orderbook['step_two']['buy_price'] / $orderbook['step_one']['sell_price'];
+        if ($orderbook['step_three']['amountAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['priceAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['sell_amount'] * $orderbook_info['step_two']['buy_price'] / $orderbook_info['step_one']['sell_price'];
+        elseif ($orderbook['step_three']['amountAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['priceAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['sell_amount'] * $orderbook_info['step_two']['buy_price'] * $orderbook_info['step_one']['buy_price'];
+        elseif ($orderbook['step_three']['amountAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['priceAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['sell_amount'] / $orderbook_info['step_two']['sell_price'] * $orderbook_info['step_one']['buy_price'];
+        elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['priceAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] / $orderbook_info['step_two']['sell_price'] * $orderbook_info['step_one']['buy_price'];
+        elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] / $orderbook_info['step_two']['sell_price'] / $orderbook_info['step_one']['sell_price'];
+        elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] * $orderbook_info['step_two']['buy_price'] / $orderbook_info['step_one']['sell_price'];
 
         $deal_amount_min = $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0, $max_deal_amount), $mainAsset_decimals);
 
@@ -93,6 +143,7 @@ class Main
 
     public function getResult(
         $orderbook,
+        $orderbook_info,
         $balances,
         $combinations,
         $deal_amount,
@@ -117,13 +168,13 @@ class Main
 
             $stepOne = [
                 "orderType" => "sell",
-                "dom_position" => $orderbook['step_one']['dom_position'],
+                "dom_position" => $orderbook_info['step_one']['dom_position'],
                 "amountAsset" => $combinations["main_asset_name"],
                 "priceAsset" => $combinations["asset_one_name"],
                 "amountAssetName" => $combinations["main_asset_name"],
                 "priceAssetName" => $combinations["asset_one_name"],
                 "amount" => $this->incrementNumber($deal_amount, $orderbook["step_one"]['amount_increment']),
-                "price" => $orderbook['step_one']['sell_price'],
+                "price" => $orderbook_info['step_one']['sell_price'],
                 "result" => $market_amount_step_one["bids"]["amount"]
 
             ];
@@ -147,13 +198,13 @@ class Main
 
             $stepOne = [
                 "orderType" => "buy",
-                "dom_position" => $orderbook['step_one']['dom_position'],
+                "dom_position" => $orderbook_info['step_one']['dom_position'],
                 "amountAsset" => $combinations["asset_one_name"],
                 "priceAsset" => $combinations["main_asset_name"],
                 "amountAssetName" => $combinations["asset_one_name"],
                 "priceAssetName" => $combinations["main_asset_name"],
-                "amount" => $this->incrementNumber($deal_amount / $orderbook['step_one']['buy_price'], $orderbook["step_one"]['amount_increment']),
-                "price" => $orderbook['step_one']['buy_price'],
+                "amount" => $this->incrementNumber($deal_amount / $orderbook_info['step_one']['buy_price'], $orderbook["step_one"]['amount_increment']),
+                "price" => $orderbook_info['step_one']['buy_price'],
                 "result" => $market_amount_step_one["asks"]["amount"],
             ];
 
@@ -205,13 +256,13 @@ class Main
 
             $stepTwo = [
                 "orderType" => "sell",
-                "dom_position" => $orderbook['step_two']['dom_position'],
+                "dom_position" => $orderbook_info['step_two']['dom_position'],
                 "amountAsset" => $combinations["asset_one_name"],
                 "priceAsset" => $combinations["asset_two_name"],
                 "amountAssetName" => $combinations["asset_one_name"],
                 "priceAssetName" => $combinations["asset_two_name"],
                 "amount" => $this->incrementNumber($stepOne["result"], $orderbook["step_two"]['amount_increment']),
-                "price" => $orderbook['step_two']['sell_price'],
+                "price" => $orderbook_info['step_two']['sell_price'],
                 "result" => $market_amount_step_two["bids"]["amount"]
             ];
 
@@ -234,13 +285,13 @@ class Main
 
             $stepTwo = [
                 "orderType" => "buy",
-                "dom_position" => $orderbook['step_two']['dom_position'],
+                "dom_position" => $orderbook_info['step_two']['dom_position'],
                 "amountAsset" => $combinations["asset_two_name"],
                 "priceAsset" => $combinations["asset_one_name"],
                 "amountAssetName" => $combinations["asset_two_name"],
                 "priceAssetName" => $combinations["asset_one_name"],
-                "amount" => $this->incrementNumber($stepOne["result"] / $orderbook['step_two']['buy_price'], $orderbook["step_two"]['amount_increment']),
-                "price" => $orderbook['step_two']['buy_price'],
+                "amount" => $this->incrementNumber($stepOne["result"] / $orderbook_info['step_two']['buy_price'], $orderbook["step_two"]['amount_increment']),
+                "price" => $orderbook_info['step_two']['buy_price'],
                 "result" => $market_amount_step_two["asks"]["amount"]
             ];
 
@@ -292,13 +343,13 @@ class Main
 
             $stepThree = [
                 "orderType" => "sell",
-                "dom_position" => $orderbook['step_three']['dom_position'],
+                "dom_position" => $orderbook_info['step_three']['dom_position'],
                 "amountAsset" => $combinations["asset_two_name"],
                 "priceAsset" => $combinations["main_asset_name"],
                 "amountAssetName" => $combinations["asset_two_name"],
                 "priceAssetName" => $combinations["main_asset_name"],
                 "amount" => $this->incrementNumber($stepTwo["result"], $orderbook["step_three"]['amount_increment']),
-                "price" => $orderbook['step_three']['sell_price'],
+                "price" => $orderbook_info['step_three']['sell_price'],
                 "result" => $market_amount_step_three["bids"]["amount"]
             ];
 
@@ -323,13 +374,13 @@ class Main
 
             $stepThree = [
                 "orderType" => "buy",
-                "dom_position" => $orderbook['step_three']['dom_position'],
+                "dom_position" => $orderbook_info['step_three']['dom_position'],
                 "amountAsset" => $combinations["main_asset_name"],
                 "priceAsset" => $combinations["asset_two_name"],
                 "amountAssetName" => $combinations["main_asset_name"],
                 "priceAssetName" => $combinations["asset_two_name"],
-                "amount" => $this->incrementNumber($stepTwo["result"] / $orderbook['step_three']['buy_price'], $orderbook["step_three"]['amount_increment']),
-                "price" => $orderbook['step_three']['buy_price'],
+                "amount" => $this->incrementNumber($stepTwo["result"] / $orderbook_info['step_three']['buy_price'], $orderbook["step_three"]['amount_increment']),
+                "price" => $orderbook_info['step_three']['buy_price'],
                 "result" => $step_three_result
 
             ];
@@ -381,18 +432,18 @@ class Main
             "step_three" => $stepThree,
             "expected_data" => [
                 "fee" => FEE_TAKER,
-                "stepOne_sell_price" => $orderbook['step_one']['sell_price'],
-                "stepOne_sell_amount" => $orderbook['step_one']['sell_amount'],
-                "stepOne_buy_price" => $orderbook['step_one']['buy_price'],
-                "stepOne_buy_amount" => $orderbook['step_one']['buy_amount'],
-                "stepTwo_sell_price" => $orderbook['step_two']['sell_price'],
-                "stepTwo_sell_amount" => $orderbook['step_two']['sell_amount'],
-                "stepTwo_buy_price" => $orderbook['step_two']['buy_price'],
-                "stepTwo_buy_amount" => $orderbook['step_two']['buy_amount'],
-                "stepThree_sell_price" => $orderbook['step_three']['sell_price'],
-                "stepThree_sell_amount" => $orderbook['step_three']['sell_amount'],
-                "stepThree_buy_price" => $orderbook['step_three']['buy_price'],
-                "stepThree_buy_amount" => $orderbook['step_three']['buy_amount'],
+                "stepOne_sell_price" => $orderbook_info['step_one']['sell_price'],
+                "stepOne_sell_amount" => $orderbook_info['step_one']['sell_amount'],
+                "stepOne_buy_price" => $orderbook_info['step_one']['buy_price'],
+                "stepOne_buy_amount" => $orderbook_info['step_one']['buy_amount'],
+                "stepTwo_sell_price" => $orderbook_info['step_two']['sell_price'],
+                "stepTwo_sell_amount" => $orderbook_info['step_two']['sell_amount'],
+                "stepTwo_buy_price" => $orderbook_info['step_two']['buy_price'],
+                "stepTwo_buy_amount" => $orderbook_info['step_two']['buy_amount'],
+                "stepThree_sell_price" => $orderbook_info['step_three']['sell_price'],
+                "stepThree_sell_amount" => $orderbook_info['step_three']['sell_amount'],
+                "stepThree_buy_price" => $orderbook_info['step_three']['buy_price'],
+                "stepThree_buy_amount" => $orderbook_info['step_three']['buy_amount'],
                 "max_deal_amount" => $max_deal_amount
             ]
         ];

@@ -6,6 +6,8 @@ require dirname(__DIR__, 2) . '/index.php';
 
 $bot = new Main();
 
+$deal_amount = ["min" => 0, "step_one" => 0, "step_two" => 0, "step_three" => 0];
+
 $max_deal_amount = 0.03;
 
 $orderbook = [
@@ -43,11 +45,6 @@ $orderbook = [
         'amount_increment' => 0.00000001,
         'amountAsset' => 'ETH',
         'priceAsset' => 'BTC',
-        'sell_price' => 0.07431,
-        'buy_price' => 0.07439746,
-        'sell_amount' => 3.1505174,
-        'buy_amount' => 0.00086418,
-        'dom_position' => 1
     ],
     'step_two' => [
         'bids' => [
@@ -83,11 +80,6 @@ $orderbook = [
         'amount_increment' => 0.00000001,
         'amountAsset' => 'ETH',
         'priceAsset' => 'USDT',
-        'sell_price' => 2925.3012,
-        'buy_price' => 2925.9623,
-        'sell_amount' => 0.01883708,
-        'buy_amount' => 0.10254971,
-        'dom_position' => 1
     ],
     'step_three' => [
         'bids' => [
@@ -122,12 +114,7 @@ $orderbook = [
         'price_increment' => 0.01,
         'amount_increment' => 0.00000001,
         'amountAsset' => 'BTC',
-        'priceAsset' => 'USDT',
-        'sell_price' => 39319.32,
-        'buy_price' => 39324.35,
-        'sell_amount' => 0.029533,
-        'buy_amount' => 0.00405,
-        'dom_position' => 1
+        'priceAsset' => 'USDT'
     ],
 ];
 
@@ -159,8 +146,35 @@ $combinations = [
     'step_three_symbol' => 'BTC/USDT',
 ];
 
+$orderbook_info = [
+    'step_one' => [
+        'sell_price' => 0,
+        'buy_price' => 0,
+        'sell_amount' => 0,
+        'buy_amount' => 0,
+        'dom_position' => 0
+    ],
+    'step_two' => [
+        'sell_price' => 0,
+        'buy_price' => 0,
+        'sell_amount' => 0,
+        'buy_amount' => 0,
+        'dom_position' => 0
+    ],
+    'step_three' => [
+        'sell_price' => 0,
+        'buy_price' => 0,
+        'sell_amount' => 0,
+        'buy_amount' => 0,
+        'dom_position' => 0
+    ],
+];
+
+$bot->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
+
 $deal_amount = $bot->DealAmount(
     $orderbook,
+    $orderbook_info,
     $combinations['main_asset_name'],
     $combinations['main_asset_amount_precision'],
     $max_deal_amount
@@ -172,6 +186,7 @@ const FEE_TAKER = 0.1;
 
 $result = $bot->getResult(
     $orderbook,
+    $orderbook_info,
     $balances,
     $combinations,
     $deal_amount['min'] * 10, // тут 10 необходимо убирать (здесь он для тестов)
