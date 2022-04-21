@@ -5,6 +5,60 @@ namespace Src;
 class Main
 {
 
+    public function findReason(
+        array $result,
+        int &$depth,
+        int $max_depth,
+        array $orderbook_info,
+        array $orderbook,
+        array $combinations,
+        array $deal_amount,
+        float $max_deal_amount
+    ): string
+    {
+
+        if (!$result["status"]) {
+            return $result["reason"];
+        } elseif ($depth++ > $max_depth) {
+            return "Maximum depth";
+        } elseif (
+            $combinations["main_asset_name"] == $orderbook['step_one']['amountAsset'] &&
+            !isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"])
+        ) {
+            return "End of DOM (step 1, bids, position " . $orderbook_info['step_one']['dom_position'] . "). Pair:" . $orderbook['step_one']['amountAsset'] . "/" . $orderbook['step_one']['priceAsset'];
+        } elseif (
+            $combinations["main_asset_name"] == $orderbook['step_one']['priceAsset'] &&
+            !isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"])
+        ) {
+            return "End of DOM (step 1, asks, position " . $orderbook_info['step_one']['dom_position'] . "). Pair:" . $orderbook['step_one']['amountAsset'] . "/" . $orderbook['step_one']['priceAsset'];
+        } elseif (
+            $combinations["step_one_symbol"] == $orderbook['step_two']['amountAsset'] &&
+            !isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"])
+        ) {
+            return "End of DOM (step 2, bids, position " . $orderbook_info['step_two']['dom_position'] . "). Pair:" . $orderbook['step_two']['amountAsset'] . "/" . $orderbook['step_two']['priceAsset'] . ", amount: " . $orderbook_info['step_two']['sell_amount'] . ", price: " . $orderbook_info['step_two']['sell_price'];
+        } elseif (
+            $combinations["step_one_symbol"] == $orderbook['step_two']['priceAsset'] &&
+            !isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"])
+        ) {
+            return "End of DOM (step 2, asks, position " . $orderbook_info['step_two']['dom_position'] . "). Pair:" . $orderbook['step_two']['amountAsset'] . "/" . $orderbook['step_two']['priceAsset'] . ", amount: " . $orderbook_info['step_two']['sell_amount'] . ", price: " . $orderbook_info['step_two']['sell_price'];
+        } elseif (
+            $combinations["asset_two_name"] === $orderbook['step_three']['amountAsset'] &&
+            !isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"])
+        ) {
+            return "End of DOM (step 3, bids, position " . $orderbook_info['step_three']['dom_position'] . "). Pair: " . $orderbook['step_three']['amountAsset'] . "/" . $orderbook['step_three']['priceAsset'];
+        } elseif (
+            $combinations["asset_two_name"] === $orderbook['step_three']['priceAsset'] &&
+            !isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"])
+        ) {
+            return "End of DOM (step 3, asks, position " . $orderbook_info['step_three']['dom_position'] . "). Pair: " . $orderbook['step_three']['amountAsset'] . "/" . $orderbook['step_three']['priceAsset'];
+        } elseif ($deal_amount["min"] >= $max_deal_amount) {
+            return "Maximum reached";
+        }
+
+        return '';
+
+    }
+
     public function getOrderbookInfo(
         array &$orderbook_info,
         array $orderbook,
@@ -218,7 +272,7 @@ class Main
 
         // Subtract fee (step 1)
         $stepOne["result"] = $this->incrementNumber(
-            (FEE_TYPE === "percentages") ? $stepOne["result"] - $stepOne["result"] / 100 * FEE_TAKER : $stepOne["result"],
+            $stepOne["result"] - $stepOne["result"] / 100 * $orderbook["step_one"]['fee'],
             $orderbook["step_one"]['amount_increment']
         );
 
@@ -325,7 +379,7 @@ class Main
 
         // Subtract fee (step 2)
         $stepTwo["result"] = $this->incrementNumber(
-            (FEE_TYPE === "percentages") ? $stepTwo["result"] - $stepTwo["result"] / 100 * FEE_TAKER : $stepTwo["result"],
+            $stepTwo["result"] - $stepTwo["result"] / 100 * $orderbook["step_two"]['fee'],
             $orderbook["step_one"]['amount_increment']
         );
 
@@ -415,7 +469,7 @@ class Main
 
         // Subtract fee (step 3)
         $stepThree["result"] = $this->incrementNumber(
-            (FEE_TYPE === "percentages") ? $stepThree["result"] - $stepThree["result"] / 100 * FEE_TAKER : $stepThree["result"],
+            $stepThree["result"] - $stepThree["result"] / 100 * $orderbook["step_three"]['fee'],
             $orderbook["step_one"]['amount_increment']
         );
 
@@ -431,7 +485,7 @@ class Main
             "step_two" => $stepTwo,
             "step_three" => $stepThree,
             "expected_data" => [
-                "fee" => FEE_TAKER,
+                "fee" => $orderbook['step_one']['fee'],
                 "stepOne_sell_price" => $orderbook_info['step_one']['sell_price'],
                 "stepOne_sell_amount" => $orderbook_info['step_one']['sell_amount'],
                 "stepOne_buy_price" => $orderbook_info['step_one']['buy_price'],
@@ -450,82 +504,24 @@ class Main
 
     }
 
-    /**
-     * Gets the best of results
-     *
-     * @param array $plus_results
-     * @return array
-     */
     public function getBestResult(array $plus_results): array
     {
+
         $plus_results = array_values($plus_results);
+
         $best_results = array_column($plus_results, "result_in_main_asset");
+
         $best_key = array_keys($best_results, max($best_results));
 
         return $plus_results[$best_key["0"]];
-    }
 
-    public function CalcVisualizationHeader(array $orderbooks, string $current_symbol): string
-    {
-
-        $date = date("d.m.y H:i:s", time());
-
-        return <<<HTML
-         <style> body {font-family: monospace;} table {border-collapse: collapse;} td, th {border: 1px solid #000; padding: 5px;} th {font-weight: bold;}</style>
-         <i>Current symbol: <b>$current_symbol</b>. Generated: $date</i><br /><br />
-
-        <table>
-        <tr><th>#</th><th>Triangle</th><th>Step 1</th><th>Step 2</th><th>Step 3</th><th>Result</th></tr>
-        HTML;
-    }
-
-    public function CalcVisualizationBody($i, $step_one_dom_position, $step_two_dom_position, $step_three_dom_position, $result, $waves_deal_amount, $deal_amount, $fee, $combinations, $stepOne_sell_amount, $stepTwo_sell_amount, $stepOne_buy_amount, $stepTwo_buy_amount, $stepThree_buy_amount, $stepThree_sell_amount, $stepOne_amountAsset, $stepOne_amount_decimals, $stepOne_sell_price, $stepOne_price_decimals, $stepOne_buy_price, $stepTwo_amountAsset, $stepTwo_priceAsset, $stepTwo_amount_decimals, $stepTwo_sell_price, $stepTwo_price_decimals, $stepTwo_buy_price, $stepThree_amountAsset, $stepThree_sell_price, $stepThree_price_decimals, $stepThree_buy_price, $stepThree_amount_decimals): string
-    {
-
-        $table = "<tr><td>$i</td>";
-
-        $calculations = "<td><strong>{$combinations["main_asset_name"]} -> {$combinations["asset_one_name"]} -> {$combinations["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($deal_amount) . " {$combinations["main_asset_name"]}<br />Max: $waves_deal_amount<br />Fee: " . $this->format($fee) . "</small></td>";
-
-        // Step 1
-        $calculations .= "<td>Market: {$result["step_one"]["amountAssetName"]} -> {$result["step_one"]["priceAssetName"]} ({$result["step_one"]["orderType"]})<br />Position: $step_one_dom_position<br />Sell: " . $this->format($stepOne_sell_price) . " (" . $this->format($stepOne_sell_amount) . ")<br />Buy: " . $this->format($stepOne_buy_price) . " (" . $this->format($stepOne_buy_amount) . ")<br />Result: <span style=\"color: red;\">-" . $this->format($deal_amount) . " {$combinations["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($result["step_one"]["result"]) . " {$combinations["asset_one_name"]}</span></td>";
-
-        // Step 2
-        $calculations .= "<td>Market: {$result["step_two"]["amountAssetName"]} -> {$result["step_two"]["priceAssetName"]} ({$result["step_two"]["orderType"]})<br />Position: $step_two_dom_position<br />Sell: " . $this->format($stepTwo_sell_price) . " (" . $this->format($stepTwo_sell_amount) . ")<br />Buy: " . $this->format($stepTwo_buy_price) . " (" . $this->format($stepTwo_buy_amount) . ")<br />Result: <span style=\"color: red;\">-" . $this->format($result["step_one"]["result"]) . " {$combinations["asset_one_name"]}</span>, <span style=\"color: green;\">+" . $this->format($result["step_two"]["result"]) . " {$combinations["asset_two_name"]}</span></td>";
-
-        // Step 3
-        $calculations .= "<td>Market: {$result["step_three"]["amountAssetName"]} -> {$result["step_three"]["priceAssetName"]} ({$result["step_three"]["orderType"]})<br />Position: $step_three_dom_position<br />Sell: " . $this->format($stepThree_sell_price) . " (" . $this->format($stepThree_sell_amount) . ")<br />Buy: " . $this->format($stepThree_buy_price) . " (" . $this->format($stepThree_buy_amount) . ")<br />Result: <span style=\"color: red;\">-" . $this->format($result["step_two"]["result"]) . " {$combinations["asset_two_name"]}</span>, <span style=\"color: green;\">+" . $this->format($result["step_three"]["result"]) . " {$combinations["main_asset_name"]}</span></td>";
-
-        // Result
-        $calculations .= "<td><span style=\"color: " . (($result["result"] > 0) ? "green" : "red;") . ";\">" . $this->format($result["result"]) . " {$combinations["main_asset_name"]}</span></td>";
-
-        $calculations .= "</tr>";
-
-        $table .= $calculations;
-
-        return $table;
-    }
-
-    public function CalcVisualizationDelimeter($reason): string
-    {
-        $html = '<tr><td colspan="6" style="background-color: grey; color: #fff; text-align: center;">' . $reason . '</td></tr>';
-        $html .= '<tr><td colspan="6" style="border-left: 0; border-right: 0;">&nbsp;</td></tr>';
-
-        return $html;
-    }
-
-    public function CalcVisualizationFooter(): string
-    {
-        return '</table>';
-    }
-
-    public function format($float, $decimals = 8): string
-    {
-        return number_format($float, $decimals, ".", "");
     }
 
     public function incrementNumber(float $number, float $increment): float
     {
+
         return $increment * floor($number / $increment);
+
     }
 
 }

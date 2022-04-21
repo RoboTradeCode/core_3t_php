@@ -4,6 +4,12 @@ use Src\Main;
 
 require dirname(__DIR__, 2) . '/index.php';
 
+const MAX_DEPTH = 10;
+const MIN_PROFIT = 0;
+$results = [];
+$reason = '';
+$depth = 0;
+
 $bot = new Main();
 
 $max_deal_amount = 0.03;
@@ -176,28 +182,60 @@ $balances = [
     ],
 ];
 
-$bot->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
+while (true) {
 
-$deal_amount = $bot->DealAmount(
-    $orderbook,
-    $orderbook_info,
-    $combinations['main_asset_name'],
-    $combinations['main_asset_amount_precision'],
-    $max_deal_amount
-);
+    sleep(1);
 
-$result = $bot->getResult(
-    $orderbook,
-    $orderbook_info,
-    $balances,
-    $combinations,
-    $deal_amount['min'] * 10, // тут 10 необходимо убирать (здесь он для тестов)
-    $max_deal_amount
-);
+    $bot->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
 
-print_r($result);
+    $deal_amount = $bot->DealAmount(
+        $orderbook,
+        $orderbook_info,
+        $combinations['main_asset_name'],
+        $combinations['main_asset_amount_precision'],
+        $max_deal_amount
+    );
 
-/*
-max_deal_amount, deal_amount, $combinations['main_asset_name'], $combinations['main_asset_amount_precision'], step_one
-указываются в одной и той же валюте!
-*/
+    $result = $bot->getResult(
+        $orderbook,
+        $orderbook_info,
+        $balances,
+        $combinations,
+        $deal_amount['min'] * 10, // тут 10 необходимо убирать (здесь он для тестов)
+        $max_deal_amount
+    );
+
+    $reason = $bot->findReason(
+        $result,
+        $depth,
+        MAX_DEPTH,
+        $orderbook_info,
+        $orderbook,
+        $combinations,
+        $deal_amount,
+        $max_deal_amount
+    );
+
+    if ($result["status"] && $result["result_in_main_asset"] > MIN_PROFIT) {
+
+        $results[] = $result;
+
+    }
+
+    if (!$result["status"]) {
+
+        $reason = $result["reason"];
+
+        break;
+
+    }
+
+    if ($reason) {
+
+        break;
+
+    }
+
+}
+
+$best_result = $bot->getBestResult($results);
