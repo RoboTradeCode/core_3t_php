@@ -229,6 +229,7 @@ class Main
                 "priceAssetName" => $combinations["asset_one_name"],
                 "amount" => $this->incrementNumber($deal_amount, $orderbook["step_one"]['amount_increment']),
                 "price" => $orderbook_info['step_one']['sell_price'],
+                "exchange" => $orderbook['step_one']['exchange'],
                 "result" => $market_amount_step_one["bids"]["amount"]
 
             ];
@@ -259,6 +260,7 @@ class Main
                 "priceAssetName" => $combinations["main_asset_name"],
                 "amount" => $this->incrementNumber($deal_amount / $orderbook_info['step_one']['buy_price'], $orderbook["step_one"]['amount_increment']),
                 "price" => $orderbook_info['step_one']['buy_price'],
+                "exchange" => $orderbook['step_one']['exchange'],
                 "result" => $market_amount_step_one["asks"]["amount"],
             ];
 
@@ -317,6 +319,7 @@ class Main
                 "priceAssetName" => $combinations["asset_two_name"],
                 "amount" => $this->incrementNumber($stepOne["result"], $orderbook["step_two"]['amount_increment']),
                 "price" => $orderbook_info['step_two']['sell_price'],
+                "exchange" => $orderbook['step_two']['exchange'],
                 "result" => $market_amount_step_two["bids"]["amount"]
             ];
 
@@ -346,6 +349,7 @@ class Main
                 "priceAssetName" => $combinations["asset_one_name"],
                 "amount" => $this->incrementNumber($stepOne["result"] / $orderbook_info['step_two']['buy_price'], $orderbook["step_two"]['amount_increment']),
                 "price" => $orderbook_info['step_two']['buy_price'],
+                "exchange" => $orderbook['step_two']['exchange'],
                 "result" => $market_amount_step_two["asks"]["amount"]
             ];
 
@@ -404,6 +408,7 @@ class Main
                 "priceAssetName" => $combinations["main_asset_name"],
                 "amount" => $this->incrementNumber($stepTwo["result"], $orderbook["step_three"]['amount_increment']),
                 "price" => $orderbook_info['step_three']['sell_price'],
+                "exchange" => $orderbook['step_three']['exchange'],
                 "result" => $market_amount_step_three["bids"]["amount"]
             ];
 
@@ -435,6 +440,7 @@ class Main
                 "priceAssetName" => $combinations["asset_two_name"],
                 "amount" => $this->incrementNumber($stepTwo["result"] / $orderbook_info['step_three']['buy_price'], $orderbook["step_three"]['amount_increment']),
                 "price" => $orderbook_info['step_three']['buy_price'],
+                "exchange" => $orderbook['step_three']['exchange'],
                 "result" => $step_three_result
 
             ];

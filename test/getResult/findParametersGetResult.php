@@ -4,42 +4,17 @@ use Src\Main;
 
 require dirname(__DIR__, 2) . '/index.php';
 
-const MAX_DEPTH = 10;
-const MIN_PROFIT = 0;
-$results = [];
-$reason = '';
-$depth = 0;
-
 $bot = new Main();
+
+// конфигурация
+$min_profit = 0;
 
 $max_deal_amount = 0.03;
 
-$deal_amount = ["min" => 0, "step_one" => 0, "step_two" => 0, "step_three" => 0];
+$max_depth = 10;
+// конфигурация
 
-$orderbook_info = [
-    'step_one' => [
-        'sell_price' => 0,
-        'buy_price' => 0,
-        'sell_amount' => 0,
-        'buy_amount' => 0,
-        'dom_position' => 0
-    ],
-    'step_two' => [
-        'sell_price' => 0,
-        'buy_price' => 0,
-        'sell_amount' => 0,
-        'buy_amount' => 0,
-        'dom_position' => 0
-    ],
-    'step_three' => [
-        'sell_price' => 0,
-        'buy_price' => 0,
-        'sell_amount' => 0,
-        'buy_amount' => 0,
-        'dom_position' => 0
-    ],
-];
-
+// обновляемые данные
 $combinations = [
     'main_asset_name' => 'BTC',
     'main_asset_amount_precision' => 0.00000001,
@@ -168,17 +143,50 @@ $balances = [
     'BTC' => [
         'free' => '0.51828021',
         'used' => '0.00000000',
-        'total' => '0.51828021'
+        'total' => '0.51828021',
+        'exchange' => 'binance'
     ],
     'ETH' => [
         'free' => '0.00023513',
         'used' => '0.00000000',
-        'total' => '0.00023513'
+        'total' => '0.00023513',
+        'exchange' => 'exmo'
     ],
     'USDT' => [
         'free' => '20.76792778',
         'used' => '0.00000000',
-        'total' => '20.76792778'
+        'total' => '20.76792778',
+        'exchange' => 'kuna'
+    ],
+];
+// обновляемые данные
+
+// начало подсчета getResult()
+$results = [];
+$reason = '';
+$depth = 0;
+$deal_amount = ["min" => 0, "step_one" => 0, "step_two" => 0, "step_three" => 0];
+$orderbook_info = [
+    'step_one' => [
+        'sell_price' => 0,
+        'buy_price' => 0,
+        'sell_amount' => 0,
+        'buy_amount' => 0,
+        'dom_position' => 0
+    ],
+    'step_two' => [
+        'sell_price' => 0,
+        'buy_price' => 0,
+        'sell_amount' => 0,
+        'buy_amount' => 0,
+        'dom_position' => 0
+    ],
+    'step_three' => [
+        'sell_price' => 0,
+        'buy_price' => 0,
+        'sell_amount' => 0,
+        'buy_amount' => 0,
+        'dom_position' => 0
     ],
 ];
 
@@ -205,24 +213,11 @@ while (true) {
         $max_deal_amount
     );
 
-    $reason = $bot->findReason(
-        $result,
-        $depth,
-        MAX_DEPTH,
-        $orderbook_info,
-        $orderbook,
-        $combinations,
-        $deal_amount,
-        $max_deal_amount
-    );
-
-    if ($result["status"] && $result["result_in_main_asset"] > MIN_PROFIT) {
+    if ($result["status"] && $result["result_in_main_asset"] > $min_profit) {
 
         $results[] = $result;
 
-    }
-
-    if (!$result["status"]) {
+    } elseif (!$result["status"]) {
 
         $reason = $result["reason"];
 
@@ -230,12 +225,24 @@ while (true) {
 
     }
 
-    if ($reason) {
+    if (
+        $reason = $bot->findReason(
+            $result,
+            $depth,
+            $max_depth,
+            $orderbook_info,
+            $orderbook,
+            $combinations,
+            $deal_amount,
+            $max_deal_amount
+        )
+    ) {
 
         break;
 
     }
 
 }
+// начало подсчета getResult()
 
-$best_result = $bot->getBestResult($results);
+print_r($result);
