@@ -1,5 +1,8 @@
 <?php
 
+// Название алгоритма
+const ALGORITHM = 'test_php';
+
 // Биржа, которая тестируется гейтом
 const EXCHANGE = 'ftx';
 

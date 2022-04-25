@@ -9,7 +9,7 @@ $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
 // API для формирования сообщения для отправки по aeron
-$robotrade_api = new Api('binance', 'test_php', 'core', '1');
+$robotrade_api = new Api(EXCHANGE, ALGORITHM, 'core', '1');
 
 // нужен publisher, отправлять команды по aeron в гейт
 $publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['stream_id']);
