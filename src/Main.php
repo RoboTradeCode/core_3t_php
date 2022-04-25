@@ -5,6 +5,105 @@ namespace Src;
 class Main
 {
 
+    public function getResults(
+        float $min_profit,
+        float $max_deal_amount,
+        int $max_depth,
+        array $combinations,
+        array $orderbook,
+        array $balances,
+    ): array
+    {
+
+        $results = [];
+        $reason = '';
+        $depth = 0;
+        $deal_amount = ["min" => 0, "step_one" => 0, "step_two" => 0, "step_three" => 0];
+        $orderbook_info = [
+            'step_one' => [
+                'sell_price' => 0,
+                'buy_price' => 0,
+                'sell_amount' => 0,
+                'buy_amount' => 0,
+                'dom_position' => 0
+            ],
+            'step_two' => [
+                'sell_price' => 0,
+                'buy_price' => 0,
+                'sell_amount' => 0,
+                'buy_amount' => 0,
+                'dom_position' => 0
+            ],
+            'step_three' => [
+                'sell_price' => 0,
+                'buy_price' => 0,
+                'sell_amount' => 0,
+                'buy_amount' => 0,
+                'dom_position' => 0
+            ],
+        ];
+
+        while (true) {
+
+            sleep(1);
+
+            $this->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
+
+            $deal_amount = $this->DealAmount(
+                $orderbook,
+                $orderbook_info,
+                $combinations['main_asset_name'],
+                $combinations['main_asset_amount_precision'],
+                $max_deal_amount
+            );
+
+            $result = $this->findResult(
+                $orderbook,
+                $orderbook_info,
+                $balances,
+                $combinations,
+                $deal_amount['min'] * 10, // тут 10 необходимо убирать (здесь он для тестов)
+                $max_deal_amount
+            );
+
+            if ($result["status"] && $result["result_in_main_asset"] > $min_profit) {
+
+                $results[] = $result;
+
+            } elseif (!$result["status"]) {
+
+                $reason = $result["reason"];
+
+                break;
+
+            }
+
+            if (
+                $reason = $this->findReason(
+                    $result,
+                    $depth,
+                    $max_depth,
+                    $orderbook_info,
+                    $orderbook,
+                    $combinations,
+                    $deal_amount,
+                    $max_deal_amount
+                )
+            ) {
+
+                break;
+
+            }
+
+        }
+
+        return [
+            'results' => $results,
+            'reason' => $reason,
+        ];
+
+    }
+
     public function findReason(
         array $result,
         int &$depth,
@@ -195,7 +294,7 @@ class Main
 
     }
 
-    public function getResult(
+    public function findResult(
         $orderbook,
         $orderbook_info,
         $balances,

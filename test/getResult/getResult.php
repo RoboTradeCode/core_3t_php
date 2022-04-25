@@ -186,7 +186,7 @@ $deal_amount = $bot->DealAmount(
     $max_deal_amount
 );
 
-$result = $bot->getResult(
+$result = $bot->findResult(
     $orderbook,
     $orderbook_info,
     $balances,
