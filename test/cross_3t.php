@@ -35,6 +35,11 @@ while (!isset($config)) {
 $config = [
     'exchange' => 'kuna',
     'exchanges' => ['kuna', 'huobi'],
+    'min_profit' => [
+        'BTC' => 0,
+        'ETH' => 0,
+        'USDT' => 0
+    ],
     'min_deal_amounts' => [
         'BTC' => 0.001,
         'ETH' => 0.01,
@@ -51,8 +56,20 @@ $config = [
             'common_symbol' => 'ETH/BTC',
             'price_increment' => 0.000001,
             'amount_increment' => 0.0000001,
-            'min_amount' => 0.0001,
-            'max_amount' => 100000,
+            'limits' => [
+                'amount' => [
+                    'min' => 0.0005,
+                    'max' => 5000.0,
+                ],
+                'price' => [
+                    'min' => 1.0E-8,
+                    'max' => 10.0,
+                ],
+                'cost' => [
+                    'min' => 0.0002,
+                    'max' => 100.0,
+                ]
+            ],
             'assets' => [
                 'base' => 'ETH',
                 'quote' => 'BTC',
@@ -63,8 +80,20 @@ $config = [
             'common_symbol' => 'BTC/USDT',
             'price_increment' => 0.1,
             'amount_increment' => 0.00000001,
-            'min_amount' => 0.00001,
-            'max_amount' => 9000,
+            'limits' => [
+                'amount' => [
+                    'min' => 2.0E-5,
+                    'max' => 1000.0,
+                ],
+                'price' => [
+                    'min' => 0.01,
+                    'max' => 150000.0,
+                ],
+                'cost' => [
+                    'min' => 1.0,
+                    'max' => 500000.0,
+                ],
+            ],
             'assets' => [
                 'base' => 'BTC',
                 'quote' => 'USDT',
@@ -75,8 +104,20 @@ $config = [
             'common_symbol' => 'ETH/USDT',
             'price_increment' => 0.01,
             'amount_increment' => 0.0000001,
-            'min_amount' => 0.0001,
-            'max_amount' => 9000,
+            'limits' => [
+                'amount' => [
+                    'min' => 0.0005,
+                    'max' => 5000.0,
+                ],
+                'price' => [
+                    'min' => 0.01,
+                    'max' => 100000.0,
+                ],
+                'cost' => [
+                    'min' => 1.0,
+                    'max' => 500000.0
+                ],
+            ],
             'assets' => [
                 'base' => 'ETH',
                 'quote' => 'USDT',
@@ -89,7 +130,12 @@ $config = [
             ['source_asset' => 'USDT', 'common_symbol' => 'BTC/USDT', 'operation' => 'buy'],
             ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
         ],
-    ]
+    ],
+    'max_depth' => 10,
+    'fees' => [
+        'kuna' => 0.1,
+        'huobi' => 0.1
+    ],
 ];
 
 // создаем класс cross 3t
@@ -126,15 +172,39 @@ while (true) {
 
         foreach ($config['routes'] as $route) {
 
-            $best_orderbooks = $cross_3t->findBestOrderbooks($route, $balances, $orderbooks);
+            $step_one = array_shift($route);
+            $step_two = array_shift($route);
+            $step_three = array_shift($route);
 
-            print_r($best_orderbooks); echo PHP_EOL;
-            echo PHP_EOL;
+            $combinations = [
+                'main_asset_name' => $step_one['source_asset'],
+                'main_asset_amount_precision' => 0.00000001,
+                'asset_one_name' => $step_two['source_asset'],
+                'asset_two_name' => $step_three['source_asset'],
+                'step_one_symbol' => $step_one['common_symbol'],
+                'step_two_symbol' => $step_two['common_symbol'],
+                'step_three_symbol' => $step_three['common_symbol'],
+            ];
+
+            $min_profit = $config['min_profit'][$combinations['main_asset_name']];
+
+            $max_deal_amount = $config['max_deal_amounts'][$combinations['main_asset_name']];
+
+            $max_depth = $config['max_depth'];
+
+            print_r($cross_3t->findBestOrderbooks($route, $balances, $orderbooks));
+
+            $orderbook = $cross_3t->getOrderbook(
+                $combinations,
+                $cross_3t->findBestOrderbooks($route, $balances, $orderbooks)
+            );
+
+
 
         }
 
-        //print_r($balances) . PHP_EOL;
-        //print_r($orderbooks) . PHP_EOL;
+        print_r($balances) . PHP_EOL;
+        //print_r($orderbook) . PHP_EOL;
         //print_r($config) . PHP_EOL;
 
     } else {

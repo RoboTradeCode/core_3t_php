@@ -20,11 +20,7 @@ function handler_get_config(string $message)
 
     if ($data = Aeron::messageDecode($message)) {
 
-        if (
-            $data['event'] == 'config' && $data['node'] == 'gate' &&
-            isset($data['data']['markets']) && isset($data['data']['assets_labels']) &&
-            isset($data['data']['routes']) && isset($data['data']['core_config'])
-        ) {
+        if ($data['event'] == 'config' && $data['node'] == 'configurator') {
 
             $core_config = $data['data']['core_config'];
 
