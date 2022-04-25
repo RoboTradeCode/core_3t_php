@@ -104,7 +104,20 @@ class Main
 
     }
 
-    public function findReason(
+    public function getBestResult(array $plus_results): array
+    {
+
+        $plus_results = array_values($plus_results);
+
+        $best_results = array_column($plus_results, "result_in_main_asset");
+
+        $best_key = array_keys($best_results, max($best_results));
+
+        return $plus_results[$best_key["0"]];
+
+    }
+
+    private function findReason(
         array $result,
         int &$depth,
         int $max_depth,
@@ -158,7 +171,7 @@ class Main
 
     }
 
-    public function getOrderbookInfo(
+    private function getOrderbookInfo(
         array &$orderbook_info,
         array $orderbook,
         array $deal_amount,
@@ -207,7 +220,7 @@ class Main
 
     }
 
-    public function DealAmount(
+    private function DealAmount(
         $orderbook,
         $orderbook_info,
         $mainAsset_id,
@@ -244,7 +257,7 @@ class Main
 
     }
 
-    public function MarketOrder(array $orderbook, float $amount, string $bidask): bool|array
+    private function MarketOrder(array $orderbook, float $amount, string $bidask): bool|array
     {
 
         if ($bidask != "bids" && $bidask != "asks") return false;
@@ -294,7 +307,7 @@ class Main
 
     }
 
-    public function findResult(
+    private function findResult(
         $orderbook,
         $orderbook_info,
         $balances,
@@ -609,20 +622,7 @@ class Main
 
     }
 
-    public function getBestResult(array $plus_results): array
-    {
-
-        $plus_results = array_values($plus_results);
-
-        $best_results = array_column($plus_results, "result_in_main_asset");
-
-        $best_key = array_keys($best_results, max($best_results));
-
-        return $plus_results[$best_key["0"]];
-
-    }
-
-    public function incrementNumber(float $number, float $increment): float
+    private function incrementNumber(float $number, float $increment): float
     {
 
         return $increment * floor($number / $increment);
