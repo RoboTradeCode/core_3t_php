@@ -6,6 +6,9 @@ const ALGORITHM = 'test_php';
 // Биржа, которая тестируется гейтом
 const EXCHANGE = 'ftx';
 
+// Amount для create order в BTC
+const AMOUNT = 0.00055;
+
 // Тестируемая пара для проверки корректности постановки оредров и их отмены (Важно: пока только BTC/USDT)
 const SYMBOL = 'BTC/USDT';
 

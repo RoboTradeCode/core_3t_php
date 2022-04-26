@@ -44,21 +44,19 @@ while (true) {
 
                     $price = $memcached_datum['bids'][0][0] * 0.9;
 
-                    $amount = 0.00055;
-
                     $publisher->offer(
                         $robotrade_api->createOrder(
                             $memcached_datum['symbol'],
                             'limit',
                             'buy',
-                            $amount,
+                            AMOUNT,
                             $price,
                             'test gate for created order'
                         )
                     );
 
                     echo '[OK] Send Gate to create order. Price: ' . $price .
-                        ' Amount: ' . $amount .
+                        ' Amount: ' . AMOUNT .
                         ' Symbol: ' . $memcached_datum['symbol'] .
                         ' Side: ' . 'buy' .
                         ' Type: ' . 'limit' .
