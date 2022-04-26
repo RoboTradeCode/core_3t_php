@@ -1,12 +1,19 @@
 <?php
 
+use Src\Api;
 use Src\Cross3T;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/index.php';
 
 // подключение к memcached
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
+
+const EXCHANGE = 'huobi';
+const ALGO = 'cross_3t_php';
+
+// API для формирования сообщения для отправки по aeron
+$robotrade_api = new Api(EXCHANGE, ALGO, 'core', '1');
 
 // получить конфиг из memcached. Пока не получит конфиг, алгоритм выполняться не будет
 while (!isset($config)) {
@@ -36,14 +43,19 @@ $config = [
     'exchange' => 'kuna',
     'exchanges' => ['kuna', 'huobi'],
     'min_profit' => [
-        'BTC' => 0,
-        'ETH' => 0,
-        'USDT' => 0
+        'BTC' => -10,
+        'ETH' => -10,
+        'USDT' => -10
     ],
     'min_deal_amounts' => [
         'BTC' => 0.001,
         'ETH' => 0.01,
         'USDT' => 20
+    ],
+    'rates' => [
+        'BTC' => 46139,
+        'ETH' => 3471,
+        'USDT' => 1
     ],
     'max_deal_amounts' => [
         'BTC' => 0.01,
@@ -126,9 +138,9 @@ $config = [
     ],
     'routes' => [
         [
+            ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
             ['source_asset' => 'ETH', 'common_symbol' => 'ETH/USDT', 'operation' => 'sell'],
             ['source_asset' => 'USDT', 'common_symbol' => 'BTC/USDT', 'operation' => 'buy'],
-            ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
         ],
     ],
     'max_depth' => 10,
@@ -167,45 +179,29 @@ while (true) {
     // если есть все необходимые данные
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
 
-        // проверка на минимальный и по максимальному баланс
-        $cross_3t->filterBalanceByMinAndMAxDealAmount($balances);
+        // фильтрация баланса в диапазоне минимальном и максимальном
+        //$cross_3t->filterBalanceByMinAndMAxDealAmount($balances);
 
-        foreach ($config['routes'] as $route) {
+        // запускаем алгоритм и получаем лучший результат
+        if ($best_result = $cross_3t->run($balances, $orderbooks)) {
 
-            $step_one = array_shift($route);
-            $step_two = array_shift($route);
-            $step_three = array_shift($route);
+            // для каждого шага, если результат выпал на текущую биржу, отправить сообщение на создание ордера
+            foreach (['step_one', 'step_two', 'step_three'] as $step) {
+                if ($best_result[$step]['exchange'] == EXCHANGE) {
+                    $robotrade_api->createOrder(
+                        $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
+                        'market',
+                        'buy',
+                        $best_result[$step]['amount'],
+                        $best_result[$step]['price'],
+                        'Create order step_one'
+                    );
+                }
+            }
 
-            $combinations = [
-                'main_asset_name' => $step_one['source_asset'],
-                'main_asset_amount_precision' => 0.00000001,
-                'asset_one_name' => $step_two['source_asset'],
-                'asset_two_name' => $step_three['source_asset'],
-                'step_one_symbol' => $step_one['common_symbol'],
-                'step_two_symbol' => $step_two['common_symbol'],
-                'step_three_symbol' => $step_three['common_symbol'],
-            ];
-
-            $min_profit = $config['min_profit'][$combinations['main_asset_name']];
-
-            $max_deal_amount = $config['max_deal_amounts'][$combinations['main_asset_name']];
-
-            $max_depth = $config['max_depth'];
-
-            print_r($cross_3t->findBestOrderbooks($route, $balances, $orderbooks));
-
-            $orderbook = $cross_3t->getOrderbook(
-                $combinations,
-                $cross_3t->findBestOrderbooks($route, $balances, $orderbooks)
-            );
-
-
+            print_r($best_result) . PHP_EOL;
 
         }
-
-        print_r($balances) . PHP_EOL;
-        //print_r($orderbook) . PHP_EOL;
-        //print_r($config) . PHP_EOL;
 
     } else {
 
@@ -220,7 +216,5 @@ while (true) {
         print_r($undefined) . PHP_EOL;
 
     }
-
-    //$cross_3t->run($balances, $orderbooks, $rates, $server, $data['symbol']);
 
 }

@@ -18,6 +18,70 @@ class Cross3T extends Main
     }
 
     /**
+     * Запуск алгоритма просчета cross_3t
+     *
+     * @param array $balances Балансы, с разных бирж
+     * @param array $orderbooks Ордербуки, с разных бирж
+     * @return array Возвращает результат
+     */
+    public function run(array $balances, array $orderbooks): array
+    {
+
+        foreach ($this->config['routes'] as $route) {
+
+            $combinations = $this->getCombinations($route);
+
+            $orderbook = $this->getOrderbook(
+                $combinations,
+                $this->findBestOrderbooks($route, $balances, $orderbooks)
+            );
+
+            $results[] = $this->getResults(
+                $this->config['min_profit'][$combinations['main_asset_name']],
+                $this->config['max_deal_amounts'][$combinations['main_asset_name']],
+                $this->config['max_depth'],
+                $this->config['rates'],
+                $combinations,
+                $orderbook,
+                [
+                    $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
+                    $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
+                    $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
+                ]
+            );
+
+        }
+
+        return $this->getBestResult($results ?? []);
+
+    }
+
+    /**
+     * Возвращает самый лучший результат
+     *
+     * @param array $results Результаты
+     * @return array Лучший результат
+     */
+    public function getBestResult(array $results): array
+    {
+
+        foreach (array_column($results ?? [], 'results') as $items)
+            foreach ($items as $item)
+                $all_results[] = $item;
+
+        if (isset($all_results)) {
+
+            $array = array_column($all_results, 'result_in_main_asset');
+
+            return $all_results[array_keys($array, max($array))[0]];
+
+        }
+
+        return [];
+
+    }
+
+    /**
      * Метод находит самые выгодные ордербуки со всех бирж
      *
      * @param array $route Треугольник, приходящи й от конфигуратора
@@ -109,7 +173,7 @@ class Cross3T extends Main
      * @param array $balances Балансы со всех бирж, взятые из memcached
      * @return void
      */
-    public function filterBalanceByMinAndMAxDealAmount(array &$balances)
+    public function filterBalanceByMinAndMAxDealAmount(array &$balances): void
     {
 
         foreach ($balances as $exchange => $balance) {
@@ -197,6 +261,11 @@ class Cross3T extends Main
 
     }
 
+    /**
+     * Формирует массив всех ключей для memcached
+     *
+     * @return array Возвращает все ключи для memcached
+     */
     public function getAllMemcachedKeys(): array
     {
 
@@ -218,6 +287,38 @@ class Cross3T extends Main
 
     }
 
+    /**
+     * Возвращает комбинацию для использования переменной в getResults()
+     *
+     * @param array $route Маршрут от конфигуратора в одном треугольнике
+     * @return array Массив комбинации
+     */
+    public function getCombinations(array $route): array
+    {
+
+        $step_one = array_shift($route);
+        $step_two = array_shift($route);
+        $step_three = array_shift($route);
+
+        return [
+            'main_asset_name' => $step_one['source_asset'],
+            'main_asset_amount_precision' => 0.00000001,
+            'asset_one_name' => $step_two['source_asset'],
+            'asset_two_name' => $step_three['source_asset'],
+            'step_one_symbol' => $step_one['common_symbol'],
+            'step_two_symbol' => $step_two['common_symbol'],
+            'step_three_symbol' => $step_three['common_symbol'],
+        ];
+
+    }
+
+    /**
+     * Возвращает три ордербука для каждого шага, чтобы использовать его в getResults
+     *
+     * @param array $combinations Комбинация для каждого шага в треугольнике
+     * @param array $best_orderbooks Лучшие ордербуки
+     * @return array Три шага ордербука
+     */
     public function getOrderbook(array $combinations, array $best_orderbooks): array
     {
 

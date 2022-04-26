@@ -5,10 +5,23 @@ namespace Src;
 class Main
 {
 
+    /**
+     * Возвращает результат треугольника
+     *
+     * @param float $min_profit Минимальная прибыль в main_asset
+     * @param float $max_deal_amount Максимальный размер сделки в main_asset
+     * @param int $max_depth Максимальная глубина в стакан
+     * @param array $rates Курсы
+     * @param array $combinations Комбинация
+     * @param array $orderbook Три шага ордербука
+     * @param array $balances Балансы
+     * @return array Отдает массив результатов и reason
+     */
     public function getResults(
         float $min_profit,
         float $max_deal_amount,
         int $max_depth,
+        array $rates,
         array $combinations,
         array $orderbook,
         array $balances,
@@ -16,7 +29,6 @@ class Main
     {
 
         $results = [];
-        $reason = '';
         $depth = 0;
         $deal_amount = ["min" => 0, "step_one" => 0, "step_two" => 0, "step_three" => 0];
         $orderbook_info = [
@@ -45,8 +57,6 @@ class Main
 
         while (true) {
 
-            sleep(1);
-
             $this->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
 
             $deal_amount = $this->DealAmount(
@@ -62,11 +72,12 @@ class Main
                 $orderbook_info,
                 $balances,
                 $combinations,
-                $deal_amount['min'] * 10, // тут 10 необходимо убирать (здесь он для тестов)
+                $rates,
+                $deal_amount['min'],
                 $max_deal_amount
             );
 
-            if ($result["status"] && $result["result_in_main_asset"] > $min_profit) {
+            if ($result["status"] && $result["result"] > $min_profit) {
 
                 $results[] = $result;
 
@@ -104,19 +115,19 @@ class Main
 
     }
 
-    public function getBestResult(array $plus_results): array
-    {
-
-        $plus_results = array_values($plus_results);
-
-        $best_results = array_column($plus_results, "result_in_main_asset");
-
-        $best_key = array_keys($best_results, max($best_results));
-
-        return $plus_results[$best_key["0"]];
-
-    }
-
+    /**
+     * Находит причину выхода из глубины стакана
+     *
+     * @param array $result Результат
+     * @param int $depth Глубина
+     * @param int $max_depth Максимальная глубина
+     * @param array $orderbook_info Информация об шагах ордербуках
+     * @param array $orderbook Три шага ордербука
+     * @param array $combinations Комбинация
+     * @param array $deal_amount Размер сделки
+     * @param float $max_deal_amount Максимальный размер сделки
+     * @return string Причина в виде текста
+     */
     private function findReason(
         array $result,
         int &$depth,
@@ -171,6 +182,15 @@ class Main
 
     }
 
+    /**
+     * Обновляет информацию в $orderbook_info
+     *
+     * @param array $orderbook_info Информация об шагах ордербуках
+     * @param array $orderbook Три шага ордербука
+     * @param array $deal_amount Размер сделки
+     * @param float $max_deal_amount Максимальный размер сделки
+     * @return void
+     */
     private function getOrderbookInfo(
         array &$orderbook_info,
         array $orderbook,
@@ -220,12 +240,22 @@ class Main
 
     }
 
+    /**
+     * Отдает размер сделки в main_asset
+     *
+     * @param array $orderbook Три шага ордербука
+     * @param array $orderbook_info Информация об шагах ордербуках
+     * @param string $mainAsset_id Main_asset
+     * @param float $mainAsset_decimals Decimals в main_asset
+     * @param float $max_deal_amount Максимальный размер сделки
+     * @return array Размер сделки
+     */
     private function DealAmount(
-        $orderbook,
-        $orderbook_info,
-        $mainAsset_id,
-        $mainAsset_decimals,
-        $max_deal_amount
+        array $orderbook,
+        array $orderbook_info,
+        string $mainAsset_id,
+        float $mainAsset_decimals,
+        float $max_deal_amount
     ): array
     {
 
@@ -257,6 +287,14 @@ class Main
 
     }
 
+    /**
+     * Считает результат
+     *
+     * @param array $orderbook Три шага ордербука
+     * @param float $amount Количество
+     * @param string $bidask Sell/Buy
+     * @return bool|array Результат или false если что-то сломалось
+     */
     private function MarketOrder(array $orderbook, float $amount, string $bidask): bool|array
     {
 
@@ -307,13 +345,26 @@ class Main
 
     }
 
+    /**
+     * Находит результат
+     *
+     * @param array $orderbook Три шага ордербука
+     * @param array $orderbook_info Информация об шагах ордербуках
+     * @param array $balances Балансы
+     * @param array $combinations Комбинация
+     * @param array $rates Курсы из настроек
+     * @param float $deal_amount Размер сделки
+     * @param float $max_deal_amount Максимальный размер сделки
+     * @return array Результат
+     */
     private function findResult(
-        $orderbook,
-        $orderbook_info,
-        $balances,
-        $combinations,
-        $deal_amount,
-        $max_deal_amount
+        array $orderbook,
+        array $orderbook_info,
+        array $balances,
+        array $combinations,
+        array $rates,
+        float $deal_amount,
+        float $max_deal_amount
     ): array
     {
 
@@ -591,8 +642,11 @@ class Main
             $orderbook["step_one"]['amount_increment']
         );
 
+        $final_result = round(($stepThree["result"] - $deal_amount), 8);
+
         return [
-            "result" => round(($stepThree["result"] - $deal_amount), 8),
+            "result" => $final_result,
+            "result_in_main_asset" => round($final_result * $rates[$combinations["main_asset_name"]], 8),
             "status" => $status,
             "reason" => $reason,
             "deal_amount" => $deal_amount,
@@ -622,6 +676,13 @@ class Main
 
     }
 
+    /**
+     * Округляет число с нужным шагом
+     *
+     * @param float $number Значение в виде числа
+     * @param float $increment С каким шагом нужно округлить число
+     * @return float Округленное число с нужным шагом
+     */
     private function incrementNumber(float $number, float $increment): float
     {
 
