@@ -38,7 +38,6 @@ sudo apt install php8.0-common
 sudo apt install php8.0-cli
 sudo apt install php8.0-fpm
 sudo apt install php8.0-mysql
-sudo apt install php8.0-dev libmemcache-dev
 sudo apt install php8.0-memcache
 sudo apt install php8.0-memcached
 ```
@@ -46,6 +45,8 @@ sudo apt install php8.0-memcached
 4. Необходимо установить memcached
 ```shell
 sudo apt install memcached
+sudo apt install -y php-memcached
+sudo apt install -y php8.0-memcached
 ```
 
 5. Проверить работает ли memcached 
@@ -59,7 +60,7 @@ sudo service memcached status
 ```shell
 sudo apt update
 sudo apt install memcached
-sudo apt install libmemcached-tools
+sudo apt install libmemcached-tools -y
 sudo systemctl start memcached
 sudo apt-get install php8.0-memcache
 ```
@@ -77,6 +78,10 @@ php -r "unlink('composer-setup.php');"
 Хотя, есть вероятность, что и в первой версии тоже будет работать.
 ```shell
 composer
+```
+Или
+```shell
+php composer.phar
 ```
 
 8. Клонирование репозитория (Если ссылка не подходит, скопировать ее, на гитхаб в репозитории -> code -> https -> копирование значок)
