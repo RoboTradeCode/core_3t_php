@@ -3,6 +3,7 @@
 use Src\Api;
 
 require dirname(__DIR__) . '/index.php';
+require __DIR__ . '/config/test_aeron_config_c.php';
 
 // memcached подключение
 $memcached = new Memcached();
