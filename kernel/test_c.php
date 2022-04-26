@@ -66,7 +66,7 @@ while (true) {
 
                 }
 
-            } elseif ($action == 'order') {
+            } elseif ($action == 'orders') {
 
                 foreach ($memcached_datum as $order) {
 

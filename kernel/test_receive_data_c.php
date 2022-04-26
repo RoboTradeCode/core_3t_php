@@ -79,7 +79,7 @@ function handler_orders(string $message): void
         if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'order_created' && isset($data['data'])) {
 
             // записать в memcached
-            $key = $data['exchange'] . '_order';
+            $key = $data['exchange'] . '_orders';
 
             $orders = $memcached->get($key);
 
