@@ -4,16 +4,14 @@ use robotrade\Api;
 use Src\Cross3T;
 
 require dirname(__DIR__) . '/index.php';
+require  dirname(__DIR__) . '/config/aeron_config_c.php';
 
 // подключение к memcached
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-const EXCHANGE = 'huobi';
-const ALGO = 'cross_3t_php';
-
 // API для формирования сообщения для отправки по aeron
-$robotrade_api = new Api(EXCHANGE, ALGO, 'core', '1');
+$robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 
 // получить конфиг из memcached. Пока не получит конфиг, алгоритм выполняться не будет
 while (!isset($config)) {
