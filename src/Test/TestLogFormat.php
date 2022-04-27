@@ -2,7 +2,7 @@
 
 namespace Src\Test;
 
-use Src\Api;
+use robotrade\Api;
 
 class TestLogFormat
 {

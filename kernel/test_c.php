@@ -1,6 +1,6 @@
 <?php
 
-use Src\Api;
+use robotrade\Api;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/test_aeron_config_c.php';

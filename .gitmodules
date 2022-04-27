@@ -1,0 +1,3 @@
+[submodule "libs/PHP-API"]
+	path = libs/PHP-API
+	url = https://github.com/RoboTradeCode/PHP-API.git
