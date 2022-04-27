@@ -2,7 +2,8 @@
 
 use Src\Cross3T;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/index.php';
+require dirname(__DIR__) . '/config/aeron_config.php';
 
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
