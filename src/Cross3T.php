@@ -269,7 +269,7 @@ class Cross3T extends Main
     public function getAllMemcachedKeys(): array
     {
 
-        $keys = [];
+        $keys = ['config'];
 
         foreach ($this->config['exchanges'] as  $exchange)
             $keys = array_merge(
