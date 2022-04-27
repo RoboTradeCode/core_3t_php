@@ -1,22 +1,21 @@
 <?php
 
 use Src\Aeron;
-use robotrade\Api;
-use Src\Test\TestAgentFormatData;
 
 require dirname(__DIR__) . '/index.php';
+require  dirname(__DIR__) . '/config/aeron_config_c.php';
 
+// memcached подключение
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-$publisher = new AeronPublisher('aeron:ipc');
+// публишер для агента, чтобы получить конфиг
+$publisher = new AeronPublisher(AGENT_PUBLISHER['channel'], AGENT_PUBLISHER['stream_id']);
 
-$robotrade_api = new Api('binance', 'cross_3t_php', 'core', '1');
-
-function handler_get_config(string $message)
+function handler_get_config(string $message): void
 {
 
-    global $memcached, $core_config, $publisher, $robotrade_api;
+    global $memcached, $core_config;
 
     if ($data = Aeron::messageDecode($message)) {
 
@@ -31,11 +30,7 @@ function handler_get_config(string $message)
 
         } else {
 
-            $message = '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null');
-
-            echo $message . PHP_EOL;
-
-            $publisher->offer($robotrade_api->error('get_aeron_data', null, $message));
+            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
 
@@ -43,7 +38,7 @@ function handler_get_config(string $message)
 
 }
 
-$subscriber = new AeronSubscriber('handler_get_config', 'aeron:ipc');
+$subscriber = new AeronSubscriber('handler_get_config', AGENT_SUBSCRIBERS_BALANCES['channel'], AGENT_SUBSCRIBERS_BALANCES['stream_id']);
 
 while (true) {
 
@@ -58,9 +53,15 @@ while (true) {
             usleep(1000000);
 
             $code = $publisher->offer(
-                Aeron::messageEncode(
-                    (new TestAgentFormatData('binance'))->sendAgentGetFullConfig()
-                )
+                Aeron::messageEncode([
+                    'event' => 'config',
+                    'exchange' => EXCHANGE,
+                    'instance' => NODE,
+                    'action' => 'get_full_config',
+                    'algo' => ALGORITHM,
+                    'data' => [],
+                    'timestamp' => intval(microtime(true) * 1000000)
+                ])
             );
 
             echo 'Try to send command get_full_config to Agent. Code: ' . $code . PHP_EOL;
@@ -79,57 +80,28 @@ while (true) {
 
 }
 
-function handler(string $message)
+function handler_orderbooks(string $message): void
 {
 
-    global $memcached, $publisher, $robotrade_api;
+    global $memcached;
 
+    // если данные пришли
     if ($data = Aeron::messageDecode($message)) {
 
-        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
+        // если event как data, а node как gate
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'orderbook' && isset($data['data'])) {
 
-            if ($data['action'] == 'orderbook') {
-
-                $key = $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'];
-
-            } elseif ($data['action'] == 'order' || $data['action'] == 'order_created') {
-
-                $key = $data['exchange'] . '_order';
-
-                $orders = $memcached->get($key);
-
-                $orders[$data['data']['id']] = $data['data'];
-
-                $data['data'] = $orders;
-
-            } else {
-
-                $key = $data['exchange'] . '_' . $data['action'];
-
-            }
-
+            // записать в memcached
             $memcached->set(
-                $key,
+                $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'],
                 $data['data']
             );
 
-        } elseif (
-            $data['event'] == 'config' && $data['node'] == 'agent' &&
-            isset($data['data']['markets']) && isset($data['data']['assets_labels']) && isset($data['data']['routes'])
-        ) {
-
-            $memcached->set(
-                'config',
-                $data['data']
-            );
+            echo '[OK] Data saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . ' Symbol: ' . $data['data']['symbol'] . PHP_EOL;
 
         } else {
 
-            $message = '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null');
-
-            echo $message . PHP_EOL;
-
-            $publisher->offer($robotrade_api->error('get_aeron_data', null, $message));
+            echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
 
@@ -137,24 +109,83 @@ function handler(string $message)
 
 }
 
-$subscriber = new AeronSubscriber('handler', 'aeron:udp?control-mode=manual');
+function handler_balances(string $message): void
+{
 
-$subscriber->addDestination('aeron:ipc');
+    global $memcached;
 
-foreach ($core_config['aeron']['subscribers'] as $core_subscribers) {
+    // если данные пришли
+    if ($data = Aeron::messageDecode($message)) {
 
-    foreach ($core_subscribers['destinations'] as $destination) {
+        // если event как data, а node как gate
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
-        $subscriber->addDestination($destination);
+            // записать в memcached
+            $memcached->set(
+                $data['exchange'] . '_' . $data['action'],
+                $data['data']
+            );
+
+            echo '[OK] Data saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
+
+        } else {
+
+            echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+
+        }
 
     }
 
 }
 
+function handler_orders(string $message): void
+{
+
+    global $memcached;
+
+    // если данные пришли
+    if ($data = Aeron::messageDecode($message)) {
+
+        // если event как data, а node как gate
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'order_created' && isset($data['data'])) {
+
+            // записать в memcached
+            $key = $data['exchange'] . '_orders';
+
+            $orders = $memcached->get($key);
+
+            $orders[$data['data']['id']] = $data['data'];
+
+            $memcached->set(
+                $key,
+                $orders
+            );
+
+            echo '[OK] Data Order saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
+
+        } else {
+
+            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+
+        }
+
+    }
+
+}
+
+// subscribers подключение
+$subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', GATE_SUBSCRIBERS_ORDERBOOKS['channel'], GATE_SUBSCRIBERS_ORDERBOOKS['stream_id']);
+
+$subscriber_balances = new AeronSubscriber('handler_balances', GATE_SUBSCRIBERS_BALANCES['channel'], GATE_SUBSCRIBERS_BALANCES['stream_id']);
+
+$subscriber_orders = new AeronSubscriber('handler_orders', GATE_SUBSCRIBERS_ORDERS['channel'], GATE_SUBSCRIBERS_ORDERS['stream_id']);
+
 while (true) {
 
-    $subscriber->poll();
+    $subscriber_orderbooks->poll();
 
-    usleep(100000);
+    $subscriber_balances->poll();
+
+    $subscriber_orders->poll();
 
 }

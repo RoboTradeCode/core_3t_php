@@ -2,5 +2,6 @@
 /vendor
 /cache/*
 /config/test_aeron_config_c.php
+/config/aeron_config_c.php
 /logs/*
 /test/test.php
