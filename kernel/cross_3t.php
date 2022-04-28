@@ -10,9 +10,6 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-// конфиг прописанный вручную
-$config = CONFIG;
-
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 
