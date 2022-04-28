@@ -100,6 +100,8 @@ while (true) {
 
         }
 
+        echo '[' . date('Y-m-d H:i:s') . '] Calculate. Count Orderbooks' . count($orderbooks) . PHP_EOL;
+
     } else {
 
         echo '[WARNING] $balances or $orderbooks or $configis is empty' . PHP_EOL;
