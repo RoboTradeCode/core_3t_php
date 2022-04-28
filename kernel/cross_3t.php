@@ -71,7 +71,7 @@ while (true) {
 
         }
 
-        echo '[' . date('Y-m-d H:i:s') . '] Calculate. Count Orderbooks' . count($orderbooks) . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Calculate. Count Orderbooks ' . count($orderbooks) . PHP_EOL;
 
     } else {
 
