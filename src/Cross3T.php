@@ -31,24 +31,28 @@ class Cross3T extends Main
 
             $combinations = $this->getCombinations($route);
 
-            $orderbook = $this->getOrderbook(
-                $combinations,
-                $this->findBestOrderbooks($route, $balances, $orderbooks)
-            );
+            if ($best_orderbooks = $this->findBestOrderbooks($route, $balances, $orderbooks)) {
 
-            $results[] = $this->getResults(
-                $this->config['min_profit'][$combinations['main_asset_name']],
-                $this->config['max_deal_amounts'][$combinations['main_asset_name']],
-                $this->config['max_depth'],
-                $this->config['rates'],
-                $combinations,
-                $orderbook,
-                [
-                    $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
-                    $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
-                    $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
-                ]
-            );
+                $orderbook = $this->getOrderbook(
+                    $combinations,
+                    $best_orderbooks
+                );
+
+                $results[] = $this->getResults(
+                    $this->config['min_profit'][$combinations['main_asset_name']],
+                    $this->config['max_deal_amounts'][$combinations['main_asset_name']],
+                    $this->config['max_depth'],
+                    $this->config['rates'],
+                    $combinations,
+                    $orderbook,
+                    [
+                        $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
+                        $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
+                        $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
+                    ]
+                );
+
+            }
 
         }
 
@@ -99,6 +103,10 @@ class Cross3T extends Main
             $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
 
             $potential_amounts = [];
+
+            // если не существует такого ордербука, возвращай пустой массив
+            if (!isset($orderbooks[$source['common_symbol']]))
+                return [];
 
             foreach ($orderbooks[$source['common_symbol']] as $exchange => $orderbook) {
 
