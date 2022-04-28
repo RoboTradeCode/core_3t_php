@@ -2,6 +2,8 @@
 
 namespace Src;
 
+use Throwable;
+
 class Main
 {
 
@@ -59,13 +61,23 @@ class Main
 
             $this->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
 
-            $deal_amount = $this->DealAmount(
-                $orderbook,
-                $orderbook_info,
-                $combinations['main_asset_name'],
-                $combinations['main_asset_amount_precision'],
-                $max_deal_amount
-            );
+            try {
+
+                $deal_amount = $this->DealAmount(
+                    $orderbook,
+                    $orderbook_info,
+                    $combinations['main_asset_name'],
+                    $combinations['main_asset_amount_precision'],
+                    $max_deal_amount
+                );
+
+            } catch(Throwable) {
+
+                echo '[' . date('Y-m-d H:i:s') . '] Division by zero Deal Amount. Error Message: ' . $e->getMessage() . PHP_EOL;
+
+                break;
+
+            }
 
             $result = $this->findResult(
                 $orderbook,
