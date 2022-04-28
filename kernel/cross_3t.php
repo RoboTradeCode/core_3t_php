@@ -30,8 +30,6 @@ while (true) {
     // взять все данные из memcached
     $memcached_data = $memcached->getMulti($all_keys) ?? [];
 
-    print_r($all_keys);
-
     // отформировать и отделить все данные, полученные из memcached
     $all_data = $cross_3t->reformatAndSeparateData($memcached_data);
 
@@ -72,6 +70,8 @@ while (true) {
             }
 
         }
+
+        echo '[' . date('Y-m-d H:i:s') . '] Calculate. Count Orderbooks' . count($orderbooks) . PHP_EOL;
 
     } else {
 

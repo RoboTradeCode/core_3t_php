@@ -69,7 +69,7 @@ class Cross3T extends Main
     public function getBestResult(array $results): array
     {
 
-        foreach (array_column($results ?? [], 'results') as $items)
+        foreach (array_column($results, 'results') as $items)
             foreach ($items as $item)
                 $all_results[] = $item;
 
