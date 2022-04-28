@@ -2,21 +2,21 @@
 
 // Конфиг, который должен получать от конфигуратора
 const CONFIG = [
-    'exchange' => 'kuna',
-    'exchanges' => ['kuna', 'huobi'],
+    'exchange' => 'ftx',
+    'exchanges' => ['ftx'],
     'min_profit' => [
         'BTC' => 0,
         'ETH' => 0,
         'USDT' => 0
     ],
     'min_deal_amounts' => [
-        'BTC' => 0.001,
-        'ETH' => 0.01,
-        'USDT' => 20
+        'BTC' => 0,
+        'ETH' => 0,
+        'USDT' => 0
     ],
     'rates' => [
-        'BTC' => 46139,
-        'ETH' => 3471,
+        'BTC' => 39000,
+        'ETH' => 2900,
         'USDT' => 1
     ],
     'max_deal_amounts' => [
@@ -26,22 +26,22 @@ const CONFIG = [
     ],
     'markets' => [
         [
-            'exchange_symbol' => 'ETH-BTC',
+            'exchange_symbol' => 'ETH/BTC',
             'common_symbol' => 'ETH/BTC',
-            'price_increment' => 0.000001,
-            'amount_increment' => 0.0000001,
+            'price_increment' => 0.0000025,
+            'amount_increment' => 0.001,
             'limits' => [
                 'amount' => [
-                    'min' => 0.0005,
-                    'max' => 5000.0,
+                    'min' => 0.001,
+                    'max' => null,
                 ],
                 'price' => [
-                    'min' => 1.0E-8,
-                    'max' => 10.0,
+                    'min' => null,
+                    'max' => null,
                 ],
                 'cost' => [
-                    'min' => 0.0002,
-                    'max' => 100.0,
+                    'min' => null,
+                    'max' => null,
                 ]
             ],
             'assets' => [
@@ -50,22 +50,22 @@ const CONFIG = [
             ]
         ],
         [
-            'exchange_symbol' => 'BTC-USDT',
+            'exchange_symbol' => 'BTC/USDT',
             'common_symbol' => 'BTC/USDT',
-            'price_increment' => 0.1,
-            'amount_increment' => 0.00000001,
+            'price_increment' => 1,
+            'amount_increment' => 0.0001,
             'limits' => [
                 'amount' => [
-                    'min' => 2.0E-5,
-                    'max' => 1000.0,
+                    'min' => 0.0001,
+                    'max' => null,
                 ],
                 'price' => [
-                    'min' => 0.01,
-                    'max' => 150000.0,
+                    'min' => null,
+                    'max' => null,
                 ],
                 'cost' => [
-                    'min' => 1.0,
-                    'max' => 500000.0,
+                    'min' => null,
+                    'max' => null,
                 ],
             ],
             'assets' => [
@@ -74,22 +74,22 @@ const CONFIG = [
             ]
         ],
         [
-            'exchange_symbol' => 'ETH-USDT',
+            'exchange_symbol' => 'ETH/USDT',
             'common_symbol' => 'ETH/USDT',
-            'price_increment' => 0.01,
-            'amount_increment' => 0.0000001,
+            'price_increment' => 0.1,
+            'amount_increment' => 0.001,
             'limits' => [
                 'amount' => [
-                    'min' => 0.0005,
-                    'max' => 5000.0,
+                    'min' => 0.001,
+                    'max' => null,
                 ],
                 'price' => [
-                    'min' => 0.01,
-                    'max' => 100000.0,
+                    'min' => null,
+                    'max' => null,
                 ],
                 'cost' => [
-                    'min' => 1.0,
-                    'max' => 500000.0
+                    'min' => null,
+                    'max' => null
                 ],
             ],
             'assets' => [
@@ -100,15 +100,39 @@ const CONFIG = [
     ],
     'routes' => [
         [
+            ['source_asset' => 'USDT', 'common_symbol' => 'BTC/USDT', 'operation' => 'buy'],
+            ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
+            ['source_asset' => 'ETH', 'common_symbol' => 'ETH/USDT', 'operation' => 'sell'],
+        ],
+        [
+            ['source_asset' => 'BTC', 'common_symbol' => 'BTC/USDT', 'operation' => 'sell'],
+            ['source_asset' => 'USDT', 'common_symbol' => 'ETH/USDT', 'operation' => 'buy'],
+            ['source_asset' => 'ETH', 'common_symbol' => 'ETH/BTC', 'operation' => 'sell'],
+        ],
+        [
+            ['source_asset' => 'ETH', 'common_symbol' => 'ETH/BTC', 'operation' => 'sell'],
+            ['source_asset' => 'BTC', 'common_symbol' => 'BTC/USDT', 'operation' => 'sell'],
+            ['source_asset' => 'USDT', 'common_symbol' => 'ETH/USDT', 'operation' => 'buy'],
+        ],
+        [
             ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
             ['source_asset' => 'ETH', 'common_symbol' => 'ETH/USDT', 'operation' => 'sell'],
             ['source_asset' => 'USDT', 'common_symbol' => 'BTC/USDT', 'operation' => 'buy'],
         ],
+        [
+            ['source_asset' => 'ETH', 'common_symbol' => 'ETH/USDT', 'operation' => 'sell'],
+            ['source_asset' => 'USDT', 'common_symbol' => 'BTC/USDT', 'operation' => 'buy'],
+            ['source_asset' => 'BTC', 'common_symbol' => 'ETH/BTC', 'operation' => 'buy'],
+        ],
+        [
+            ['source_asset' => 'USDT', 'common_symbol' => 'ETH/USDT', 'operation' => 'buy'],
+            ['source_asset' => 'ETH', 'common_symbol' => 'ETH/BTC', 'operation' => 'sell'],
+            ['source_asset' => 'BTC', 'common_symbol' => 'BTC/USDT', 'operation' => 'sell'],
+        ],
     ],
     'max_depth' => 10,
     'fees' => [
-        'kuna' => 0.1,
-        'huobi' => 0.1
+        'ftx' => 0.1
     ],
 ];
 
@@ -124,22 +148,10 @@ const NODE = 'core';
 // Instance
 const INSTANCE = '1';
 
-// publisher, который подключается к subscriber в агенте, для посылания команды на получения конфига
-const AGENT_PUBLISHER = [
-    'channel' => 'aeron:ipc',
-    'stream_id' => 1001
-];
-
-// subscriber, который подключается к publisher в агенте, для принятия конфига
-const AGENT_SUBSCRIBERS_BALANCES = [
-    'channel' => 'aeron:ipc',
-    'stream_id' => 1001
-];
-
 // publisher, который подключается к subscriber в гейте, для посылания команд
 const GATE_PUBLISHER = [
     'channel' => 'aeron:ipc',
-    'stream_id' => 1001
+    'stream_id' => 1005
 ];
 
 // subscriber, который подключается к publisher в гейте, для принятия данных
