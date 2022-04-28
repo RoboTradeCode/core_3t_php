@@ -71,7 +71,7 @@ class Main
                     $max_deal_amount
                 );
 
-            } catch(Throwable) {
+            } catch(Throwable $e) {
 
                 echo '[' . date('Y-m-d H:i:s') . '] Division by zero Deal Amount. Error Message: ' . $e->getMessage() . PHP_EOL;
 
