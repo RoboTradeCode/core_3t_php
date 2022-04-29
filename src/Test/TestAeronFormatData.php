@@ -23,7 +23,7 @@ class TestAeronFormatData
 
     }
 
-    public function orderBook(array $data = []): bool|string
+    public function orderbook(array $data = []): bool|string
     {
 
         if (empty($data))

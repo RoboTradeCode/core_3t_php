@@ -99,64 +99,6 @@ cd core_3t_php/
 composer install
 ```
 
-## Инструкция запуска Core для тестовой проверки Gate
-Для тестирования, гейту, для передачи данных (ордербуков, балансов), необходимо передавать один ордербук BTC/USDT и ордера, когда они создались на бирже.
-
-Настройки, для запуска Core для тестовой проверки Gate, находятся в файле ```config/test_aeron_config_c.php```.
-Чтобы получить такой файл нужно скопировать ```test_aeron_config_c.example.php``` в эту же папку и убрать ```.example```
-
-В ней есть две константы
-```php
-// Биржа, которая тестируется гейтом
-const EXCHANGE = 'ftx';
-
-// Тестируемая пара для проверки корректности постановки оредров и их отмены (Важно: пока только BTC/USDT)
-const SYMBOL = 'BTC/USDT';
-
-// publisher, который подключается к subscriber в гейте, для посылания команд
-const GATE_PUBLISHER = [
-    'channel' => 'aeron:ipc',
-    'stream_id' => 1001
-];
-
-// subscriber, который подключается к publisher в гейте, для принятия ордербуков
-const GATE_SUBSCRIBERS_ORDERBOOKS = [
-    'channel' => 'aeron:ipc',
-    'stream_id' => 1001
-];
-
-// subscriber, который подключается к publisher в гейте, для принятия балансов
-const GATE_SUBSCRIBERS_BALANCES = [
-    'channel' => 'aeron:ipc',
-    'stream_id' => 1002
-];
-
-// subscriber, который подключается к publisher в гейте, для принятия ордеров
-const GATE_SUBSCRIBERS_ORDERS = [
-    'channel' => 'aeron:ipc',
-    'stream_id' => 1003
-];
-```
-
-GATE_PUBLISHER - настройки для Publisher, который будет отправлять команды (к примеру отмена ордера) в subscriber в gate. Задаем channel и stream_id.
-GATE_SUBSCRIBERS_ORDERBOOKS, GATE_SUBSCRIBERS_BALANCES, GATE_SUBSCRIBERS_ORDERS- настройки для Subscribers, которые будут принимать данные (ордербуки, балансы, ордера) от publishers от gate. Задаем для каждого  свой channel и stream_id.
-
-_**Последовательность запуска:**_
-
-1. Первый шаг - запуск получения данных от гейта.
-```shell
-php kernel/test_receive_data_c.php
-```
-Если гейт отсылает данные и они корректные под новый формат, то в консоле должен выводить сообщения начинающиеся: ```[OK] Data saved ...```
-
-2. Запустить тестовый алгоритм.
-```shell
-php kernel/test_c.php
-```
-Если гейт отсылает данные, то в консоле должен выводить сообщения начинающиеся: ```[OK] ...```
-
-
-
 ## Инструкция запуска Core в production
 0. Перед запуском ядра, необходимо, чтобы был запущен агент.
 
