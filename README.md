@@ -108,6 +108,20 @@ composer install
 GATE_PUBLISHER - настройки для Publisher, который будет отправлять команды (к примеру отмена ордера) в subscriber в gate. Задаем channel и stream_id.
 GATE_SUBSCRIBERS_ORDERBOOKS, GATE_SUBSCRIBERS_BALANCES, GATE_SUBSCRIBERS_ORDERS- настройки для Subscribers, которые будут принимать данные (ордербуки, балансы, ордера) от publishers от gate. Задаем для каждого  свой channel и stream_id.
 
+_**Последовательность запуска:**_
+
+1. Первый шаг - запуск получения данных от гейта.
+```shell
+php kernel/test_receive_data_c.php
+```
+Если гейт отсылает данные и они корректные под новый формат, то в консоле должен выводить сообщения начинающиеся: ```[OK] Data saved ...```
+
+2. Запустить тестовый алгоритм.
+```shell
+php kernel/test_c.php
+```
+Если гейт отсылает данные, то в консоле должен выводить сообщения начинающиеся: ```[OK] ...```
+
 ## Инструкция запуска Core в production
 0. Перед запуском ядра, необходимо, чтобы был запущен агент.
 
