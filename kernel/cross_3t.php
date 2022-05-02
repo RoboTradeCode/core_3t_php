@@ -24,6 +24,8 @@ $cross_3t = new Cross3T($config);
 
 while (true) {
 
+    usleep(SLEEP);
+
     // берем все данные из memcached
     $all_keys = $cross_3t->getAllMemcachedKeys();
 

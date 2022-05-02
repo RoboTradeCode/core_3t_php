@@ -136,6 +136,9 @@ const CONFIG = [
     ],
 ];
 
+// Задержка алгоритма
+const SLEEP = 10;
+
 // Название алгоритма
 const ALGORITHM = 'cross_3t_php';
 
