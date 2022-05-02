@@ -86,7 +86,7 @@ php composer.phar
 
 8. Клонирование репозитория (Если ссылка не подходит, скопировать ее, на гитхаб в репозитории -> code -> https -> копирование значок)
 ```shell
-git clone --recurse-submodules https://github.com/RoboTradeCode/core_3t_php.git
+git clone --recurse-submodules https://github.com/RoboTradeCode/core_3t_php.git -b test.x
 ```
 
 9. перейти в папку core_3t_php
