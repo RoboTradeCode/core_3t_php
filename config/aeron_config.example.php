@@ -6,6 +6,9 @@ const ALGORITHM = 'cross_3t_php';
 // Биржа, которая тестируется гейтом
 const EXCHANGE = 'ftx';
 
+// Задержка алгоритма
+const SLEEP = 10;
+
 // Нода
 const NODE = 'core';
 

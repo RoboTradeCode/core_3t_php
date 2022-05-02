@@ -182,6 +182,8 @@ $subscriber_orders = new AeronSubscriber('handler_orders', GATE_SUBSCRIBERS_ORDE
 
 while (true) {
 
+    usleep(SLEEP);
+
     $subscriber_orderbooks->poll();
 
     $subscriber_balances->poll();
