@@ -21,11 +21,11 @@ function handler_get_config(string $message): void
 
         if ($data['event'] == 'config' && $data['node'] == 'configurator') {
 
-            $core_config = $data['data']['core_config'];
+            $core_config = $data['data']['configs']['core_config'];
 
             $memcached->set(
                 'config',
-                $data['data']
+                $core_config
             );
 
         } else {
@@ -57,14 +57,14 @@ while (true) {
                     'event' => 'config',
                     'exchange' => EXCHANGE,
                     'instance' => NODE,
-                    'action' => 'get_full_config',
+                    'action' => 'get_config',
                     'algo' => ALGORITHM,
                     'data' => [],
                     'timestamp' => intval(microtime(true) * 1000000)
                 ])
             );
 
-            echo '[ERROR] Try to send command get_full_config to Agent. Code: ' . $code . PHP_EOL;
+            echo '[ERROR] Try to send command get_config to Agent. Code: ' . $code . PHP_EOL;
 
         } while($code > 0);
 

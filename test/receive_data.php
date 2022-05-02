@@ -2,7 +2,6 @@
 
 use Src\Aeron;
 use Src\Test\TestAeronFormatData;
-use Src\Test\TestAgentFormatData;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -154,8 +153,7 @@ $datas = [
             'used' => 0,
             'total' => 0.15,
         ]
-    ]),
-    (new TestAgentFormatData('binance'))->configAndMarketInfoFromAgent()
+    ])
 ];
 
 while(true) {
