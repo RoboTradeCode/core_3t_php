@@ -1,5 +1,8 @@
 <?php
 
+// Создавать ли html файл при каждом просчете
+const DEBUG_HTML_VISION = false;
+
 // Конфиг, который должен получать от конфигуратора
 const CONFIG = [
     'exchange' => 'ftx',

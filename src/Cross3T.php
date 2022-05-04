@@ -27,6 +27,8 @@ class Cross3T extends Main
     public function run(array $balances, array $orderbooks): array
     {
 
+        $results = [];
+
         foreach ($this->config['routes'] as $route) {
 
             $combinations = $this->getCombinations($route);
@@ -56,7 +58,12 @@ class Cross3T extends Main
 
         }
 
-        return $this->getBestResult($results ?? []);
+        $best_result = $this->getBestResult($results);
+
+        if (DEBUG_HTML_VISION)
+            $this->madeHtmlVision($results, $best_result);
+
+        return $best_result;
 
     }
 
