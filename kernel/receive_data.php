@@ -63,45 +63,10 @@ function handler_balances(string $message): void
 
 }
 
-function handler_orders(string $message): void
-{
-
-    global $memcached;
-
-    // если данные пришли
-    if ($data = Aeron::messageDecode($message)) {
-
-        // если event как data, а node как gate
-        if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'order_created' && isset($data['data'])) {
-
-            // записать в memcached
-            $key = $data['exchange'] . '_orders';
-
-            $orders = $memcached->get($key);
-
-            $orders[$data['data']['id']] = $data['data'];
-
-            $memcached->set(
-                $key,
-                $orders
-            );
-
-        } else {
-
-            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
-
-        }
-
-    }
-
-}
-
 // subscribers подключение
 $subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', GATE_SUBSCRIBERS_ORDERBOOKS['channel'], GATE_SUBSCRIBERS_ORDERBOOKS['stream_id']);
 
 $subscriber_balances = new AeronSubscriber('handler_balances', GATE_SUBSCRIBERS_BALANCES['channel'], GATE_SUBSCRIBERS_BALANCES['stream_id']);
-
-$subscriber_orders = new AeronSubscriber('handler_orders', GATE_SUBSCRIBERS_ORDERS['channel'], GATE_SUBSCRIBERS_ORDERS['stream_id']);
 
 while (true) {
 
@@ -110,7 +75,5 @@ while (true) {
     $subscriber_orderbooks->poll();
 
     $subscriber_balances->poll();
-
-    $subscriber_orders->poll();
 
 }
