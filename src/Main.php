@@ -643,7 +643,7 @@ class Main
         // Subtract fee (step 2)
         $stepTwo["result"] = $this->incrementNumber(
             $stepTwo["result"] - $stepTwo["result"] / 100 * $orderbook["step_two"]['fee'],
-            $orderbook["step_one"]['amount_increment']
+            $orderbook["step_two"]['amount_increment']
         );
 
         /* STEP 3 */
@@ -735,7 +735,7 @@ class Main
         // Subtract fee (step 3)
         $stepThree["result"] = $this->incrementNumber(
             $stepThree["result"] - $stepThree["result"] / 100 * $orderbook["step_three"]['fee'],
-            $orderbook["step_one"]['amount_increment']
+            $orderbook["step_three"]['amount_increment']
         );
 
         $final_result = round(($stepThree["result"] - $deal_amount), 8);
