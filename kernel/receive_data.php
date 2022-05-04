@@ -26,8 +26,6 @@ function handler_orderbooks(string $message): void
                 $data['data']
             );
 
-            echo '[OK] Data saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . ' Symbol: ' . $data['data']['symbol'] . PHP_EOL;
-
         } else {
 
             echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
@@ -54,8 +52,6 @@ function handler_balances(string $message): void
                 $data['exchange'] . '_' . $data['action'],
                 $data['data']
             );
-
-            echo '[OK] Data saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
 
         } else {
 
@@ -89,8 +85,6 @@ function handler_orders(string $message): void
                 $key,
                 $orders
             );
-
-            echo '[OK] Data Order saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
 
         } else {
 
