@@ -788,4 +788,14 @@ class Main
 
     }
 
+    /**
+     * @param float $float
+     * @param int $decimals
+     * @return string
+     */
+    public function format(float $float, int $decimals = 8): string
+    {
+        return number_format($float, $decimals, ".", "");
+    }
+
 }
