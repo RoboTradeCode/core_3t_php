@@ -58,7 +58,7 @@ while (true) {
                         $robotrade_api->createOrder(
                             $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
                             'market',
-                            'buy',
+                            $best_result[$step]['orderType'],
                             $best_result[$step]['amount'],
                             $best_result[$step]['price'],
                             'Create order ' . $step
