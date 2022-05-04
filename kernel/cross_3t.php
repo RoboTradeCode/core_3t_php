@@ -53,8 +53,6 @@ while (true) {
     // взять все данные из memcached
     $memcached_data = $memcached->getMulti($all_keys) ?? [];
 
-    print_r($all_keys);
-
     // проверяем конфиг на обновление, если появился новый конфиг, обновить его, удалить данные конфига из memcached
     if ($cross_3t->proofConfigOnUpdate($config, $memcached_data))
         $memcached->delete('config');
