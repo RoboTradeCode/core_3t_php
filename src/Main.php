@@ -85,7 +85,7 @@ class Main
 
         $html .= '</table>';
 
-        $index = fopen(dirname(__DIR__) . '/cache/index.html', 'w');
+        $index = fopen('/var/www/html/test.html', 'w');
 
         fwrite($index, $html);
 
