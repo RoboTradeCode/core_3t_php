@@ -10,7 +10,6 @@ class Main
     /**
      * Возвращает результат треугольника
      *
-     * @param float $min_profit Минимальная прибыль в main_asset
      * @param float $max_deal_amount Максимальный размер сделки в main_asset
      * @param int $max_depth Максимальная глубина в стакан
      * @param array $rates Курсы
@@ -20,7 +19,6 @@ class Main
      * @return array Отдает массив результатов и reason
      */
     public function getResults(
-        float $min_profit,
         float $max_deal_amount,
         int $max_depth,
         array $rates,
@@ -89,7 +87,7 @@ class Main
                 $max_deal_amount
             );
 
-            if ($result["status"] && $result["result"] > $min_profit) {
+            if ($result["status"]) {
 
                 $results[] = $result;
 

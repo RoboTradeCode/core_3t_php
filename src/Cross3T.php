@@ -27,6 +27,8 @@ class Cross3T extends Main
     public function run(array $balances, array $orderbooks): array
     {
 
+        $results = [];
+
         foreach ($this->config['routes'] as $route) {
 
             $combinations = $this->getCombinations($route);
@@ -39,7 +41,6 @@ class Cross3T extends Main
                 );
 
                 $results[] = $this->getResults(
-                    $this->config['min_profit'][$combinations['main_asset_name']],
                     $this->config['max_deal_amounts'][$combinations['main_asset_name']],
                     $this->config['max_depth'],
                     $this->config['rates'],
@@ -56,7 +57,7 @@ class Cross3T extends Main
 
         }
 
-        return $this->getBestResult($results ?? []);
+        return $this->getBestResult($results, $this->config['min_profit']);
 
     }
 
@@ -64,9 +65,10 @@ class Cross3T extends Main
      * Возвращает самый лучший результат
      *
      * @param array $results Результаты
+     * @param array $min_profit Минимальная прибыль в main_asset_name
      * @return array Лучший результат
      */
-    public function getBestResult(array $results): array
+    public function getBestResult(array $results, array $min_profit): array
     {
 
         foreach (array_column($results, 'results') as $items)
@@ -77,7 +79,10 @@ class Cross3T extends Main
 
             $array = array_column($all_results, 'result_in_main_asset');
 
-            return $all_results[array_keys($array, max($array))[0]];
+            $best_result = $all_results[array_keys($array, max($array))[0]];
+
+            if ($best_result["result"] >= $min_profit[$best_result['main_asset_name']])
+                return $best_result;
 
         }
 
