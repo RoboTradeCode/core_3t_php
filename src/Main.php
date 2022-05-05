@@ -31,11 +31,13 @@ class Main
 
         if ($best_result) {
 
+            $result_first_step = ($best_result["step_one"]["orderType"] == 'buy') ? $best_result["deal_amount"] : $best_result["step_one"]["amount"];
+
             $table = "<tr><td>0</td>";
 
             $calculations = "<td><strong>{$best_result["main_asset_name"]} -> {$best_result["asset_one_name"]} -> {$best_result["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($best_result["deal_amount"]) . " {$best_result["main_asset_name"]}<br />Max: {$best_result["expected_data"]["max_deal_amount"]}" . "</small></td>";
 
-            $calculations .= "<td>Market: {$best_result["step_one"]["amountAssetName"]} -> {$best_result["step_one"]["priceAssetName"]} ({$best_result["step_one"]["orderType"]})<br />Position: {$best_result["step_one"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepOne_sell_price"]} ({$best_result["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepOne_buy_price"]} ({$best_result["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$best_result["deal_amount"]} {$best_result["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span></td>";
+            $calculations .= "<td>Market: {$best_result["step_one"]["amountAssetName"]} -> {$best_result["step_one"]["priceAssetName"]} ({$best_result["step_one"]["orderType"]})<br />Position: {$best_result["step_one"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepOne_sell_price"]} ({$best_result["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepOne_buy_price"]} ({$best_result["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$result_first_step} {$best_result["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span></td>";
 
             $calculations .= "<td>Market: {$best_result["step_two"]["amountAssetName"]} -> {$best_result["step_two"]["priceAssetName"]} ({$best_result["step_two"]["orderType"]})<br />Position: {$best_result["step_two"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepTwo_sell_price"]} ({$best_result["expected_data"]["stepTwo_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepTwo_buy_price"]} ({$best_result["expected_data"]["stepTwo_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_two"]["result"]) . " {$best_result["asset_two_name"]}</span></td>";
 
@@ -57,11 +59,13 @@ class Main
 
             foreach ($result['results'] as $res) {
 
+                $res_first_step = ($res["step_one"]["orderType"] == 'buy') ? $res["deal_amount"] : $res["step_one"]["amount"];
+
                 $table = "<tr><td>$i</td>";
 
                 $calculations = "<td><strong>{$res["main_asset_name"]} -> {$res["asset_one_name"]} -> {$res["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($res["deal_amount"]) . " {$res["main_asset_name"]}<br />Max: {$res["expected_data"]["max_deal_amount"]}" . "</small></td>";
 
-                $calculations .= "<td>Market: {$res["step_one"]["amountAssetName"]} -> {$res["step_one"]["priceAssetName"]} ({$res["step_one"]["orderType"]})<br />Position: {$res["step_one"]["dom_position"]}<br />Sell: {$res["expected_data"]["stepOne_sell_price"]} ({$res["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$res["expected_data"]["stepOne_buy_price"]} ({$res["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$res["deal_amount"]} {$res["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($res["step_one"]["result"]) . " {$res["asset_one_name"]}</span></td>";
+                $calculations .= "<td>Market: {$res["step_one"]["amountAssetName"]} -> {$res["step_one"]["priceAssetName"]} ({$res["step_one"]["orderType"]})<br />Position: {$res["step_one"]["dom_position"]}<br />Sell: {$res["expected_data"]["stepOne_sell_price"]} ({$res["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$res["expected_data"]["stepOne_buy_price"]} ({$res["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$res_first_step} {$res["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($res["step_one"]["result"]) . " {$res["asset_one_name"]}</span></td>";
 
                 $calculations .= "<td>Market: {$res["step_two"]["amountAssetName"]} -> {$res["step_two"]["priceAssetName"]} ({$res["step_two"]["orderType"]})<br />Position: {$res["step_two"]["dom_position"]}<br />Sell: {$res["expected_data"]["stepTwo_sell_price"]} ({$res["expected_data"]["stepTwo_sell_amount"]})<br />Buy: {$res["expected_data"]["stepTwo_buy_price"]} ({$res["expected_data"]["stepTwo_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($res["step_one"]["result"]) . " {$res["asset_one_name"]}</span>, <span style=\"color: green;\">+" . $this->format($res["step_two"]["result"]) . " {$res["asset_two_name"]}</span></td>";
 
