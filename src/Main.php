@@ -14,7 +14,7 @@ class Main
      * @param array $best_result The best result
      * @return void
      */
-    public function madeHtmlVision(array $results, array $best_result): void
+    public function madeHtmlVision(array $results, array $best_result, array $orderbooks, array $balances): void
     {
 
         $date = date("d.m.y H:i:s", time());
@@ -88,6 +88,8 @@ class Main
         }
 
         $html .= '</table>';
+
+        $html .= '<br /><br /> Balances: ' . json_encode($balances) . '<br /><br /> Orderbooks: ' . json_encode($orderbooks) . '<br /><br /> Best results: ' . json_encode($best_result) . '<br /><br /> Results: ' . json_encode($results);
 
         $index = fopen('/var/www/html/test.html', 'w');
 

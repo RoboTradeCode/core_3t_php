@@ -60,7 +60,7 @@ class Cross3T extends Main
         $best_result = $this->getBestResult($results, $this->config['min_profit']);
 
         if (DEBUG_HTML_VISION)
-            $this->madeHtmlVision($results, $best_result);
+            $this->madeHtmlVision($results, $best_result, $orderbooks, $balances);
 
         return $best_result;
 
