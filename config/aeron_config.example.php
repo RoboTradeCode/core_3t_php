@@ -127,6 +127,20 @@ const CONFIG = [
             ['source_asset' => 'BTC', 'common_symbol' => 'BTC/USDT', 'operation' => 'sell'],
         ],
     ],
+    'assets_labels' => [
+        [
+            'exchange' => 'ETH',
+            'common' => 'ETH'
+        ],
+        [
+            'exchange' => 'BTC',
+            'common' => 'BTC'
+        ],
+        [
+            'exchange' => 'USDT',
+            'common' => 'USDT'
+        ],
+    ],
     'max_depth' => 10,
     'fees' => [
         'ftx' => 0.1
