@@ -11,6 +11,9 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
+// очистить все, что есть в memcached
+$memcached->flush();
+
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 
@@ -20,8 +23,8 @@ $publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['strea
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
 
-// отмменяет все ордера
-(new Core())->cancelAllOrders(EXCHANGE . '_orders', $memcached, $publisher, $robotrade_api);
+// При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
+(new Core($publisher, $robotrade_api))->cancelAllOrders()->getBalances()->send();
 
 while (true) {
 
@@ -32,10 +35,6 @@ while (true) {
 
     // взять все данные из memcached
     $memcached_data = $memcached->getMulti($all_keys) ?? [];
-
-    // проверяем конфиг на обновление, если появился новый конфиг, обновить его, удалить данные конфига из memcached
-    if ($cross_3t->proofConfigOnUpdate($config, $memcached_data))
-        $memcached->delete('config');
 
     // отформировать и отделить все данные, полученные из memcached
     $all_data = $cross_3t->reformatAndSeparateData($memcached_data);
