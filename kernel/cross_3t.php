@@ -16,30 +16,6 @@ $robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 // нужен publisher, отправлять команды по aeron в гейт
 $publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['stream_id']);
 
-// получить конфиг из memcached. Пока не получит конфиг, алгоритм выполняться не будет
-while (!isset($config)) {
-
-    sleep(1);
-
-    // берет конфиг из memcached
-    $memcached_data = $memcached->get('config');
-
-    // если нашел запись в memcached
-    if ($memcached_data) {
-
-        // присвоить конфиг
-        $config = $memcached_data;
-
-        // удалить из memcached
-        $memcached->delete('config');
-
-        echo '[Ok] Config is set' . PHP_EOL;
-
-    } else
-        echo '[WARNING] Config is not set' . PHP_EOL;
-
-}
-
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
 
