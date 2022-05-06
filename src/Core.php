@@ -23,17 +23,13 @@ class Core
 
         if ($memcached_data = $memcached->get($key)) {
 
-            $parts = explode('_', $key);
-
-            $action = $parts[1];
+            list(, $action) = explode('_', $key);
 
             if ($action == 'orders') {
 
-                $order_ids = array_column($memcached_data, 'id');
-
                 $publisher->offer(
                     $robotrade_api->cancelOrders(
-                        $order_ids,
+                        $memcached_data,
                         'test gate for cancel order'
                     )
                 );
