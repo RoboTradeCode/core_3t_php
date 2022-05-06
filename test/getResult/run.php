@@ -259,6 +259,11 @@ $orderbooks = [
     ]
 ];
 
+$orderbooks = json_decode(file_get_contents(dirname(__DIR__, 2) . '/cache/orderbooks.json'), true);
+$balances = json_decode(file_get_contents(dirname(__DIR__, 2) . '/cache/balances.json'), true);
+
+//print_r($balances); die();
+
 $cross_3t = new Cross3T($config);
 
 // если есть все необходимые данные
