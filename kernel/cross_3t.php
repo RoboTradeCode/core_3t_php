@@ -69,7 +69,7 @@ while (true) {
                         )
                     );
 
-                    echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'] . 'Amount: ' . $best_result[$step]['amount'] . 'Price: ' . $best_result[$step]['price'] . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'] . ' Amount: ' . $best_result[$step]['amount'] . 'Price: ' . $best_result[$step]['price'] . PHP_EOL;
 
                 }
 
