@@ -47,10 +47,8 @@ const CONFIG = [
                     'max' => null,
                 ]
             ],
-            'assets' => [
-                'base' => 'ETH',
-                'quote' => 'BTC',
-            ]
+            'base_asset' => 'ETH',
+            'quote_asset' => 'BTC',
         ],
         [
             'exchange_symbol' => 'BTC/USDT',
@@ -71,10 +69,8 @@ const CONFIG = [
                     'max' => null,
                 ],
             ],
-            'assets' => [
-                'base' => 'BTC',
-                'quote' => 'USDT',
-            ]
+            'base_asset' => 'BTC',
+            'quote_asset' => 'USDT',
         ],
         [
             'exchange_symbol' => 'ETH/USDT',
@@ -95,10 +91,8 @@ const CONFIG = [
                     'max' => null
                 ],
             ],
-            'assets' => [
-                'base' => 'ETH',
-                'quote' => 'USDT',
-            ]
+            'base_asset' => 'ETH',
+            'quote_asset' => 'USDT',
         ]
     ],
     'routes' => [
