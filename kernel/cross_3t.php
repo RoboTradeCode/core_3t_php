@@ -27,7 +27,7 @@ $publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['strea
 $cross_3t = new Cross3T($config);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Core($publisher, $robotrade_api))->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
+(new Core($publisher, $robotrade_api))->cancelAllOrders()->getBalances()->send();
 
 while (true) {
 
