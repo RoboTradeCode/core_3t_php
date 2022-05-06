@@ -47,10 +47,10 @@ class Core
      *
      * @return $this
      */
-    public function getBalances(): static
+    public function getBalances(array $assets = null): static
     {
 
-        $this->publisher->offer($this->robotrade_api->getBalances());
+        $this->publisher->offer($this->robotrade_api->getBalances($assets));
 
         $this->commands[] = 'Get All Balances.';
 
