@@ -120,7 +120,7 @@ class Main
 
         return [
             'results' => $results,
-            'reason' => $reason,
+            'reason' => $reason ?? '',
         ];
 
     }
