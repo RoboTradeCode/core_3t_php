@@ -1,6 +1,7 @@
 <?php
 
 use robotrade\Api;
+use Src\Core;
 use Src\Cross3T;
 
 require dirname(__DIR__) . '/index.php';
@@ -18,6 +19,9 @@ $publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['strea
 
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
+
+// отмменяет все ордера
+(new Core())->cancelAllOrders(EXCHANGE . '_orders', $memcached, $publisher, $robotrade_api);
 
 while (true) {
 
