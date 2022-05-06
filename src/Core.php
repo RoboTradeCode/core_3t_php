@@ -2,49 +2,76 @@
 
 namespace Src;
 
-use Memcached;
 use AeronPublisher;
 use robotrade\Api;
 
 class Core
 {
 
+    private AeronPublisher $publisher;
+    private Api $robotrade_api;
+    private array $commands;
+
     /**
-     * Отменяет все ордера при запуске ядра
+     * Нужно передать объект класса AeronPublisher и Robotrade Api
      *
-     * @param string $key ключ EXCHANEG . '_orders'
-     * @param Memcached $memcached Memcached object
      * @param AeronPublisher $publisher Gate AeronPublisher
      * @param Api $robotrade_api Api create message to send command to Gate
-     * @return void
      */
-    public function cancelAllOrders(string $key, Memcached $memcached, AeronPublisher $publisher, Api $robotrade_api): void
+    public function __construct(AeronPublisher $publisher, Api $robotrade_api)
     {
 
-        if ($memcached_data = $memcached->get($key)) {
+        $this->publisher = $publisher;
+        $this->robotrade_api = $robotrade_api;
 
-            list(, $action) = explode('_', $key);
+    }
 
-            if ($action == 'orders') {
+    /**
+     * Отправляет гейту команду на закрытие всех ордеров
+     *
+     * @return $this
+     */
+    public function cancelAllOrders(): static
+    {
 
-                $publisher->offer(
-                    $robotrade_api->cancelOrders(
-                        $memcached_data,
-                        'test gate for cancel order'
-                    )
-                );
+        $this->publisher->offer($this->robotrade_api->cancelAllOrders('Cancel All orders'));
 
-                echo '[OK] Send Gate to cancel all orders' . PHP_EOL;
+        $this->commands[] = 'Cancel All Orders.';
 
-                $memcached->delete($key);
+        return $this;
 
-            } else {
+    }
 
-                echo '[OK] No open orders' . PHP_EOL;
+    /**
+     * Отправляет гейту команду на получение балансов
+     *
+     * @return $this
+     */
+    public function getBalances(): static
+    {
 
-            }
+        $this->publisher->offer($this->robotrade_api->getBalances());
 
-        }
+        $this->commands[] = 'Get All Balances.';
+
+        return $this;
+
+    }
+
+    /**
+     * Выводит сообщение на экран какие команды были отправлены
+     *
+     * @return void
+     */
+    public function send(): void
+    {
+
+        $message = 'Send commands: ';
+
+        foreach ($this->commands as $command)
+            $message .=  $command . ' ';
+
+        echo $message . PHP_EOL;
 
     }
 

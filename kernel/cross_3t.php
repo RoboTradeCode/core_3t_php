@@ -11,6 +11,9 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
+// очистить все, что есть в memcached
+$memcached->flush();
+
 // конфиг прописанный вручную
 $config = CONFIG;
 
@@ -23,8 +26,8 @@ $publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['strea
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
 
-// отмменяет все ордера
-(new Core())->cancelAllOrders(EXCHANGE . '_orders', $memcached, $publisher, $robotrade_api);
+// При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
+(new Core($publisher, $robotrade_api))->cancelAllOrders()->getBalances()->send();
 
 while (true) {
 
