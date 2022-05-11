@@ -1,6 +1,7 @@
 <?php
 
 use Src\Aeron;
+use Src\Configurator;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/aeron_config.php';
@@ -8,6 +9,9 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 // memcached подключение
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
+
+// получаем конфиг от конфигуратора
+$config = (new Configurator())->getConfig(EXCHANGE, INSTANCE);
 
 function handler_orderbooks(string $message): void
 {
@@ -64,9 +68,9 @@ function handler_balances(string $message): void
 }
 
 // subscribers подключение
-$subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', GATE_SUBSCRIBERS_ORDERBOOKS['channel'], GATE_SUBSCRIBERS_ORDERBOOKS['stream_id']);
+$subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', $config['aeron']['subscribers']['orderbooks']['channel'], $config['aeron']['subscribers']['orderbooks']['stream_id']);
 
-$subscriber_balances = new AeronSubscriber('handler_balances', GATE_SUBSCRIBERS_BALANCES['channel'], GATE_SUBSCRIBERS_BALANCES['stream_id']);
+$subscriber_balances = new AeronSubscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
 
 while (true) {
 

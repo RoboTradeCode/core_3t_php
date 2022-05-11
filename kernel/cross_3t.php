@@ -1,6 +1,7 @@
 <?php
 
 use robotrade\Api;
+use Src\Configurator;
 use Src\Core;
 use Src\Cross3T;
 
@@ -14,11 +15,14 @@ $memcached->addServer('localhost', 11211);
 // очистить все, что есть в memcached
 $memcached->flush();
 
+// получаем конфиг от конфигуратора
+$config = (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 
 // нужен publisher, отправлять команды по aeron в гейт
-$publisher = new AeronPublisher(GATE_PUBLISHER['channel'], GATE_PUBLISHER['stream_id']);
+$publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
 
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
