@@ -304,39 +304,90 @@ class Main
         //Step 1
         if ($deal_amount["step_one"] < $max_deal_amount) {
 
-            $orderbook_info['step_one']['buy_price'] = (isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"])) ? $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"] : 0;
-            $orderbook_info['step_one']['sell_price'] = (isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"])) ? $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"] : 0;
+            $asks_step_one_condition = isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"]) && isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"]);
+            $bids_step_one_condition = isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"]) && isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"]);
 
-            $orderbook_info['step_one']['buy_amount'] += (isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"])) ? $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"] : 0;
-            $orderbook_info['step_one']['sell_amount'] += (isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"])) ? $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"] : 0;
+            if ($asks_step_one_condition) {
 
-            $orderbook_info['step_one']['dom_position']++;
+                $orderbook_info['step_one']['buy_price'] = $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"];
+
+                $orderbook_info['step_one']['buy_amount'] += $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"];
+
+            }
+
+            if ($bids_step_one_condition) {
+
+                $orderbook_info['step_one']['sell_price'] = $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"];
+
+                $orderbook_info['step_one']['sell_amount'] += $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"];
+
+            }
+
+            if ($asks_step_one_condition || $bids_step_one_condition) {
+
+                $orderbook_info['step_one']['dom_position']++;
+
+            }
 
         }
 
         //Step 2
         if ($deal_amount["step_two"] < $max_deal_amount) {
 
-            $orderbook_info['step_two']['buy_price'] = (isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"])) ? $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"] : 0;
-            $orderbook_info['step_two']['sell_price'] = (isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"])) ? $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"] : 0;
+            $asks_step_two_condition = isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"]) && isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"]);
+            $bids_step_two_condition = isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"]) && isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"]);
 
-            $orderbook_info['step_two']['buy_amount'] += (isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"])) ? $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"] : 0;
-            $orderbook_info['step_two']['sell_amount'] += (isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"])) ? $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"] : 0;
+            if ($asks_step_two_condition) {
 
-            $orderbook_info['step_two']['dom_position']++;
+                $orderbook_info['step_two']['buy_price'] = $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"];
+
+                $orderbook_info['step_two']['buy_amount'] += $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"];
+
+            }
+
+            if ($bids_step_two_condition) {
+
+                $orderbook_info['step_two']['sell_price'] = $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"];
+
+                $orderbook_info['step_two']['sell_amount'] += $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"];
+
+            }
+
+            if ($asks_step_two_condition || $bids_step_two_condition) {
+
+                $orderbook_info['step_two']['dom_position']++;
+
+            }
 
         }
 
         //Step 3
         if ($deal_amount["step_three"] < $max_deal_amount) {
 
-            $orderbook_info['step_three']['buy_price'] = (isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"])) ? $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"] : 0;
-            $orderbook_info['step_three']['sell_price'] = (isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"])) ? $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"] : 0;
+            $asks_step_three_condition = isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"]) && isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"]);
+            $bids_step_three_condition = isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"]) && isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"]);
 
-            $orderbook_info['step_three']['buy_amount'] += (isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"])) ? $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"] : 0;
-            $orderbook_info['step_three']['sell_amount'] += (isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"])) ? $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"] : 0;
+            if ($asks_step_three_condition) {
 
-            $orderbook_info['step_three']['dom_position']++;
+                $orderbook_info['step_three']['buy_price'] = $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"];
+
+                $orderbook_info['step_three']['buy_amount'] += $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"];
+
+            }
+
+            if ($bids_step_three_condition) {
+
+                $orderbook_info['step_three']['sell_price'] = $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"];
+
+                $orderbook_info['step_three']['sell_amount'] += $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"];
+
+            }
+
+            if ($asks_step_three_condition || $bids_step_three_condition) {
+
+                $orderbook_info['step_three']['dom_position']++;
+
+            }
 
         }
 
