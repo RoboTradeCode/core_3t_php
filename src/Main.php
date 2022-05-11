@@ -89,9 +89,9 @@ class Main
 
         $html .= '</table>';
 
-        $html .= '<br /><br /> Balances: ' . json_encode($balances) . '<br /><br /> Orderbooks: ' . json_encode($orderbooks) . '<br /><br /> Best results: ' . json_encode($best_result) . '<br /><br /> Results: ' . json_encode($results);
+        $html .= '<br /><br /> Balances: <pre>' . json_encode($balances, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Orderbooks: <pre>' . json_encode($orderbooks, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Best results: <pre>' . json_encode($best_result, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Results: <pre>' . json_encode($results, JSON_PRETTY_PRINT) . '</pre>';
 
-        $index = fopen('/var/www/html/test.html', 'w');
+        $index = fopen('/home/klenin/work/awesome/core/cache/test.html', 'w');
 
         fwrite($index, $html);
 
