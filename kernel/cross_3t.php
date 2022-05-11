@@ -46,7 +46,6 @@ while (true) {
     // балансы, ордербуки и неизвестные данные
     $balances = $all_data['balances'];
     $orderbooks = $all_data['orderbooks'];
-    $undefined = $all_data['undefined'];
 
     // если есть все необходимые данные
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
@@ -84,14 +83,6 @@ while (true) {
     } else {
 
         echo '[WARNING] $balances or $orderbooks or $configis is empty' . PHP_EOL;
-
-    }
-
-    if (!empty($undefined)) {
-
-        echo '[WARNING] $undefined is not empty' . PHP_EOL;
-
-        print_r($undefined) . PHP_EOL;
 
     }
 
