@@ -75,4 +75,18 @@ class Core
 
     }
 
+    public function discreteTime(): bool
+    {
+
+        $var = str_split(time());
+
+        $var = end($var);
+
+        if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var))
+            return true;
+
+        return false;
+
+    }
+
 }
