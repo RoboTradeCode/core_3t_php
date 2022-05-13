@@ -183,3 +183,9 @@ const GATE_SUBSCRIBERS_ORDERS = [
     'channel' => 'aeron:ipc',
     'stream_id' => 1003
 ];
+
+// publisher, который подключается к subscriber в гейте, для посылания команд
+const LOG_PUBLISHER = [
+    'channel' => 'aeron:ipc',
+    'stream_id' => 1004
+];
