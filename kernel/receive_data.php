@@ -22,7 +22,7 @@ $log = new Log(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 $i = 0;
 
 // нужен publisher, отправлять логи на сервер логов
-$publisher = new AeronPublisher(LOG_PUBLISHER['channel'], LOG_PUBLISHER['stream_id']);
+$publisher = new AeronPublisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id']);
 
 function handler_orderbooks(string $message): void
 {
