@@ -20,8 +20,6 @@ function handler_orderbooks(string $message): void
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'orderbook' && isset($data['data'])) {
 
-            $data['data']['timestamp'] = time();
-
             // записать в memcached
             $memcached->set(
                 $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'],
