@@ -1,6 +1,8 @@
 <?php
 
 use Src\Aeron;
+use Src\DiscreteTime;
+use Src\Log;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/aeron_config.php';
@@ -8,6 +10,15 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 // memcached подключение
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
+
+$discrete_time = new DiscreteTime();
+
+$log = new Log(EXCHANGE, ALGORITHM, NODE, INSTANCE);
+
+$i = 0;
+
+// нужен publisher, отправлять логи на сервер логов
+$publisher = new AeronPublisher(LOG_PUBLISHER['channel'], LOG_PUBLISHER['stream_id']);
 
 function handler_orderbooks(string $message): void
 {
@@ -75,5 +86,14 @@ while (true) {
     $subscriber_orderbooks->poll();
 
     $subscriber_balances->poll();
+
+    if ($discrete_time->proof()) {
+
+        $publisher->offer($log->sendWorkCore($i));
+
+        $i++;
+
+    }
+
 
 }
