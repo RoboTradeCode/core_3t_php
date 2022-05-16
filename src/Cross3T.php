@@ -57,7 +57,25 @@ class Cross3T extends Main
 
         }
 
-        return $this->getBestResult($results, $this->config['min_profit']);
+        $best_result = $this->getBestResult($results, $this->config['min_profit']);
+
+        if (DEBUG_HTML_VISION) {
+
+            $var = str_split(time());
+
+            $var = end($var);
+
+            if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var)) {
+
+                $this->madeHtmlVision($results, $best_result, $orderbooks, $balances);
+
+                $this->previous = $var;
+
+            }
+
+        }
+
+        return $best_result;
 
     }
 

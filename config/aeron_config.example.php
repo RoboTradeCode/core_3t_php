@@ -189,3 +189,6 @@ const NODE = 'core';
 
 // Instance
 const INSTANCE = '1';
+
+// файл для визуального отображения рассчетов
+const MADE_HTML_VISION_FILE = '/var/www/html/test.html';
