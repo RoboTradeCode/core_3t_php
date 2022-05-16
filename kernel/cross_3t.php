@@ -16,7 +16,7 @@ $memcached->addServer('localhost', 11211);
 $memcached->flush();
 
 // получаем конфиг от конфигуратора
-$config = (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
 
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
