@@ -13,7 +13,7 @@ $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
 // получаем конфиг от конфигуратора
-$config = (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
 
 $discrete_time = new DiscreteTime();
 
