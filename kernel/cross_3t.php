@@ -84,6 +84,8 @@ while (true) {
 
         echo '[WARNING] $balances or $orderbooks or $configis is empty' . PHP_EOL;
 
+        sleep(1);
+
     }
 
 }
