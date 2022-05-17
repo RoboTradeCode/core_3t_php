@@ -76,16 +76,27 @@ foreach ($config['assets_labels'] as $assets_label) {
 
     if ($balances[EXCHANGE][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
 
-        $publisher->offer(
-            $robotrade_api->createOrder(
-                $assets_label['common'] . '/USDT',
-                'market',
-                'sell',
-                $config['assets_labels']['markets']['amount_increment'] * floor(($balances[EXCHANGE][$assets_label['common']]['free']) *0.98 / $config['assets_labels']['markets']['amount_increment']),
-                0,
-                'Create Balancer order'
-            )
-        );
+        $precisions = '';
+
+        foreach ($config['markets'] as $market) {
+            if ($market['common_symbol'] == $assets_label['common'] . '/USDT') {
+                $precisions = $market;
+                break;
+            }
+        }
+
+        if (!empty($precisions)) {
+            $publisher->offer(
+                $robotrade_api->createOrder(
+                    $assets_label['common'] . '/USDT',
+                    'market',
+                    'sell',
+                    $precisions * floor(($balances[EXCHANGE][$assets_label['common']]['free']) *0.98 / $precisions['amount_increment']),
+                    0,
+                    'Create Balancer order'
+                )
+            );
+        }
 
         echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
@@ -138,7 +149,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
-                $config['assets_labels']['markets']['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0]) / $config['assets_labels']['markets']['amount_increment']),
+                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0]) / $precisions['amount_increment']),
                 0,
                 'Create Balancer order'
             )
