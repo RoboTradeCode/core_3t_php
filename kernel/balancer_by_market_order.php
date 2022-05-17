@@ -48,7 +48,7 @@ do {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE])) {
+            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]) && $assets_label['common'] != 'USDT') {
 
                 $do = true;
 
@@ -74,7 +74,7 @@ do {
 
 foreach ($config['assets_labels'] as $assets_label) {
 
-    if ($balances[EXCHANGE][$assets_label['common']]['free'] > 0) {
+    if ($balances[EXCHANGE][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
 
         $publisher->offer(
             $robotrade_api->createOrder(
@@ -123,7 +123,7 @@ foreach ($config['assets_labels'] as $assets_label) {
     $precisions = '';
 
     foreach ($config['assets_labels']['markets'] as $market) {
-        if ($market['common_symbol'] == $assets_label['common'] . '/USDT') {
+        if ($market['common_symbol'] == $assets_label['common'] . '/USDT' && $assets_label['common'] != 'USDT') {
             $precisions = $market;
             break;
         }
