@@ -91,7 +91,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                     $assets_label['common'] . '/USDT',
                     'market',
                     'sell',
-                    $precisions * floor(($balances[EXCHANGE][$assets_label['common']]['free']) *0.98 / $precisions['amount_increment']),
+                    $precisions['amount_increment'] * floor(($balances[EXCHANGE][$assets_label['common']]['free']) *0.98 / $precisions['amount_increment']),
                     0,
                     'Create Balancer order'
                 )
