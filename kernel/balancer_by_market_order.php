@@ -87,6 +87,8 @@ foreach ($config['assets_labels'] as $assets_label) {
             )
         );
 
+        echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+
     }
 
 }
@@ -116,7 +118,7 @@ do {
 
 } while(empty($balances[EXCHANGE]));
 
-$sum_usdt = $balances[EXCHANGE] / count($config['assets_labels']);
+$sum_usdt = $balances[EXCHANGE]['USDT']['free'] / count($config['assets_labels']);
 
 foreach ($config['assets_labels'] as $assets_label) {
 
