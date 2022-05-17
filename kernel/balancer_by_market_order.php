@@ -150,7 +150,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                 'market',
                 'buy',
                 $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0]) / $precisions['amount_increment']),
-                0,
+                $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
                 'Create Balancer order'
             )
         );
