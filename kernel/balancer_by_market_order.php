@@ -124,7 +124,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
     $precisions = '';
 
-    foreach ($config['assets_labels']['markets'] as $market) {
+    foreach ($config['markets'] as $market) {
         if ($market['common_symbol'] == $assets_label['common'] . '/USDT' && $assets_label['common'] != 'USDT') {
             $precisions = $market;
             break;
