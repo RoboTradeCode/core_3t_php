@@ -34,12 +34,7 @@ php -v
 
 3. Далее установить библиотеки.
 ```shell
-sudo apt install php8.0-common
-sudo apt install php8.0-cli
-sudo apt install php8.0-fpm
-sudo apt install php8.0-mysql
-sudo apt install php8.0-memcache
-sudo apt install php8.0-memcached
+sudo apt install php8.0-common && sudo apt install php8.0-cli && sudo apt install php8.0-fpm && sudo apt install php8.0-mysql && sudo apt install php8.0-memcache && sudo apt install php8.0-memcached -y
 ```
 
 4. Необходимо установить memcached
@@ -65,13 +60,7 @@ sudo systemctl start memcached
 sudo apt-get install php8.0-memcache
 ```
 
-6. Установка composer
-```shell
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php
-php -r "unlink('composer-setup.php');"
-```
+6. Установка composer (https://getcomposer.org/download/)
 
 7. Проверить версию (она обязательно должна быть не меньше 2.0.0)
 Если версия ниже 2.0.0, обратиться к статье (https://coderteam.ru/blog/obnovlyaemsya-do-composer-2-na-ubuntu/)
@@ -79,14 +68,10 @@ php -r "unlink('composer-setup.php');"
 ```shell
 composer
 ```
-Или
-```shell
-php composer.phar
-```
 
 8. Клонирование репозитория (Если ссылка не подходит, скопировать ее, на гитхаб в репозитории -> code -> https -> копирование значок)
 ```shell
-git clone --recurse-submodules https://github.com/RoboTradeCode/core_3t_php.git -b test.x
+git clone --recurse-submodules https://github.com/RoboTradeCode/core_3t_php.git
 ```
 
 9. перейти в папку core_3t_php
@@ -99,33 +84,8 @@ cd core_3t_php/
 composer install
 ```
 
-## Инструкция запуска Core для тестовой проверки Gate
-Для тестирования, гейту, для передачи данных (ордербуков, балансов), необходимо передавать один ордербук BTC/USDT и ордера, когда они создались на бирже.
-
-Настройки, для запуска Core для тестовой проверки Gate, находятся в файле ```config/test_aeron_config_c.php```.
-Чтобы получить такой файл нужно скопировать ```test_aeron_config_c.example.php``` в эту же папку и убрать ```.example```
-
-GATE_PUBLISHER - настройки для Publisher, который будет отправлять команды (к примеру отмена ордера) в subscriber в gate. Задаем channel и stream_id.
-GATE_SUBSCRIBERS_ORDERBOOKS, GATE_SUBSCRIBERS_BALANCES, GATE_SUBSCRIBERS_ORDERS- настройки для Subscribers, которые будут принимать данные (ордербуки, балансы, ордера) от publishers от gate. Задаем для каждого  свой channel и stream_id.
-
-_**Последовательность запуска:**_
-
+## Cross 3t алгоритма
 1. Первый шаг - запуск получения данных от гейта.
-```shell
-php kernel/test_receive_data_c.php
-```
-Если гейт отсылает данные и они корректные под новый формат, то в консоле должен выводить сообщения начинающиеся: ```[OK] Data saved ...```
-
-2. Запустить тестовый алгоритм.
-```shell
-php kernel/test_c.php
-```
-Если гейт отсылает данные, то в консоле должен выводить сообщения начинающиеся: ```[OK] ...```
-
-## Инструкция запуска Core в production
-0. Перед запуском ядра, необходимо, чтобы был запущен агент.
-
-1. Первый шаг - запуск получения данных от агента и гейта.
 ```shell
 php kernel/receive_data.php
 ```
@@ -135,7 +95,6 @@ php kernel/receive_data.php
 php kernel/cross_3t.php
 ```
 
-## Алгоритм
 Первоначальные данные:
 1) Все ордербуки со всех бирж
 2) Все балансы со всех бирж
@@ -148,3 +107,19 @@ php kernel/cross_3t.php
 4) Выбираем лучшие ордербуки идя в глубь стакана, и в зависимости от deal_amount (запоминаем, какая пара относится к какой бирже)
 5) Записать результат сделки в массив для каждого треугольника
 6) Выбираем лучший результат и если он положительный, совершаем сделку на станции если есть эта биржа в результате
+
+## Балансировочный алгоритм
+1. Первый шаг - запуск получения данных от гейта.
+```shell
+php kernel/receive_data.php
+```
+
+2. Запустить сам алгоритм balancer_by_market_order.
+```shell
+php kernel/balancer_by_market_order.php
+```
+
+Логика алгоритма:
+1) Балансирует всю сумму к USDT
+2) Делит всю сумму поровну на все ассеты
+3) Отправляет запросы на постановку маркет ордеров для каждого ассета

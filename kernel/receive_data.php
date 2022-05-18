@@ -1,6 +1,9 @@
 <?php
 
 use Src\Aeron;
+use Src\Configurator;
+use Src\DiscreteTime;
+use Src\Log;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/aeron_config.php';
@@ -9,76 +12,19 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-// публишер для агента, чтобы получить конфиг
-$publisher = new AeronPublisher(AGENT_PUBLISHER['channel'], AGENT_PUBLISHER['stream_id']);
+$balances = [];
 
-function handler_get_config(string $message): void
-{
+// получаем конфиг от конфигуратора
+$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
 
-    global $memcached, $core_config;
+$discrete_time = new DiscreteTime();
 
-    if ($data = Aeron::messageDecode($message)) {
+$log = new Log(EXCHANGE, ALGORITHM, NODE, INSTANCE);
 
-        if ($data['event'] == 'config' && $data['node'] == 'configurator') {
+$i = 0;
 
-            $core_config = $data['data']['configs']['core_config'];
-
-            $memcached->set(
-                'config',
-                $core_config
-            );
-
-        } else {
-
-            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
-
-        }
-
-    }
-
-}
-
-$subscriber = new AeronSubscriber('handler_get_config', AGENT_SUBSCRIBERS_BALANCES['channel'], AGENT_SUBSCRIBERS_BALANCES['stream_id']);
-
-while (true) {
-
-    usleep(100000);
-
-    $subscriber->poll();
-
-    if (!isset($core_config)) {
-
-        do {
-
-            usleep(1000000);
-
-            $code = $publisher->offer(
-                Aeron::messageEncode([
-                    'event' => 'config',
-                    'exchange' => EXCHANGE,
-                    'instance' => NODE,
-                    'action' => 'get_config',
-                    'algo' => ALGORITHM,
-                    'data' => [],
-                    'timestamp' => intval(microtime(true) * 1000000)
-                ])
-            );
-
-            echo '[ERROR] Try to send command get_config to Agent. Code: ' . $code . PHP_EOL;
-
-        } while($code > 0);
-
-    } else {
-
-        echo '[OK] Can config get' . PHP_EOL;
-
-        unset($subscriber);
-
-        break;
-
-    }
-
-}
+// нужен publisher, отправлять логи на сервер логов
+$publisher = new AeronPublisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id']);
 
 function handler_orderbooks(string $message): void
 {
@@ -97,8 +43,6 @@ function handler_orderbooks(string $message): void
                 $data['data']
             );
 
-            echo '[OK] Data saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . ' Symbol: ' . $data['data']['symbol'] . PHP_EOL;
-
         } else {
 
             echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
@@ -112,7 +56,7 @@ function handler_orderbooks(string $message): void
 function handler_balances(string $message): void
 {
 
-    global $memcached;
+    global $memcached, $balances;
 
     // если данные пришли
     if ($data = Aeron::messageDecode($message)) {
@@ -120,13 +64,25 @@ function handler_balances(string $message): void
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
+            if (empty($balances)) {
+
+                $balances[$data['exchange']] = $data['data'];
+
+            } else {
+
+                foreach ($data['data'] as $asset => $datum) {
+
+                    $balances[$data['exchange']][$asset] = $datum;
+
+                }
+
+            }
+
             // записать в memcached
             $memcached->set(
                 $data['exchange'] . '_' . $data['action'],
-                $data['data']
+                $balances[$data['exchange']]
             );
-
-            echo '[OK] Data saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
 
         } else {
 
@@ -138,54 +94,26 @@ function handler_balances(string $message): void
 
 }
 
-function handler_orders(string $message): void
-{
-
-    global $memcached;
-
-    // если данные пришли
-    if ($data = Aeron::messageDecode($message)) {
-
-        // если event как data, а node как gate
-        if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'order_created' && isset($data['data'])) {
-
-            // записать в memcached
-            $key = $data['exchange'] . '_orders';
-
-            $orders = $memcached->get($key);
-
-            $orders[$data['data']['id']] = $data['data'];
-
-            $memcached->set(
-                $key,
-                $orders
-            );
-
-            echo '[OK] Data Order saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
-
-        } else {
-
-            echo '[ERROR] data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
-
-        }
-
-    }
-
-}
-
 // subscribers подключение
-$subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', GATE_SUBSCRIBERS_ORDERBOOKS['channel'], GATE_SUBSCRIBERS_ORDERBOOKS['stream_id']);
+$subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', $config['aeron']['subscribers']['orderbooks']['channel'], $config['aeron']['subscribers']['orderbooks']['stream_id']);
 
-$subscriber_balances = new AeronSubscriber('handler_balances', GATE_SUBSCRIBERS_BALANCES['channel'], GATE_SUBSCRIBERS_BALANCES['stream_id']);
-
-$subscriber_orders = new AeronSubscriber('handler_orders', GATE_SUBSCRIBERS_ORDERS['channel'], GATE_SUBSCRIBERS_ORDERS['stream_id']);
+$subscriber_balances = new AeronSubscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
 
 while (true) {
+
+    usleep(SLEEP);
 
     $subscriber_orderbooks->poll();
 
     $subscriber_balances->poll();
 
-    $subscriber_orders->poll();
+    if ($discrete_time->proof()) {
+
+        $publisher->offer($log->sendWorkCore($i));
+
+        $i++;
+
+    }
+
 
 }

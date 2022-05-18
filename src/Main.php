@@ -8,9 +8,102 @@ class Main
 {
 
     /**
+     * Made html vision file into cache folder
+     *
+     * @param array $results All results
+     * @param array $best_result The best result
+     * @param array $orderbooks All orderbooks
+     * @param array $balances All balances
+     * @return void
+     */
+    public function madeHtmlVision(array $results, array $best_result, array $orderbooks, array $balances): void
+    {
+
+        $date = date("d.m.y H:i:s", time());
+
+        $i = 1;
+
+        $html = <<<HTML
+         <style> body {font-family: monospace;} table {border-collapse: collapse;} td, th {border: 1px solid #000; padding: 5px;} th {font-weight: bold;}</style>
+         <i>Generated: $date</i><br /><br />
+
+        <table>
+        <tr><th>#</th><th>Triangle</th><th>Step 1</th><th>Step 2</th><th>Step 3</th><th>Result</th></tr>
+        HTML;
+
+        if ($best_result) {
+
+            $result_first_step = ($best_result["step_one"]["orderType"] == 'buy') ? $best_result["deal_amount"] : $best_result["step_one"]["amount"];
+
+            $table = "<tr><td>0</td>";
+
+            $calculations = "<td><strong>{$best_result["main_asset_name"]} -> {$best_result["asset_one_name"]} -> {$best_result["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($best_result["deal_amount"]) . " {$best_result["main_asset_name"]}<br />Max: {$best_result["expected_data"]["max_deal_amount"]}" . "</small></td>";
+
+            $calculations .= "<td>Market: {$best_result["step_one"]["amountAssetName"]} -> {$best_result["step_one"]["priceAssetName"]} ({$best_result["step_one"]["orderType"]})<br />Position: {$best_result["step_one"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepOne_sell_price"]} ({$best_result["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepOne_buy_price"]} ({$best_result["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$result_first_step} {$best_result["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span><br />{$best_result["step_one"]["exchange"]}</td>";
+
+            $calculations .= "<td>Market: {$best_result["step_two"]["amountAssetName"]} -> {$best_result["step_two"]["priceAssetName"]} ({$best_result["step_two"]["orderType"]})<br />Position: {$best_result["step_two"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepTwo_sell_price"]} ({$best_result["expected_data"]["stepTwo_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepTwo_buy_price"]} ({$best_result["expected_data"]["stepTwo_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_two"]["result"]) . " {$best_result["asset_two_name"]}</span><br />{$best_result["step_two"]["exchange"]}</td>";
+
+            $calculations .= "<td>Market: {$best_result["step_three"]["amountAssetName"]} -> {$best_result["step_three"]["priceAssetName"]} ({$best_result["step_three"]["orderType"]})<br />Position: {$best_result["step_three"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepThree_sell_price"]} ({$best_result["expected_data"]["stepThree_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepThree_buy_price"]} ({$best_result["expected_data"]["stepThree_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($best_result["step_two"]["result"]) . " {$best_result["asset_two_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_three"]["result"]) . " {$best_result["main_asset_name"]}</span><br />{$best_result["step_three"]["exchange"]}</td>";
+
+            $calculations .= "<td><span style=\"color: " . (($best_result["result"] > 0) ? "green" : "red;") . ";\">" . $this->format($best_result["result"]) . " {$best_result["main_asset_name"]}</span></td>";
+
+            $calculations .= "</tr>";
+
+            $table .= $calculations;
+
+            $html .= $table;
+
+            $html .= '<tr><td colspan="6" style="background-color: grey; color: #fff; text-align: center;"> Best Result </td></tr>' . '<tr><td colspan="6" style="border-left: 0; border-right: 0;">&nbsp;</td></tr>';
+
+        }
+
+        foreach ($results as $result) {
+
+            foreach ($result['results'] as $res) {
+
+                $res_first_step = ($res["step_one"]["orderType"] == 'buy') ? $res["deal_amount"] : $res["step_one"]["amount"];
+
+                $table = "<tr><td>$i</td>";
+
+                $calculations = "<td><strong>{$res["main_asset_name"]} -> {$res["asset_one_name"]} -> {$res["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($res["deal_amount"]) . " {$res["main_asset_name"]}<br />Max: {$res["expected_data"]["max_deal_amount"]}" . "</small></td>";
+
+                $calculations .= "<td>Market: {$res["step_one"]["amountAssetName"]} -> {$res["step_one"]["priceAssetName"]} ({$res["step_one"]["orderType"]})<br />Position: {$res["step_one"]["dom_position"]}<br />Sell: {$res["expected_data"]["stepOne_sell_price"]} ({$res["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$res["expected_data"]["stepOne_buy_price"]} ({$res["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$res_first_step} {$res["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($res["step_one"]["result"]) . " {$res["asset_one_name"]}</span><br />{$res["step_one"]["exchange"]}</td>";
+
+                $calculations .= "<td>Market: {$res["step_two"]["amountAssetName"]} -> {$res["step_two"]["priceAssetName"]} ({$res["step_two"]["orderType"]})<br />Position: {$res["step_two"]["dom_position"]}<br />Sell: {$res["expected_data"]["stepTwo_sell_price"]} ({$res["expected_data"]["stepTwo_sell_amount"]})<br />Buy: {$res["expected_data"]["stepTwo_buy_price"]} ({$res["expected_data"]["stepTwo_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($res["step_one"]["result"]) . " {$res["asset_one_name"]}</span>, <span style=\"color: green;\">+" . $this->format($res["step_two"]["result"]) . " {$res["asset_two_name"]}</span><br />{$res["step_two"]["exchange"]}</td>";
+
+                $calculations .= "<td>Market: {$res["step_three"]["amountAssetName"]} -> {$res["step_three"]["priceAssetName"]} ({$res["step_three"]["orderType"]})<br />Position: {$res["step_three"]["dom_position"]}<br />Sell: {$res["expected_data"]["stepThree_sell_price"]} ({$res["expected_data"]["stepThree_sell_amount"]})<br />Buy: {$res["expected_data"]["stepThree_buy_price"]} ({$res["expected_data"]["stepThree_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($res["step_two"]["result"]) . " {$res["asset_two_name"]}</span>, <span style=\"color: green;\">+" . $this->format($res["step_three"]["result"]) . " {$res["main_asset_name"]}</span><br />{$res["step_three"]["exchange"]}</td>";
+
+                $calculations .= "<td><span style=\"color: " . (($res["result"] > 0) ? "green" : "red;") . ";\">" . $this->format($res["result"]) . " {$res["main_asset_name"]}</span></td>";
+
+                $calculations .= "</tr>";
+
+                $table .= $calculations;
+
+                $html .= $table;
+
+                $i++;
+
+            }
+
+            $html .= '<tr><td colspan="6" style="background-color: grey; color: #fff; text-align: center;">' . $result['reason'] . '</td></tr>' . '<tr><td colspan="6" style="border-left: 0; border-right: 0;">&nbsp;</td></tr>';
+
+        }
+
+        $html .= '</table>';
+
+        $html .= '<br /><br /> Balances: <pre>' . json_encode($balances, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Orderbooks: <pre>' . json_encode($orderbooks, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Best results: <pre>' . json_encode($best_result, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Results: <pre>' . json_encode($results, JSON_PRETTY_PRINT) . '</pre>';
+
+        $index = fopen(MADE_HTML_VISION_FILE, 'w');
+
+        fwrite($index, $html);
+
+        fclose($index);
+
+    }
+
+    /**
      * Возвращает результат треугольника
      *
-     * @param float $min_profit Минимальная прибыль в main_asset
      * @param float $max_deal_amount Максимальный размер сделки в main_asset
      * @param int $max_depth Максимальная глубина в стакан
      * @param array $rates Курсы
@@ -20,7 +113,6 @@ class Main
      * @return array Отдает массив результатов и reason
      */
     public function getResults(
-        float $min_profit,
         float $max_deal_amount,
         int $max_depth,
         array $rates,
@@ -89,7 +181,7 @@ class Main
                 $max_deal_amount
             );
 
-            if ($result["status"] && $result["result"] > $min_profit) {
+            if ($result["status"]) {
 
                 $results[] = $result;
 
@@ -122,7 +214,7 @@ class Main
 
         return [
             'results' => $results,
-            'reason' => $reason,
+            'reason' => $reason ?? '',
         ];
 
     }
@@ -214,39 +306,90 @@ class Main
         //Step 1
         if ($deal_amount["step_one"] < $max_deal_amount) {
 
-            $orderbook_info['step_one']['buy_price'] = (isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"])) ? $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"] : 0;
-            $orderbook_info['step_one']['sell_price'] = (isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"])) ? $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"] : 0;
+            $asks_step_one_condition = isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"]) && isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"]);
+            $bids_step_one_condition = isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"]) && isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"]);
 
-            $orderbook_info['step_one']['buy_amount'] += (isset($orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"])) ? $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"] : 0;
-            $orderbook_info['step_one']['sell_amount'] += (isset($orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"])) ? $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"] : 0;
+            if ($asks_step_one_condition) {
 
-            $orderbook_info['step_one']['dom_position']++;
+                $orderbook_info['step_one']['buy_price'] = $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["0"];
+
+                $orderbook_info['step_one']['buy_amount'] += $orderbook["step_one"]["asks"][$orderbook_info['step_one']['dom_position']]["1"];
+
+            }
+
+            if ($bids_step_one_condition) {
+
+                $orderbook_info['step_one']['sell_price'] = $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["0"];
+
+                $orderbook_info['step_one']['sell_amount'] += $orderbook["step_one"]["bids"][$orderbook_info['step_one']['dom_position']]["1"];
+
+            }
+
+            if ($asks_step_one_condition || $bids_step_one_condition) {
+
+                $orderbook_info['step_one']['dom_position']++;
+
+            }
 
         }
 
         //Step 2
         if ($deal_amount["step_two"] < $max_deal_amount) {
 
-            $orderbook_info['step_two']['buy_price'] = (isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"])) ? $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"] : 0;
-            $orderbook_info['step_two']['sell_price'] = (isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"])) ? $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"] : 0;
+            $asks_step_two_condition = isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"]) && isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"]);
+            $bids_step_two_condition = isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"]) && isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"]);
 
-            $orderbook_info['step_two']['buy_amount'] += (isset($orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"])) ? $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"] : 0;
-            $orderbook_info['step_two']['sell_amount'] += (isset($orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"])) ? $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"] : 0;
+            if ($asks_step_two_condition) {
 
-            $orderbook_info['step_two']['dom_position']++;
+                $orderbook_info['step_two']['buy_price'] = $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["0"];
+
+                $orderbook_info['step_two']['buy_amount'] += $orderbook["step_two"]["asks"][$orderbook_info['step_two']['dom_position']]["1"];
+
+            }
+
+            if ($bids_step_two_condition) {
+
+                $orderbook_info['step_two']['sell_price'] = $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["0"];
+
+                $orderbook_info['step_two']['sell_amount'] += $orderbook["step_two"]["bids"][$orderbook_info['step_two']['dom_position']]["1"];
+
+            }
+
+            if ($asks_step_two_condition || $bids_step_two_condition) {
+
+                $orderbook_info['step_two']['dom_position']++;
+
+            }
 
         }
 
         //Step 3
         if ($deal_amount["step_three"] < $max_deal_amount) {
 
-            $orderbook_info['step_three']['buy_price'] = (isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"])) ? $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"] : 0;
-            $orderbook_info['step_three']['sell_price'] = (isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"])) ? $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"] : 0;
+            $asks_step_three_condition = isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"]) && isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"]);
+            $bids_step_three_condition = isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"]) && isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"]);
 
-            $orderbook_info['step_three']['buy_amount'] += (isset($orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"])) ? $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"] : 0;
-            $orderbook_info['step_three']['sell_amount'] += (isset($orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"])) ? $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"] : 0;
+            if ($asks_step_three_condition) {
 
-            $orderbook_info['step_three']['dom_position']++;
+                $orderbook_info['step_three']['buy_price'] = $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["0"];
+
+                $orderbook_info['step_three']['buy_amount'] += $orderbook["step_three"]["asks"][$orderbook_info['step_three']['dom_position']]["1"];
+
+            }
+
+            if ($bids_step_three_condition) {
+
+                $orderbook_info['step_three']['sell_price'] = $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["0"];
+
+                $orderbook_info['step_three']['sell_amount'] += $orderbook["step_three"]["bids"][$orderbook_info['step_three']['dom_position']]["1"];
+
+            }
+
+            if ($asks_step_three_condition || $bids_step_three_condition) {
+
+                $orderbook_info['step_three']['dom_position']++;
+
+            }
 
         }
 
@@ -445,13 +588,13 @@ class Main
                 $reason = "Not enough balance (step 1, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
             }
 
-        }
+            // Subtract fee (step 1)
+            $stepOne["result"] = $this->incrementNumber(
+                $stepOne["result"] - $stepOne["result"] / 100 * $orderbook["step_one"]['fee'],
+                $orderbook["step_one"]['amount_increment']
+            );
 
-        // Subtract fee (step 1)
-        $stepOne["result"] = $this->incrementNumber(
-            $stepOne["result"] - $stepOne["result"] / 100 * $orderbook["step_one"]['fee'],
-            $orderbook["step_one"]['amount_increment']
-        );
+        }
 
         // Amount limit check (step 1)
         $min_amount_step_one = $orderbook["step_one"]["limits"]["amount"]["min"] ?? 0;
@@ -534,6 +677,12 @@ class Main
                 $reason = "Not enough balance (step 2, buy). Asset: {$stepTwo["priceAssetName"]} ({$balances[$orderbook['step_two']['priceAsset']]["free"]} < {$stepOne["result"]})";
             }
 
+            // Subtract fee (step 2)
+            $stepTwo["result"] = $this->incrementNumber(
+                $stepTwo["result"] - $stepTwo["result"] / 100 * $orderbook["step_two"]['fee'],
+                $orderbook["step_two"]['amount_increment']
+            );
+
         }
 
         // Amount limit check (step 2)
@@ -555,12 +704,6 @@ class Main
                 "reason" => "Cost limit error (step 2): {$combinations["step_two_symbol"]} min cost: $cost_limit_step_two, current cost: " . ($stepTwo["amount"] * $stepTwo["price"])
             ];
         }
-
-        // Subtract fee (step 2)
-        $stepTwo["result"] = $this->incrementNumber(
-            $stepTwo["result"] - $stepTwo["result"] / 100 * $orderbook["step_two"]['fee'],
-            $orderbook["step_one"]['amount_increment']
-        );
 
         /* STEP 3 */
         if ($orderbook['step_three']['amountAsset'] != $combinations["main_asset_name"]) {
@@ -626,6 +769,13 @@ class Main
                 $reason = "Not enough balance (step 3, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $step_three_result)";
             }
 
+
+            // Subtract fee (step 3)
+            $stepThree["result"] = $this->incrementNumber(
+                $stepThree["result"] - $stepThree["result"] / 100 * $orderbook["step_three"]['fee'],
+                $orderbook["step_three"]['amount_increment']
+            );
+
         }
 
         //Amount limit check (step 3)
@@ -647,12 +797,6 @@ class Main
                 "reason" => "Cost limit error (step 3): {$combinations["step_three_symbol"]} min cost: $cost_limit_step_three, current cost: " . ($stepThree["amount"] * $stepThree["price"])
             ];
         }
-
-        // Subtract fee (step 3)
-        $stepThree["result"] = $this->incrementNumber(
-            $stepThree["result"] - $stepThree["result"] / 100 * $orderbook["step_three"]['fee'],
-            $orderbook["step_one"]['amount_increment']
-        );
 
         $final_result = round(($stepThree["result"] - $deal_amount), 8);
 
@@ -700,6 +844,16 @@ class Main
 
         return $increment * floor($number / $increment);
 
+    }
+
+    /**
+     * @param float $float
+     * @param int $decimals
+     * @return string
+     */
+    public function format(float $float, int $decimals = 8): string
+    {
+        return number_format($float, $decimals, ".", "");
     }
 
 }
