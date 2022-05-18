@@ -34,7 +34,7 @@ php -v
 
 3. Далее установить библиотеки.
 ```shell
-sudo apt install php8.0-common && php8.0-cli && php8.0-fpm && php8.0-mysql && php8.0-memcache && php8.0-memcached
+sudo apt install php8.0-common && sudo apt install php8.0-cli && sudo apt install php8.0-fpm && sudo apt install php8.0-mysql && sudo apt install php8.0-memcache && sudo apt install php8.0-memcached -y
 ```
 
 4. Необходимо установить memcached
