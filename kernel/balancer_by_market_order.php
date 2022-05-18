@@ -164,3 +164,33 @@ foreach ($config['assets_labels'] as $assets_label) {
     }
 
 }
+
+
+// очистить все, что есть в memcached
+$memcached->flush();
+
+unset($balances);
+
+// При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
+(new Core($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+
+// если есть все необходимые данные
+do {
+
+    sleep(1);
+
+    $do = true;
+
+    // отформировать и отделить все данные, полученные из memcached
+    $all_data = $cross_3t->reformatAndSeparateData($memcached->getMulti($cross_3t->getAllMemcachedKeys()) ?? []);
+
+    // балансы
+    $balances = $all_data['balances'];
+
+    echo 'Try get balances from memcached' . PHP_EOL;
+
+} while(empty($balances[EXCHANGE]));
+
+print_r($balances[EXCHANGE]);
+
+$memcached->flush();
