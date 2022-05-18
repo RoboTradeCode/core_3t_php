@@ -12,8 +12,13 @@ class DiscreteTime
 
         $var = end($var);
 
-        if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var))
+        if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var)) {
+
+            $this->previous = $var;
+
             return true;
+
+        }
 
         return false;
 
