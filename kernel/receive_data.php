@@ -12,6 +12,8 @@ require dirname(__DIR__) . '/config/aeron_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
+$balances = [];
+
 // получаем конфиг от конфигуратора
 $config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
 
@@ -54,7 +56,7 @@ function handler_orderbooks(string $message): void
 function handler_balances(string $message): void
 {
 
-    global $memcached;
+    global $memcached, $balances;
 
     // если данные пришли
     if ($data = Aeron::messageDecode($message)) {
@@ -62,10 +64,24 @@ function handler_balances(string $message): void
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
+            if (empty($balances)) {
+
+                $balances[$data['exchange']] = $data['data'];
+
+            } else {
+
+                foreach ($data['data'] as $asset => $datum) {
+
+                    $balances[$data['exchange']][$asset] = $datum;
+
+                }
+
+            }
+
             // записать в memcached
             $memcached->set(
                 $data['exchange'] . '_' . $data['action'],
-                $data['data']
+                $balances[$data['exchange']]
             );
 
         } else {
