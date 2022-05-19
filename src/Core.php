@@ -38,6 +38,8 @@ class Core
 
         $this->commands[] = 'Cancel All Orders.';
 
+        sleep(1);
+
         return $this;
 
     }
@@ -53,6 +55,8 @@ class Core
         $this->publisher->offer($this->robotrade_api->getBalances($assets));
 
         $this->commands[] = 'Get All Balances.';
+
+        sleep(1);
 
         return $this;
 
