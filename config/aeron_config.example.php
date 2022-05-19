@@ -149,7 +149,7 @@ const CONFIG = [
         'publishers' => [
             'gate' => [
                 'channel' => 'aeron:ipc',
-                'stream_id' => 1005
+                'stream_id' => 1004
             ],
             'log' => [
                 'channel' => 'aeron:udp?endpoint=3.66.183.27:44444',
@@ -160,16 +160,16 @@ const CONFIG = [
             'balance' => [
                 'channel' => 'aeron:ipc',
                 'destinations' => [],
-                'stream_id' => 1002
+                'stream_id' => 1005
             ],
             'orderbooks' => [
                 'channel' => 'aeron:ipc',
                 'destinations' => [],
-                'stream_id' => 1001
+                'stream_id' => 1006
             ],
             'orders' => [
                 'channel' => 'aeron:ipc',
-                'stream_id' => 1003
+                'stream_id' => 1007
             ]
         ]
     ]
