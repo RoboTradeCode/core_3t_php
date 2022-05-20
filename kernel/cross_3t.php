@@ -7,7 +7,7 @@ use Src\Gate;
 use Src\Cross3T;
 
 require dirname(__DIR__) . '/index.php';
-require dirname(__DIR__) . '/config/aeron_config.php';
+require dirname(__DIR__) . '/config/common_config.php';
 
 // подключение к memcached
 $memcached = new Memcached();
@@ -16,17 +16,19 @@ $memcached->addServer('localhost', 11211);
 // очистить все, что есть в memcached
 $memcached->flush();
 
+$common_config = CORES['cross_3t'];
+
 // получаем конфиг от конфигуратора
-$config = DEBUG_HTML_VISION ? CONFIG : Configurator::getConfig(EXCHANGE, INSTANCE);
+$config = $common_config['debug'] ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
 // API для формирования сообщения для отправки по aeron
-$robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
+$robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
 // нужен publisher, отправлять команды по aeron в гейт
 $publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
 
 // создаем класс cross 3t
-$cross_3t = new Cross3T($config);
+$cross_3t = new Cross3T($config, $common_config);
 
 // создаем класс для работы с ядром
 $core = new Core($config);
@@ -39,7 +41,7 @@ $gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'co
 
 while (true) {
 
-    usleep(SLEEP);
+    usleep($common_config['sleep']);
 
     // отформировать и отделить все данные, полученные из memcached
     $all_data = $core->getFormatData($memcached);
@@ -57,7 +59,7 @@ while (true) {
             // для каждого шага, если результат выпал на текущую биржу, отправить сообщение на создание ордера
             foreach (['step_one', 'step_two', 'step_three'] as $step) {
 
-                if ($best_result[$step]['exchange'] == EXCHANGE) {
+                if ($best_result[$step]['exchange'] == $common_config['exchange']) {
 
                     $publisher->offer(
                         $robotrade_api->createOrder(

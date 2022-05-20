@@ -16,7 +16,7 @@ class Main
      * @param array $balances All balances
      * @return void
      */
-    public function madeHtmlVision(array $results, array $best_result, array $orderbooks, array $balances): void
+    public function madeHtmlVision(array $results, array $best_result, array $orderbooks, array $balances, string $file_path): void
     {
 
         $date = date("d.m.y H:i:s", time());
@@ -93,7 +93,7 @@ class Main
 
         $html .= '<br /><br /> Balances: <pre>' . json_encode($balances, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Orderbooks: <pre>' . json_encode($orderbooks, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Best results: <pre>' . json_encode($best_result, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Results: <pre>' . json_encode($results, JSON_PRETTY_PRINT) . '</pre>';
 
-        $index = fopen(MADE_HTML_VISION_FILE, 'w');
+        $index = fopen($file_path, 'w');
 
         fwrite($index, $html);
 

@@ -6,7 +6,7 @@ use Src\Core;
 use Src\Gate;
 
 require dirname(__DIR__) . '/index.php';
-require dirname(__DIR__) . '/config/aeron_config.php';
+require dirname(__DIR__) . '/config/common_config.php';
 
 // подключение к memcached
 $memcached = new Memcached();
@@ -15,10 +15,12 @@ $memcached->addServer('localhost', 11211);
 // очистить все, что есть в memcached
 $memcached->flush();
 
-$config = DEBUG_HTML_VISION ? CONFIG : Configurator::getConfig(EXCHANGE, INSTANCE);
+$common_config = CORES['balancer_by_market_order'];
+
+$config = $common_config['debug'] ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
 // API для формирования сообщения для отправки по aeron
-$robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
+$robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
 // нужен publisher, отправлять команды по aeron в гейт
 $publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
@@ -44,11 +46,11 @@ do {
 
     $orderbooks = $all_data['orderbooks'];
 
-    if (!empty($balances[EXCHANGE])) {
+    if (!empty($balances[$common_config['exchange']])) {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]) && $assets_label['common'] != 'USDT') {
+            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
 
                 $do = true;
 
@@ -74,7 +76,7 @@ do {
 
 foreach ($config['assets_labels'] as $assets_label) {
 
-    if ($balances[EXCHANGE][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
+    if ($balances[$common_config['exchange']][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
 
         $precisions = '';
 
@@ -91,7 +93,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                     $assets_label['common'] . '/USDT',
                     'market',
                     'sell',
-                    $precisions['amount_increment'] * floor(($balances[EXCHANGE][$assets_label['common']]['free']) * 0.96 / $precisions['amount_increment']),
+                    $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.96 / $precisions['amount_increment']),
                     $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
                     'Create Balancer order'
                 )
@@ -127,9 +129,9 @@ do {
 
     echo 'Try get balances from memcached' . PHP_EOL;
 
-} while(empty($balances[EXCHANGE]));
+} while(empty($balances[$common_config['exchange']]));
 
-$sum_usdt = $balances[EXCHANGE]['USDT']['free'] / count($config['assets_labels']) * 0.96;
+$sum_usdt = $balances[$common_config['exchange']]['USDT']['free'] / count($config['assets_labels']) * 0.96;
 
 foreach ($config['assets_labels'] as $assets_label) {
 
@@ -149,8 +151,8 @@ foreach ($config['assets_labels'] as $assets_label) {
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
-                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0]) / $precisions['amount_increment']),
-                $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+                $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
                 'Create Balancer order'
             )
         );
@@ -189,8 +191,8 @@ do {
 
     echo 'Try get balances from memcached' . PHP_EOL;
 
-} while(empty($balances[EXCHANGE]));
+} while(empty($balances[$common_config['exchange']]));
 
-print_r($balances[EXCHANGE]);
+print_r($balances[$common_config['exchange']]);
 
 $memcached->flush();
