@@ -106,7 +106,7 @@ $subscriber_balances = new AeronSubscriber('handler_balances', $config['aeron'][
 
 while (true) {
 
-    usleep(SLEEP);
+    usleep($common_config['sleep']);
 
     $subscriber_orderbooks->poll();
 
