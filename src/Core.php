@@ -2,80 +2,90 @@
 
 namespace Src;
 
-use AeronPublisher;
-use robotrade\Api;
-
 class Core
 {
 
-    private AeronPublisher $publisher;
-    private Api $robotrade_api;
-    private array $commands;
+    private array $config;
 
     /**
-     * Нужно передать объект класса AeronPublisher и Robotrade Api
-     *
-     * @param AeronPublisher $publisher Gate AeronPublisher
-     * @param Api $robotrade_api Api create message to send command to Gate
+     * @param array $config Вся конфигурация приходящяя от агента
      */
-    public function __construct(AeronPublisher $publisher, Api $robotrade_api)
+    public function __construct(array $config)
     {
 
-        $this->publisher = $publisher;
-        $this->robotrade_api = $robotrade_api;
+        $this->config = $config;
+
+    }
+
+    public function getFormatData($memcached): array
+    {
+
+        return $this->reformatAndSeparateData($memcached->getMulti($this->getAllMemcachedKeys()) ?? []);
 
     }
 
     /**
-     * Отправляет гейту команду на закрытие всех ордеров
+     * Формирует массив всех ключей для memcached
      *
-     * @return $this
+     * @return array Возвращает все ключи для memcached
      */
-    public function cancelAllOrders(): static
+    private function getAllMemcachedKeys(): array
     {
 
-        $this->publisher->offer($this->robotrade_api->cancelAllOrders('Cancel All orders'));
+        $keys = ['config'];
 
-        $this->commands[] = 'Cancel All Orders.';
+        foreach ($this->config['exchanges'] as  $exchange)
+            $keys = array_merge(
+                $keys,
+                preg_filter(
+                    '/^/',
+                    $exchange . '_orderbook_',
+                    array_column($this->config['markets'], 'common_symbol')
+                ),
+                [$exchange . '_balances'], // добавить еще к массиву ключ баланса
+                [$exchange . '_orders'] // добавить еще к массиву ключ для получения ордеров
+            );
 
-        sleep(1);
-
-        return $this;
+        return $keys;
 
     }
 
     /**
-     * Отправляет гейту команду на получение балансов
+     * Возвращает данные из memcached в определенном формате и отделенные по ордербукам, балансам и т. д.
      *
-     * @return $this
+     * @param array $memcached_data Сырые данные, взятые напрямую из memcached
+     * @return array[]
      */
-    public function getBalances(array $assets = null): static
+    private function reformatAndSeparateData(array $memcached_data): array
     {
 
-        $this->publisher->offer($this->robotrade_api->getBalances($assets));
+        foreach ($memcached_data as $key => $data) {
 
-        $this->commands[] = 'Get All Balances.';
+            if (isset($data)) {
 
-        sleep(1);
+                $parts = explode('_', $key);
 
-        return $this;
+                $exchange = $parts[0];
+                $action = $parts[1];
+                $value = $parts[2] ?? null;
 
-    }
+                if ($action == 'balances') {
+                    $balances[$exchange] = $data;
+                } elseif ($action == 'orderbook' && $value) {
+                    $orderbooks[$value][$exchange] = $data;
+                } else {
+                    $undefined[$key] = $data;
+                }
 
-    /**
-     * Выводит сообщение на экран какие команды были отправлены
-     *
-     * @return void
-     */
-    public function send(): void
-    {
+            }
 
-        $message = 'Send commands: ';
+        }
 
-        foreach ($this->commands as $command)
-            $message .=  $command . ' ';
-
-        echo $message . PHP_EOL;
+        return [
+            'balances' => $balances ?? [],
+            'orderbooks' => $orderbooks ?? [],
+            'undefined' => $undefined ?? [],
+        ];
 
     }
 

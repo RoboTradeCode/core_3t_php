@@ -5,20 +5,20 @@ namespace Src;
 class Configurator
 {
 
-    public string $configurator_url = 'https://configurator.robotrade.io/';
+    public static string $configurator_url = 'https://configurator.robotrade.io/';
 
-    public function getConfig(string $exchange, string $instance): array
+    public static function getConfig(string $exchange, string $instance): array
     {
 
         $config_from_configurator = json_decode(
-            file_get_contents($this->configurator_url . $exchange . '/' . $instance . '?only_new=false'),
+            file_get_contents(self::$configurator_url . $exchange . '/' . $instance . '?only_new=false'),
             true
         )['data'];
 
         $cross_3t_php = $config_from_configurator['configs']['core_config']['cross_3t_php'];
 
         // проверяет все конфиги
-        $this->proofConfig($cross_3t_php);
+        self::proofConfig($cross_3t_php);
 
         return [
             'exchange' => $cross_3t_php['exchange'],
@@ -37,7 +37,7 @@ class Configurator
 
     }
 
-    private function proofConfig($cross_3t_php): void
+    private static function proofConfig($cross_3t_php): void
     {
 
         if (

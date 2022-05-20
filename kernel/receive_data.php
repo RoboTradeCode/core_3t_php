@@ -15,7 +15,7 @@ $memcached->addServer('localhost', 11211);
 $balances = [];
 
 // получаем конфиг от конфигуратора
-$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+$config = DEBUG_HTML_VISION ? CONFIG : Configurator::getConfig(EXCHANGE, INSTANCE);
 
 $discrete_time = new DiscreteTime();
 

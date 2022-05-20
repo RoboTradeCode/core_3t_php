@@ -3,6 +3,7 @@
 use robotrade\Api;
 use Src\Configurator;
 use Src\Core;
+use Src\Gate;
 use Src\Cross3T;
 
 require dirname(__DIR__) . '/index.php';
@@ -16,7 +17,7 @@ $memcached->addServer('localhost', 11211);
 $memcached->flush();
 
 // получаем конфиг от конфигуратора
-$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+$config = DEBUG_HTML_VISION ? CONFIG : Configurator::getConfig(EXCHANGE, INSTANCE);
 
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
@@ -27,21 +28,21 @@ $publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
 
+// создаем класс для работы с ядром
+$core = new Core($config);
+
+// Класс гейта для посылания команд от ядра к гейту
+$gate = new Gate($publisher, $robotrade_api);
+
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Core($publisher, $robotrade_api))->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 while (true) {
 
     usleep(SLEEP);
 
-    // берем все данные из memcached
-    $all_keys = $cross_3t->getAllMemcachedKeys();
-
-    // взять все данные из memcached
-    $memcached_data = $memcached->getMulti($all_keys) ?? [];
-
     // отформировать и отделить все данные, полученные из memcached
-    $all_data = $cross_3t->reformatAndSeparateData($memcached_data);
+    $all_data = $core->getFormatData($memcached);
 
     // балансы, ордербуки и неизвестные данные
     $balances = $all_data['balances'];
@@ -49,9 +50,6 @@ while (true) {
 
     // если есть все необходимые данные
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
-
-        // фильтрация баланса в диапазоне минимальном и максимальном
-        //$cross_3t->filterBalanceByMinAndMAxDealAmount($balances);
 
         // запускаем алгоритм и получаем лучший результат
         if ($best_result = $cross_3t->run($balances, $orderbooks)) {

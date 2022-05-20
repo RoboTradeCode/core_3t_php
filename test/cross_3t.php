@@ -1,6 +1,7 @@
 <?php
 
 use robotrade\Api;
+use Src\Core;
 use Src\Cross3T;
 
 require dirname(__DIR__) . '/index.php';
@@ -151,23 +152,22 @@ $config = [
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config);
 
+// создаем класс для работы с ядром
+$core = new Core($config);
+
 while (true) {
 
     sleep(1);
 
     // берем все данные из memcached
-    $all_keys = $cross_3t->getAllMemcachedKeys();
+    $all_keys = $core->getAllMemcachedKeys();
 
     $memcached_data = $memcached->getMulti($all_keys) ?? [];
 
     print_r($all_keys);
 
-    // проверяем конфиг на обновление, если появился новый конфиг, обновить его, удалить данные конфига из memcached
-    if ($cross_3t->proofConfigOnUpdate($config, $memcached_data))
-        $memcached->delete('config');
-
     // отформировать и отделить все данные, полученные из memcached
-    $all_data = $cross_3t->reformatAndSeparateData($memcached_data);
+    $all_data = $core->reformatAndSeparateData($memcached_data);
 
     // балансы, ордербуки и неизвестные данные
     $balances = $all_data['balances'];
