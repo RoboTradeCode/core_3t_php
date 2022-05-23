@@ -36,7 +36,7 @@ $core = new Core($config);
 
 // если есть все необходимые данные
 do {
-    
+
     sleep(1);
 
     $do = true;
@@ -74,7 +74,7 @@ do {
         echo 'Try get data from memcached' . PHP_EOL;
 
     }
-    
+
 } while($do);
 
 foreach ($config['assets_labels'] as $assets_label) {
@@ -101,6 +101,16 @@ foreach ($config['assets_labels'] as $assets_label) {
                     'Create Balancer order'
                 )
             );
+            print_r(
+                $robotrade_api->createOrder(
+                    $assets_label['common'] . '/USDT',
+                    'market',
+                    'sell',
+                    $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
+                    $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                    'Create Balancer order'
+                )
+            ); echo PHP_EOL;
         }
 
         echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
@@ -108,6 +118,8 @@ foreach ($config['assets_labels'] as $assets_label) {
     }
 
 }
+
+print_r($balances[$common_config['exchange']]); echo PHP_EOL;
 
 // очистить все, что есть в memcached
 $memcached->flush();
@@ -159,6 +171,16 @@ foreach ($config['assets_labels'] as $assets_label) {
                 'Create Balancer order'
             )
         );
+        print_r(
+            $robotrade_api->createOrder(
+                $assets_label['common'] . '/USDT',
+                'market',
+                'buy',
+                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+                $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
+                'Create Balancer order'
+            )
+        ); echo PHP_EOL;
 
         echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
@@ -170,6 +192,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
 }
 
+print_r($balances[$common_config['exchange']]); echo PHP_EOL;
 
 // очистить все, что есть в memcached
 $memcached->flush();
