@@ -74,7 +74,7 @@ class Gate
         $message = 'Send commands: ';
 
         foreach ($this->commands as $command)
-            $message .=  $command . ' ';
+            $message .=  $command . '. ';
 
         $this->echo($message);
 
