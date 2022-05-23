@@ -99,10 +99,18 @@ function handler_balances(string $message): void
 
 }
 
-// subscribers подключение
+// subscribers подключения
 $subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', $config['aeron']['subscribers']['orderbooks']['channel'], $config['aeron']['subscribers']['orderbooks']['stream_id']);
 
+foreach ($config['aeron']['subscribers']['orderbooks']['destinations'] as $destination) {
+    $subscriber_orderbooks->addDestination($destination);
+}
+
 $subscriber_balances = new AeronSubscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
+
+foreach ($config['aeron']['subscribers']['balance']['destinations'] as $destination) {
+    $subscriber_balances->addDestination($destination);
+}
 
 while (true) {
 
