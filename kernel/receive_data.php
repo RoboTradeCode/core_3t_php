@@ -6,7 +6,7 @@ use Src\DiscreteTime;
 use Src\Log;
 
 require dirname(__DIR__) . '/index.php';
-require dirname(__DIR__) . '/config/aeron_config.php';
+require dirname(__DIR__) . '/config/common_config.php';
 
 // memcached подключение
 $memcached = new Memcached();
@@ -14,14 +14,19 @@ $memcached->addServer('localhost', 11211);
 
 $balances = [];
 
+$common_config = CORES['receive_data'];
+
 // получаем конфиг от конфигуратора
-$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+$config = $common_config['debug'] ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
-$discrete_time = new DiscreteTime();
+// Нужные классы для отправки данных на лог сервер
+if ($common_config['send_ping_to_log_server']) {
 
-$log = new Log(EXCHANGE, ALGORITHM, NODE, INSTANCE);
+    $discrete_time = new DiscreteTime();
 
-$i = 0;
+    $log = new Log($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
+
+}
 
 // нужен publisher, отправлять логи на сервер логов
 $publisher = new AeronPublisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id']);
@@ -101,19 +106,22 @@ $subscriber_balances = new AeronSubscriber('handler_balances', $config['aeron'][
 
 while (true) {
 
-    usleep(SLEEP);
+    usleep($common_config['sleep']);
 
     $subscriber_orderbooks->poll();
 
     $subscriber_balances->poll();
 
-    if ($discrete_time->proof()) {
+    if ($common_config['send_ping_to_log_server'] && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
+
+        if (isset($i)) {
+            $i++;
+        } else {
+            $i = 0;
+        }
 
         $publisher->offer($log->sendWorkCore($i));
 
-        $i++;
-
     }
-
 
 }

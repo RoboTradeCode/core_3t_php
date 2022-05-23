@@ -1,6 +1,6 @@
 .idea
 /vendor
 /cache/*
-/config/aeron_config.php
+/config/common_config.php
 /logs/*
 /test/test.php

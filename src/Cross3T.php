@@ -6,14 +6,17 @@ class Cross3T extends Main
 {
 
     private array $config;
+    public array $common_config;
 
     /**
      * @param array $config Вся конфигурация приходящяя от агента
      */
-    public function __construct(array $config)
+    public function __construct(array $config, array $common_config)
     {
 
         $this->config = $config;
+
+        $this->common_config = $common_config;
 
     }
 
@@ -59,7 +62,7 @@ class Cross3T extends Main
 
         $best_result = $this->getBestResult($results, $this->config['min_profit']);
 
-        if (DEBUG_HTML_VISION) {
+        if (isset($this->common_config['debug']) && $this->common_config['debug']) {
 
             $var = str_split(time());
 
@@ -67,7 +70,7 @@ class Cross3T extends Main
 
             if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var) || $best_result) {
 
-                $this->madeHtmlVision($results, $best_result, $orderbooks, $balances);
+                $this->madeHtmlVision($results, $best_result, $orderbooks, $balances, $this->common_config['made_html_vision_file']);
 
                 $this->previous = $var;
 
@@ -228,45 +231,6 @@ class Cross3T extends Main
     }
 
     /**
-     * Возвращает данные из memcached в определенном формате и отделенные по ордербукам, балансам и т. д.
-     *
-     * @param array $memcached_data Сырые данные, взятые напрямую из memcached
-     * @return array[]
-     */
-    public function reformatAndSeparateData(array $memcached_data): array
-    {
-
-        foreach ($memcached_data as $key => $data) {
-
-            if (isset($data)) {
-
-                $parts = explode('_', $key);
-
-                $exchange = $parts[0];
-                $action = $parts[1];
-                $value = $parts[2] ?? null;
-
-                if ($action == 'balances') {
-                    $balances[$exchange] = $data;
-                } elseif ($action == 'orderbook' && $value) {
-                    $orderbooks[$value][$exchange] = $data;
-                } else {
-                    $undefined[$key] = $data;
-                }
-
-            }
-
-        }
-
-        return [
-            'balances' => $balances ?? [],
-            'orderbooks' => $orderbooks ?? [],
-            'undefined' => $undefined ?? [],
-        ];
-
-    }
-
-    /**
      * Проверяет пришел ли новый конфиг и обновляет текущий на новый
      *
      * @param array $config Текущая конфигурация
@@ -289,32 +253,6 @@ class Cross3T extends Main
         }
 
         return false;
-
-    }
-
-    /**
-     * Формирует массив всех ключей для memcached
-     *
-     * @return array Возвращает все ключи для memcached
-     */
-    public function getAllMemcachedKeys(): array
-    {
-
-        $keys = ['config'];
-
-        foreach ($this->config['exchanges'] as  $exchange)
-            $keys = array_merge(
-                $keys,
-                preg_filter(
-                    '/^/',
-                    $exchange . '_orderbook_',
-                    array_column($this->config['markets'], 'common_symbol')
-                ),
-                [$exchange . '_balances'], // добавить еще к массиву ключ баланса
-                [$exchange . '_orders'] // добавить еще к массиву ключ для получения ордеров
-            );
-
-        return $keys;
 
     }
 

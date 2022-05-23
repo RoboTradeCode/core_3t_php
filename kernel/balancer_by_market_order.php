@@ -3,10 +3,10 @@
 use robotrade\Api;
 use Src\Configurator;
 use Src\Core;
-use Src\Cross3T;
+use Src\Gate;
 
 require dirname(__DIR__) . '/index.php';
-require dirname(__DIR__) . '/config/aeron_config.php';
+require dirname(__DIR__) . '/config/common_config.php';
 
 // подключение к memcached
 $memcached = new Memcached();
@@ -15,19 +15,21 @@ $memcached->addServer('localhost', 11211);
 // очистить все, что есть в memcached
 $memcached->flush();
 
-$config = DEBUG_HTML_VISION ? CONFIG : (new Configurator())->getConfig(EXCHANGE, INSTANCE);
+$common_config = CORES['balancer_by_market_order'];
+
+$config = $common_config['debug'] ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
 // API для формирования сообщения для отправки по aeron
-$robotrade_api = new Api(EXCHANGE, ALGORITHM, NODE, INSTANCE);
+$robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
 // нужен publisher, отправлять команды по aeron в гейт
 $publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Core($publisher, $robotrade_api))->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
+(new Gate($publisher, $robotrade_api))->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
-// создаем класс cross 3t
-$cross_3t = new Cross3T($config);
+// создаем класс для работы с ядром
+$core = new Core($config);
 
 // если есть все необходимые данные
 do {
@@ -37,18 +39,18 @@ do {
     $do = true;
 
     // отформировать и отделить все данные, полученные из memcached
-    $all_data = $cross_3t->reformatAndSeparateData($memcached->getMulti($cross_3t->getAllMemcachedKeys()) ?? []);
+    $all_data = $core->getFormatData($memcached);
 
     // балансы, ордербуки и неизвестные данные
     $balances = $all_data['balances'];
 
     $orderbooks = $all_data['orderbooks'];
 
-    if (!empty($balances[EXCHANGE])) {
+    if (!empty($balances[$common_config['exchange']])) {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]) && $assets_label['common'] != 'USDT') {
+            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
 
                 $do = true;
 
@@ -74,7 +76,7 @@ do {
 
 foreach ($config['assets_labels'] as $assets_label) {
 
-    if ($balances[EXCHANGE][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
+    if ($balances[$common_config['exchange']][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
 
         $precisions = '';
 
@@ -91,7 +93,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                     $assets_label['common'] . '/USDT',
                     'market',
                     'sell',
-                    $precisions['amount_increment'] * floor(($balances[EXCHANGE][$assets_label['common']]['free']) * 0.96 / $precisions['amount_increment']),
+                    $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
                     $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
                     'Create Balancer order'
                 )
@@ -110,7 +112,7 @@ $memcached->flush();
 unset($balances);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Core($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+(new Gate($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // если есть все необходимые данные
 do {
@@ -120,16 +122,16 @@ do {
     $do = true;
 
     // отформировать и отделить все данные, полученные из memcached
-    $all_data = $cross_3t->reformatAndSeparateData($memcached->getMulti($cross_3t->getAllMemcachedKeys()) ?? []);
+    $all_data = $core->getFormatData($memcached);
 
     // балансы
     $balances = $all_data['balances'];
 
     echo 'Try get balances from memcached' . PHP_EOL;
 
-} while(empty($balances[EXCHANGE]));
+} while(empty($balances[$common_config['exchange']]));
 
-$sum_usdt = $balances[EXCHANGE]['USDT']['free'] / count($config['assets_labels']) * 0.96;
+$sum_usdt = $balances[$common_config['exchange']]['USDT']['free'] / count($config['assets_labels']) * 0.97;
 
 foreach ($config['assets_labels'] as $assets_label) {
 
@@ -149,8 +151,8 @@ foreach ($config['assets_labels'] as $assets_label) {
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
-                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0]) / $precisions['amount_increment']),
-                $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+                $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
                 'Create Balancer order'
             )
         );
@@ -164,3 +166,33 @@ foreach ($config['assets_labels'] as $assets_label) {
     }
 
 }
+
+
+// очистить все, что есть в memcached
+$memcached->flush();
+
+unset($balances);
+
+// При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
+(new Gate($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+
+// если есть все необходимые данные
+do {
+
+    sleep(1);
+
+    $do = true;
+
+    // отформировать и отделить все данные, полученные из memcached
+    $all_data = $core->getFormatData($memcached);
+
+    // балансы
+    $balances = $all_data['balances'];
+
+    echo 'Try get balances from memcached' . PHP_EOL;
+
+} while(empty($balances[$common_config['exchange']]));
+
+print_r($balances[$common_config['exchange']]);
+
+$memcached->flush();
