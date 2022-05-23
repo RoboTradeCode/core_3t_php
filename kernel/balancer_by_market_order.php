@@ -25,8 +25,11 @@ $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm']
 // нужен publisher, отправлять команды по aeron в гейт
 $publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
 
+// класс для работы с гейтом
+$gate = new Gate($publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);
+
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Gate($publisher, $robotrade_api))->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // создаем класс для работы с ядром
 $core = new Core($config);
@@ -112,7 +115,7 @@ $memcached->flush();
 unset($balances);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Gate($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // если есть все необходимые данные
 do {
@@ -174,7 +177,7 @@ $memcached->flush();
 unset($balances);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Gate($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // если есть все необходимые данные
 do {

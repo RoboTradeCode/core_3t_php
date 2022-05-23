@@ -80,7 +80,11 @@ class Gate
 
     }
 
-    private function do($message): static
+    /**
+     * @param string $message echo $message to console
+     * @return $this
+     */
+    private function do(string $message): static
     {
 
         $this->commands[] = $message;
@@ -93,7 +97,11 @@ class Gate
 
     }
 
-    private function echo($message): void
+    /**
+     * @param string $message  echo $message to console
+     * @return void
+     */
+    private function echo(string $message): void
     {
 
         echo $message . PHP_EOL;

@@ -33,8 +33,8 @@ $cross_3t = new Cross3T($config, $common_config);
 // создаем класс для работы с ядром
 $core = new Core($config);
 
-// Класс гейта для посылания команд от ядра к гейту
-$gate = new Gate($publisher, $robotrade_api);
+// класс для работы с гейтом
+$gate = new Gate($publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
 $gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
