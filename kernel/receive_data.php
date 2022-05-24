@@ -4,6 +4,8 @@ use Src\Aeron;
 use Src\Configurator;
 use Src\DiscreteTime;
 use Src\Log;
+use Aeron\Publisher;
+use Aeron\Subscriber;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -29,7 +31,8 @@ if ($common_config['send_ping_to_log_server']) {
 }
 
 // нужен publisher, отправлять логи на сервер логов
-$publisher = new AeronPublisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id']);
+$publisher = new Publisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id']);
+sleep(1);
 
 function handler_orderbooks(string $message): void
 {
@@ -100,13 +103,13 @@ function handler_balances(string $message): void
 }
 
 // subscribers подключения
-$subscriber_orderbooks = new AeronSubscriber('handler_orderbooks', $config['aeron']['subscribers']['orderbooks']['channel'], $config['aeron']['subscribers']['orderbooks']['stream_id']);
+$subscriber_orderbooks = new Subscriber('handler_orderbooks', $config['aeron']['subscribers']['orderbooks']['channel'], $config['aeron']['subscribers']['orderbooks']['stream_id']);
 
 foreach ($config['aeron']['subscribers']['orderbooks']['destinations'] as $destination) {
     $subscriber_orderbooks->addDestination($destination);
 }
 
-$subscriber_balances = new AeronSubscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
+$subscriber_balances = new Subscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
 
 foreach ($config['aeron']['subscribers']['balance']['destinations'] as $destination) {
     $subscriber_balances->addDestination($destination);

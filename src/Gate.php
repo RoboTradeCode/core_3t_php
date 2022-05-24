@@ -2,25 +2,25 @@
 
 namespace Src;
 
-use AeronPublisher;
+use Aeron\Publisher;
 use robotrade\Api;
 
 class Gate
 {
 
-    private AeronPublisher $publisher;
+    private Publisher $publisher;
     private Api $robotrade_api;
     private array $commands;
     private int $sleep;
 
     /**
-     * Нужно передать объект класса AeronPublisher и Robotrade Api
+     * Нужно передать объект класса Publisher и Robotrade Api
      *
-     * @param AeronPublisher $publisher Gate AeronPublisher
+     * @param Publisher $publisher Gate Publisher
      * @param Api $robotrade_api Api create message to send command to Gate
      * @param int $sleep Sleep between gate commands
      */
-    public function __construct(AeronPublisher $publisher, Api $robotrade_api, int $sleep = 0)
+    public function __construct(Publisher $publisher, Api $robotrade_api, int $sleep = 0)
     {
 
         $this->publisher = $publisher;
