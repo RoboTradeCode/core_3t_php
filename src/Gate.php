@@ -2,27 +2,32 @@
 
 namespace Src;
 
-use AeronPublisher;
+use Aeron\Publisher;
 use robotrade\Api;
 
 class Gate
 {
 
-    private AeronPublisher $publisher;
+    private Publisher $publisher;
     private Api $robotrade_api;
     private array $commands;
+    private int $sleep;
 
     /**
-     * Нужно передать объект класса AeronPublisher и Robotrade Api
+     * Нужно передать объект класса Publisher и Robotrade Api
      *
-     * @param AeronPublisher $publisher Gate AeronPublisher
+     * @param Publisher $publisher Gate Publisher
      * @param Api $robotrade_api Api create message to send command to Gate
+     * @param int $sleep Sleep between gate commands
      */
-    public function __construct(AeronPublisher $publisher, Api $robotrade_api)
+    public function __construct(Publisher $publisher, Api $robotrade_api, int $sleep = 0)
     {
 
         $this->publisher = $publisher;
+
         $this->robotrade_api = $robotrade_api;
+
+        $this->sleep = $sleep;
 
     }
 
@@ -34,11 +39,11 @@ class Gate
     public function cancelAllOrders(): static
     {
 
-        $this->publisher->offer($this->robotrade_api->cancelAllOrders('Cancel All orders'));
+        $message = 'Cancel All orders';
 
-        $this->commands[] = 'Cancel All Orders.';
+        $this->publisher->offer($this->robotrade_api->cancelAllOrders($message));
 
-        return $this;
+        return $this->do($message);
 
     }
 
@@ -50,11 +55,11 @@ class Gate
     public function getBalances(array $assets = null): static
     {
 
+        $message = 'Get All Balances';
+
         $this->publisher->offer($this->robotrade_api->getBalances($assets));
 
-        $this->commands[] = 'Get All Balances.';
-
-        return $this;
+        return $this->do($message);
 
     }
 
@@ -69,7 +74,35 @@ class Gate
         $message = 'Send commands: ';
 
         foreach ($this->commands as $command)
-            $message .=  $command . ' ';
+            $message .=  $command . '. ';
+
+        $this->echo($message);
+
+    }
+
+    /**
+     * @param string $message echo $message to console
+     * @return $this
+     */
+    private function do(string $message): static
+    {
+
+        $this->commands[] = $message;
+
+        $this->echo($message);
+
+        sleep($this->sleep);
+
+        return $this;
+
+    }
+
+    /**
+     * @param string $message  echo $message to console
+     * @return void
+     */
+    private function echo(string $message): void
+    {
 
         echo $message . PHP_EOL;
 

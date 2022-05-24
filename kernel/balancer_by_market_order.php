@@ -4,6 +4,7 @@ use robotrade\Api;
 use Src\Configurator;
 use Src\Core;
 use Src\Gate;
+use Aeron\Publisher;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -23,17 +24,21 @@ $config = $common_config['debug'] ? $common_config['config'] : Configurator::get
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
 // нужен publisher, отправлять команды по aeron в гейт
-$publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
+$publisher = new Publisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
+sleep(1);
+
+// класс для работы с гейтом
+$gate = new Gate($publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Gate($publisher, $robotrade_api))->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // создаем класс для работы с ядром
 $core = new Core($config);
 
 // если есть все необходимые данные
 do {
-    
+
     sleep(1);
 
     $do = true;
@@ -71,7 +76,7 @@ do {
         echo 'Try get data from memcached' . PHP_EOL;
 
     }
-    
+
 } while($do);
 
 foreach ($config['assets_labels'] as $assets_label) {
@@ -98,6 +103,16 @@ foreach ($config['assets_labels'] as $assets_label) {
                     'Create Balancer order'
                 )
             );
+            print_r(
+                $robotrade_api->createOrder(
+                    $assets_label['common'] . '/USDT',
+                    'market',
+                    'sell',
+                    $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
+                    $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                    'Create Balancer order'
+                )
+            ); echo PHP_EOL;
         }
 
         echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
@@ -106,13 +121,15 @@ foreach ($config['assets_labels'] as $assets_label) {
 
 }
 
+print_r($balances[$common_config['exchange']]); echo PHP_EOL;
+
 // очистить все, что есть в memcached
 $memcached->flush();
 
 unset($balances);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Gate($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // если есть все необходимые данные
 do {
@@ -156,6 +173,16 @@ foreach ($config['assets_labels'] as $assets_label) {
                 'Create Balancer order'
             )
         );
+        print_r(
+            $robotrade_api->createOrder(
+                $assets_label['common'] . '/USDT',
+                'market',
+                'buy',
+                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+                $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
+                'Create Balancer order'
+            )
+        ); echo PHP_EOL;
 
         echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
@@ -167,6 +194,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
 }
 
+print_r($balances[$common_config['exchange']]); echo PHP_EOL;
 
 // очистить все, что есть в memcached
 $memcached->flush();
@@ -174,7 +202,7 @@ $memcached->flush();
 unset($balances);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
-(new Gate($publisher, $robotrade_api))->getBalances(array_column($config['assets_labels'], 'common'))->send();
+$gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
 // если есть все необходимые данные
 do {

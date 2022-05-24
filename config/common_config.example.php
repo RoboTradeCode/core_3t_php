@@ -195,6 +195,7 @@ const CORES = [
         'node' => NODE,
         'instance' => INSTANCE,
         'algorithm' => 'balancer',
+        'gate_sleep' => 5,
         'config' => CONFIG
     ],
     'cross_3t' => [
@@ -205,6 +206,7 @@ const CORES = [
         'algorithm' => 'cross_3t_php',
         'sleep' => 10,
         'made_html_vision_file' => '/var/www/html/test.html',
+        'gate_sleep' => 5,
         'config' => CONFIG
     ],
     'receive_data' => [
@@ -215,6 +217,7 @@ const CORES = [
         'algorithm' => 'receive_data',
         'sleep' => 10,
         'send_ping_to_log_server' => true,
+        'gate_sleep' => 5,
         'config' => CONFIG
     ]
 ];

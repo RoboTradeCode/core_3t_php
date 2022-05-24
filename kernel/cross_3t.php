@@ -5,6 +5,7 @@ use Src\Configurator;
 use Src\Core;
 use Src\Gate;
 use Src\Cross3T;
+use Aeron\Publisher;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -25,7 +26,8 @@ $config = $common_config['debug'] ? $common_config['config'] : Configurator::get
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
 // нужен publisher, отправлять команды по aeron в гейт
-$publisher = new AeronPublisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
+$publisher = new Publisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
+sleep(1);
 
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config, $common_config);
@@ -33,8 +35,8 @@ $cross_3t = new Cross3T($config, $common_config);
 // создаем класс для работы с ядром
 $core = new Core($config);
 
-// Класс гейта для посылания команд от ядра к гейту
-$gate = new Gate($publisher, $robotrade_api);
+// класс для работы с гейтом
+$gate = new Gate($publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
 $gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
