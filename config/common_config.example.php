@@ -46,6 +46,7 @@ const AERON = [
 const CONFIG = [
     'exchange' => EXCHANGE, //название биржи
     'exchanges' => [EXCHANGE], //список всех бирж для взятие всех данных из memcached
+    'expired_orderbook_time' => 5, //сколько по времени в секундах считаем ордербуки актуальными
     'min_profit' => [
         'BTC' => 0,
         'ETH' => 0,
