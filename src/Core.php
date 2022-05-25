@@ -78,7 +78,7 @@ class Core
                 } elseif ($action == 'orderbook' && $value) {
 
                     if (
-                        ($microtime - $data['core_timestamp']) <= $this->config['expired_orderbook_time']
+                        ($microtime - $data['core_timestamp']) <= $this->config['expired_orderbook_time'] / 1000000
                     ) {
 
                         $orderbooks[$value][$exchange] = $data;
