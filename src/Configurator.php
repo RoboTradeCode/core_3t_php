@@ -43,6 +43,7 @@ class Configurator
         if (
             !isset($cross_3t_php['exchange']) ||
             !isset($cross_3t_php['exchanges']) ||
+            !isset($cross_3t_php['expired_orderbook_time']) ||
             !isset($cross_3t_php['min_profit']) ||
             !isset($cross_3t_php['min_deal_amounts']) ||
             !isset($cross_3t_php['rates']) ||
