@@ -19,7 +19,7 @@ $balances = [];
 $common_config = CORES['receive_data'];
 
 // получаем конфиг от конфигуратора
-$config = $common_config['debug'] ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
+$config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
 // Нужные классы для отправки данных на лог сервер
 if ($common_config['send_ping_to_log_server']) {
