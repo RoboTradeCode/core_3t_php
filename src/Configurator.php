@@ -18,7 +18,7 @@ class Configurator
         $cross_3t_php = $config_from_configurator['configs']['core_config']['cross_3t_php'];
 
         // проверяет все конфиги
-        self::proofConfig($cross_3t_php);
+        self::proofConfig($cross_3t_php, $config_from_configurator);
 
         return [
             'exchange' => $cross_3t_php['exchange'],
@@ -37,7 +37,7 @@ class Configurator
 
     }
 
-    private static function proofConfig($cross_3t_php): void
+    private static function proofConfig($cross_3t_php, $config_from_configurator): void
     {
 
         if (
@@ -123,6 +123,11 @@ class Configurator
                 }
             }
             ';
+            echo PHP_EOL;
+
+            print_r($cross_3t_php);
+            print_r($config_from_configurator);
+            echo PHP_EOL;
 
             die('Dead');
 
