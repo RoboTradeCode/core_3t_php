@@ -136,55 +136,59 @@ class Cross3T extends Main
 
             foreach ($orderbooks[$source['common_symbol']] as $exchange => $orderbook) {
 
-                $amount = 0;
+                if (isset($balances[$exchange][$source['source_asset']])) {
 
-                if ($operation == 'bids') {
+                    $amount = 0;
 
-                    $base_asset_amount = 0;
+                    if ($operation == 'bids') {
 
-                    foreach ($orderbook[$operation] as $price_and_amount) {
+                        $base_asset_amount = 0;
 
-                        if (($base_asset_amount + $price_and_amount[1]) < $deal_amount_potential) {
+                        foreach ($orderbook[$operation] as $price_and_amount) {
 
-                            $amount += $price_and_amount[0] * $price_and_amount[1];
+                            if (($base_asset_amount + $price_and_amount[1]) < $deal_amount_potential) {
 
-                            $base_asset_amount += $price_and_amount[1];
+                                $amount += $price_and_amount[0] * $price_and_amount[1];
 
-                        } else {
+                                $base_asset_amount += $price_and_amount[1];
 
-                            $amount += $price_and_amount[0] * ($deal_amount_potential - $base_asset_amount);
+                            } else {
 
-                            break;
+                                $amount += $price_and_amount[0] * ($deal_amount_potential - $base_asset_amount);
+
+                                break;
+
+                            }
+
+                        }
+
+                    } else {
+
+                        $quote_asset_amount = 0;
+
+                        foreach ($orderbook[$operation] as $price_and_amount) {
+
+                            if (($quote_asset_amount + $price_and_amount[0] * $price_and_amount[1]) < $deal_amount_potential) {
+
+                                $amount += $price_and_amount[1];
+
+                                $quote_asset_amount += $price_and_amount[0] * $price_and_amount[1];
+
+                            } else {
+
+                                $amount += ($deal_amount_potential - $quote_asset_amount) / $price_and_amount[0];
+
+                                break;
+
+                            }
 
                         }
 
                     }
 
-                } else {
-
-                    $quote_asset_amount = 0;
-
-                    foreach ($orderbook[$operation] as $price_and_amount) {
-
-                        if (($quote_asset_amount + $price_and_amount[0] * $price_and_amount[1]) < $deal_amount_potential) {
-
-                            $amount += $price_and_amount[1];
-
-                            $quote_asset_amount += $price_and_amount[0] * $price_and_amount[1];
-
-                        } else {
-
-                            $amount += ($deal_amount_potential - $quote_asset_amount) / $price_and_amount[0];
-
-                            break;
-
-                        }
-
-                    }
+                    $potential_amounts[$exchange] = $amount;
 
                 }
-
-                $potential_amounts[$exchange] = $amount;
 
             }
 
