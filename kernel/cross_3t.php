@@ -86,7 +86,20 @@ while (true) {
 
     } else {
 
-        echo '[WARNING] $balances or $orderbooks or $configis is empty' . PHP_EOL;
+        if (empty($balances)) {
+
+            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $balances' . PHP_EOL;
+
+            // Получение баланса
+            $gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
+
+        }
+
+        if (empty($orderbooks))
+            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $orderbooks' . PHP_EOL;
+
+        if (empty($config))
+            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $config' . PHP_EOL;
 
         sleep(1);
 
