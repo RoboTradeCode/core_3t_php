@@ -23,6 +23,7 @@ class Configurator
         return [
             'exchange' => $cross_3t_php['exchange'],
             'exchanges' => $cross_3t_php['exchanges'],
+            'expired_orderbook_time' => $cross_3t_php['expired_orderbook_time'],
             'min_profit' => $cross_3t_php['min_profit'],
             'min_deal_amounts' => $cross_3t_php['min_deal_amounts'],
             'rates' => $cross_3t_php['rates'],
