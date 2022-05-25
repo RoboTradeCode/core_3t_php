@@ -65,6 +65,7 @@ class Configurator
                     "exchanges":[
                         "ftx"
                     ],
+                    "expired_orderbook_time":500000,
                     "min_profit":{
                         "BTC":0,
                         "ETH":0,
