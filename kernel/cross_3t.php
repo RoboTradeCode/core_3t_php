@@ -82,6 +82,16 @@ while (true) {
 
             }
 
+            foreach (['step_one', 'step_two', 'step_three'] as $step) {
+
+                // удаляем из memcached данные о балансе
+                $memcached->delete($best_result[$step]['exchange'] . '_balances');
+
+            }
+
+            // Запрос на получение баланса
+            $gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
+
         }
 
     } else {
