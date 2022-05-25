@@ -51,6 +51,17 @@ class Configurator
             !isset($cross_3t_php['max_depth']) ||
             !isset($cross_3t_php['fees']) ||
             !isset($config_from_configurator['configs']['core_config']['aeron']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['publishers']['gate']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['publishers']['log']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['balance']['channel']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['balance']['destinations']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['balance']['stream_id']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orderbooks']['channel']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orderbooks']['destinations']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orderbooks']['stream_id']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orders']['channel']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orders']['destinations']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orders']['stream_id']) ||
             !isset($config_from_configurator['markets']) ||
             !isset($config_from_configurator['assets_labels']) ||
             !isset($config_from_configurator['routes'])
