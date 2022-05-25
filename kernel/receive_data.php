@@ -28,11 +28,12 @@ if ($common_config['send_ping_to_log_server']) {
 
     $log = new Log($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
-}
+    // нужен publisher, отправлять логи на сервер логов
+    Aeron::checkConnection(
+        $publisher = new Publisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id'])
+    );
 
-// нужен publisher, отправлять логи на сервер логов
-$publisher = new Publisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id']);
-sleep(1);
+}
 
 function handler_orderbooks(string $message): void
 {
@@ -123,7 +124,7 @@ while (true) {
 
     $subscriber_balances->poll();
 
-    if ($common_config['send_ping_to_log_server'] && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
+    if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
 
         if (isset($i)) {
             $i++;
