@@ -1,6 +1,7 @@
 <?php
 
 use robotrade\Api;
+use Src\Aeron;
 use Src\Configurator;
 use Src\Core;
 use Src\Gate;
@@ -23,9 +24,9 @@ $config = $common_config['debug'] ? $common_config['config'] : Configurator::get
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
-// нужен publisher, отправлять команды по aeron в гейт
-$publisher = new Publisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id']);
-sleep(1);
+Aeron::checkConnection(
+    $publisher = new Publisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id'])
+);
 
 // класс для работы с гейтом
 $gate = new Gate($publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);

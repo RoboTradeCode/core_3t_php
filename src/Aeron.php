@@ -2,6 +2,9 @@
 
 namespace Src;
 
+use Aeron\Publisher;
+use Exception;
+
 class Aeron
 {
 
@@ -16,6 +19,31 @@ class Aeron
     {
 
         return json_decode($message, true);
+
+    }
+
+    public static function checkConnection(Publisher $publisher): void
+    {
+
+        do {
+
+            try {
+
+                $publisher->offer('ping');
+
+                $do = false;
+
+            } catch (Exception) {
+
+                $do = true;
+
+                echo '[' . date('Y-m-d H:i:s') . '] Try to connect Aeron' . PHP_EOL;
+
+                sleep(1);
+
+            }
+
+        } while ($do);
 
     }
 
