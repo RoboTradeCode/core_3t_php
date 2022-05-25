@@ -59,6 +59,8 @@ class Core
     private function reformatAndSeparateData(array $memcached_data): array
     {
 
+        $microtime = microtime(true);
+
         foreach ($memcached_data as $key => $data) {
 
             if (isset($data)) {
@@ -70,11 +72,23 @@ class Core
                 $value = $parts[2] ?? null;
 
                 if ($action == 'balances') {
+
                     $balances[$exchange] = $data;
+
                 } elseif ($action == 'orderbook' && $value) {
-                    $orderbooks[$value][$exchange] = $data;
+
+                    if (
+                        ($microtime - $data['core_timestamp']) <= $this->config['expired_orderbook_time']
+                    ) {
+
+                        $orderbooks[$value][$exchange] = $data;
+
+                    }
+
                 } else {
+
                     $undefined[$key] = $data;
+
                 }
 
             }

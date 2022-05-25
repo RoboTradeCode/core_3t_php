@@ -46,6 +46,8 @@ function handler_orderbooks(string $message): void
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'orderbook' && isset($data['data'])) {
 
+            $data['data']['core_timestamp'] = microtime(true);
+
             // записать в memcached
             $memcached->set(
                 $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'],
