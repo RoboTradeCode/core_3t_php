@@ -7,6 +7,7 @@ use Src\Core;
 use Src\Gate;
 use Src\Cross3T;
 use Aeron\Publisher;
+use Src\Log;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -26,9 +27,17 @@ $config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfi
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
+// Класс формата логов
+$log = new Log($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
+
 // нужен publisher, отправлять команды по aeron в гейт
 Aeron::checkConnection(
-    $publisher = new Publisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id'])
+    $gate_publisher = new Publisher($config['aeron']['publishers']['gate']['channel'], $config['aeron']['publishers']['gate']['stream_id'])
+);
+
+// нужен publisher, отправлять логи на сервер логов
+Aeron::checkConnection(
+    $log_publisher = new Publisher($config['aeron']['publishers']['log']['channel'], $config['aeron']['publishers']['log']['stream_id'])
 );
 
 // создаем класс cross 3t
@@ -38,7 +47,7 @@ $cross_3t = new Cross3T($config, $common_config);
 $core = new Core($config);
 
 // класс для работы с гейтом
-$gate = new Gate($publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);
+$gate = new Gate($gate_publisher, $robotrade_api, $common_config['gate_sleep'] ?? 0);
 
 // При запуске ядра отправляет запрос к гейту на отмену всех ордеров и получение баланса
 $gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'common'))->send();
@@ -65,7 +74,7 @@ while (true) {
 
                 if ($best_result[$step]['exchange'] == $common_config['exchange']) {
 
-                    $publisher->offer(
+                    $gate_publisher->offer(
                         $robotrade_api->createOrder(
                             $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
                             'market',
@@ -88,6 +97,8 @@ while (true) {
                 $memcached->delete($best_result[$step]['exchange'] . '_balances');
 
             }
+
+            $log_publisher->offer($log->sendExpectedTriangle($best_result));
 
             // Запрос на получение баланса
             $gate->getBalances(array_column($config['assets_labels'], 'common'))->send();
