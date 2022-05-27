@@ -301,7 +301,7 @@ class Cross3T extends Main
         ) {
 
             $markets = $multi
-                ? $this->config[$best_orderbooks[$combinations[$step_symbol]]['exchange']]['markets']
+                ? $this->config['markets'][$best_orderbooks[$combinations[$step_symbol]]['exchange']]
                 : $this->config['markets'];
 
             foreach ($markets as $market) {
