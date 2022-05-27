@@ -30,6 +30,8 @@ class MultiFirstData
             // класс для работы с гейтом
             $gates[$exchange] = new Gate($gate_publishers[$exchange], $robotrade_apis[$exchange]);
 
+            echo '[' . date('Y-m-d H:i:s') . '] With ' . $exchange . ' gates okay' . PHP_EOL;
+
         }
 
         if (
@@ -54,6 +56,8 @@ class MultiFirstData
                 $config['aeron']['publishers']['log']['stream_id']
             )
         );
+
+        echo '[' . date('Y-m-d H:i:s') . '] With log gate okay' . PHP_EOL;
 
         // отправляем на каждый гейт, закрыть все ордера и прислать балансы
         foreach ($gates ?? [] as $gate) {

@@ -4,3 +4,4 @@
 /config/common_config.php
 /logs/*
 /test/test.php
+/config/multi_3t.json
