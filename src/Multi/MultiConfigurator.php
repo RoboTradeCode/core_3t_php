@@ -45,7 +45,7 @@ class MultiConfigurator
 
         $config['routes'] = $route;
 
-        $config['assets_label'] = $assets_label;
+        $config['assets_labels'] = $assets_label;
 
         $config['markets'] = $markets;
 
