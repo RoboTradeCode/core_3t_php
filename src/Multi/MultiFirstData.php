@@ -19,34 +19,35 @@ class MultiFirstData
             // API для формирования сообщения для отправки по aeron
             $robotrade_apis[$exchange] = new Api($exchange, $config['algorithm'], $config['node'], $config['instances'][$exchange]);
 
-            // Класс формата логов
-            $logs[$exchange] = new Log($exchange, $config['algorithm'], $config['node'], $config['instances'][$exchange]);
-
             // нужены publisher, отправлять команды на сервер гейта
             Aeron::checkConnection(
                 $gate_publishers[$exchange] = new Publisher(
-                    $config['aeron']['publishers']['gate'][$exchange]['channel'],
-                    $config['aeron']['publishers']['gate'][$exchange]['stream_id']
+                    $config['aeron']['publishers']['gates'][$exchange]['channel'],
+                    $config['aeron']['publishers']['gates'][$exchange]['stream_id']
                 )
             );
 
             // класс для работы с гейтом
             $gates[$exchange] = new Gate($gate_publishers[$exchange], $robotrade_apis[$exchange]);
 
+            echo '[' . date('Y-m-d H:i:s') . '] With ' . $exchange . ' gates okay' . PHP_EOL;
+
         }
 
         if (
             !isset($robotrade_apis) ||
-            !isset($logs) ||
             !isset($gate_publishers) ||
             !isset($gates)
         ) {
 
-            echo '[' . date('Y-m-d H:i:s') . '] [ERROR] $robotrade_apis, $logs, $gate_publishers, $gates Empty!!!' . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] [ERROR] $robotrade_apis, $log, $gate_publishers, $gates Empty!!!' . PHP_EOL;
 
             die();
 
         }
+
+        // Класс формата логов
+        $log = new Log($config['exchange'], $config['algorithm'], $config['node'], $config['instance']);
 
         // нужен publisher, отправлять логи на сервер логов
         Aeron::checkConnection(
@@ -55,6 +56,8 @@ class MultiFirstData
                 $config['aeron']['publishers']['log']['stream_id']
             )
         );
+
+        echo '[' . date('Y-m-d H:i:s') . '] With log gate okay' . PHP_EOL;
 
         // отправляем на каждый гейт, закрыть все ордера и прислать балансы
         foreach ($gates ?? [] as $gate) {
@@ -68,7 +71,7 @@ class MultiFirstData
 
         return [
             $robotrade_apis ?? [],
-            $logs ?? [],
+            $log,
             $gate_publishers ?? [],
             $gates ?? [],
             $log_publisher,
