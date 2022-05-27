@@ -3,6 +3,11 @@
 // Режим отладки (при true будут вычисляться debug информация и брать конфиг из файла)
 const DEBUG = false;
 
+// agent - запрашивать конфигурацию у Agent (секция configuration.agent далее)
+// api - запрашивать конфигурацию из api (адрес в поле api далее)
+// file - загружать конфигурацию из файла (название файла в поле file далее)
+const SOURCE = 'api';
+
 // Биржа
 const EXCHANGE = 'ftx';
 
@@ -46,7 +51,7 @@ const AERON = [
 const CONFIG = [
     'exchange' => EXCHANGE, //название биржи
     'exchanges' => [EXCHANGE], //список всех бирж для взятие всех данных из memcached
-    'expired_orderbook_time' => 5, //сколько по времени в секундах считаем ордербуки актуальными
+    'expired_orderbook_time' => 500000, //сколько по времени в микросекундах считаем ордербуки актуальными
     'min_profit' => [
         'BTC' => 0,
         'ETH' => 0,

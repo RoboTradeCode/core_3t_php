@@ -78,6 +78,8 @@ class Gate
 
         $this->echo($message);
 
+        $this->commands = [];
+
     }
 
     /**

@@ -27,7 +27,7 @@ class Cross3T extends Main
      * @param array $orderbooks Ордербуки, с разных бирж
      * @return array Возвращает результат
      */
-    public function run(array $balances, array $orderbooks): array
+    public function run(array $balances, array $orderbooks, bool $multi = false): array
     {
 
         $results = [];
@@ -38,10 +38,7 @@ class Cross3T extends Main
 
             if ($best_orderbooks = $this->findBestOrderbooks($route, $balances, $orderbooks)) {
 
-                $orderbook = $this->getOrderbook(
-                    $combinations,
-                    $best_orderbooks
-                );
+                $orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi);
 
                 $results[] = $this->getResults(
                     $this->config['max_deal_amounts'][$combinations['main_asset_name']],
@@ -124,7 +121,7 @@ class Cross3T extends Main
 
         foreach ($route as $source) {
 
-            $deal_amount_potential = $balances[$this->config['exchange']][$source['source_asset']]['free'] ?? $this->config['max_deal_amounts'][$source['source_asset']];
+            $deal_amount_potential = $this->config['max_deal_amounts'][$source['source_asset']];
 
             $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
 
@@ -136,64 +133,72 @@ class Cross3T extends Main
 
             foreach ($orderbooks[$source['common_symbol']] as $exchange => $orderbook) {
 
-                $amount = 0;
+                if (isset($balances[$exchange][$source['source_asset']])) {
 
-                if ($operation == 'bids') {
+                    $amount = 0;
 
-                    $base_asset_amount = 0;
+                    if ($operation == 'bids') {
 
-                    foreach ($orderbook[$operation] as $price_and_amount) {
+                        $base_asset_amount = 0;
 
-                        if (($base_asset_amount + $price_and_amount[1]) < $deal_amount_potential) {
+                        foreach ($orderbook[$operation] as $price_and_amount) {
 
-                            $amount += $price_and_amount[0] * $price_and_amount[1];
+                            if (($base_asset_amount + $price_and_amount[1]) < $deal_amount_potential) {
 
-                            $base_asset_amount += $price_and_amount[1];
+                                $amount += $price_and_amount[0] * $price_and_amount[1];
 
-                        } else {
+                                $base_asset_amount += $price_and_amount[1];
 
-                            $amount += $price_and_amount[0] * ($deal_amount_potential - $base_asset_amount);
+                            } else {
 
-                            break;
+                                $amount += $price_and_amount[0] * ($deal_amount_potential - $base_asset_amount);
+
+                                break;
+
+                            }
+
+                        }
+
+                    } else {
+
+                        $quote_asset_amount = 0;
+
+                        foreach ($orderbook[$operation] as $price_and_amount) {
+
+                            if (($quote_asset_amount + $price_and_amount[0] * $price_and_amount[1]) < $deal_amount_potential) {
+
+                                $amount += $price_and_amount[1];
+
+                                $quote_asset_amount += $price_and_amount[0] * $price_and_amount[1];
+
+                            } else {
+
+                                $amount += ($deal_amount_potential - $quote_asset_amount) / $price_and_amount[0];
+
+                                break;
+
+                            }
 
                         }
 
                     }
 
-                } else {
-
-                    $quote_asset_amount = 0;
-
-                    foreach ($orderbook[$operation] as $price_and_amount) {
-
-                        if (($quote_asset_amount + $price_and_amount[0] * $price_and_amount[1]) < $deal_amount_potential) {
-
-                            $amount += $price_and_amount[1];
-
-                            $quote_asset_amount += $price_and_amount[0] * $price_and_amount[1];
-
-                        } else {
-
-                            $amount += ($deal_amount_potential - $quote_asset_amount) / $price_and_amount[0];
-
-                            break;
-
-                        }
-
-                    }
+                    $potential_amounts[$exchange] = $amount;
 
                 }
 
-                $potential_amounts[$exchange] = $amount;
-
             }
 
-            $best_exchange = array_keys($potential_amounts, max($potential_amounts))[0];
+            if ($potential_amounts) {
 
-            $best_orderbooks[$source['common_symbol']] = [
-                $operation => $orderbooks[$source['common_symbol']][$best_exchange][$operation],
-                'exchange' => $best_exchange
-            ];
+                $best_exchange = array_keys($potential_amounts, max($potential_amounts))[0];
+
+                $best_orderbooks[$source['common_symbol']] = [
+                    $operation => $orderbooks[$source['common_symbol']][$best_exchange][$operation],
+                    'exchange' => $best_exchange
+                ];
+
+            }
 
         }
 
@@ -288,14 +293,18 @@ class Cross3T extends Main
      * @param array $best_orderbooks Лучшие ордербуки
      * @return array Три шага ордербука
      */
-    public function getOrderbook(array $combinations, array $best_orderbooks): array
+    public function getOrderbook(array $combinations, array $best_orderbooks, bool $multi): array
     {
 
         foreach (
             ['step_one' => 'step_one_symbol', 'step_two' => 'step_two_symbol', 'step_three' => 'step_three_symbol'] as $step => $step_symbol
         ) {
 
-            foreach ($this->config['markets'] as $market) {
+            $markets = $multi
+                ? $this->config[$best_orderbooks[$combinations[$step_symbol]]['exchange']]['markets']
+                : $this->config['markets'];
+
+            foreach ($markets as $market) {
 
                 if ($market['common_symbol'] == $combinations[$step_symbol]) {
 

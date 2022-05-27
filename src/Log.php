@@ -27,17 +27,32 @@ class Log
         $this->robotrade_api = new Api($exchange, $algo, $node, $instance);
 
     }
-    public function sendWorkCore(int $data, $message = null): bool|string
+
+    public function sendWorkCore(int $data, string $message = null): bool|string
+    {
+
+        return $this->generateMessage('ping', $data, $message);
+
+    }
+
+    public function sendExpectedTriangle(array $data, string $message = null): bool|string
+    {
+
+        return $this->generateMessage('expected_triangle', $data, $message);
+
+    }
+
+    private function generateMessage(string $action, mixed $data, string $message = null): bool|string
     {
 
         return Aeron::messageEncode([
-            'event' => 'info', 
+            'event' => 'info',
             'exchange' => $this->exchange,
             'node' => $this->node,
             'instance' => $this->instance,
-            'action' => 'ping', 
-            'message' => $message,
             'algo' => $this->algo,
+            'message' => $message,
+            'action' => $action,
             'timestamp' => $this->robotrade_api->getMicrotime(),
             'data' => $data
         ]);

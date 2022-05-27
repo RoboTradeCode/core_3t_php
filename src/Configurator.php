@@ -18,11 +18,12 @@ class Configurator
         $cross_3t_php = $config_from_configurator['configs']['core_config']['cross_3t_php'];
 
         // проверяет все конфиги
-        self::proofConfig($cross_3t_php);
+        self::proofConfig($cross_3t_php, $config_from_configurator);
 
         return [
             'exchange' => $cross_3t_php['exchange'],
             'exchanges' => $cross_3t_php['exchanges'],
+            'expired_orderbook_time' => $cross_3t_php['expired_orderbook_time'],
             'min_profit' => $cross_3t_php['min_profit'],
             'min_deal_amounts' => $cross_3t_php['min_deal_amounts'],
             'rates' => $cross_3t_php['rates'],
@@ -37,12 +38,13 @@ class Configurator
 
     }
 
-    private static function proofConfig($cross_3t_php): void
+    private static function proofConfig($cross_3t_php, $config_from_configurator): void
     {
 
         if (
             !isset($cross_3t_php['exchange']) ||
             !isset($cross_3t_php['exchanges']) ||
+            !isset($cross_3t_php['expired_orderbook_time']) ||
             !isset($cross_3t_php['min_profit']) ||
             !isset($cross_3t_php['min_deal_amounts']) ||
             !isset($cross_3t_php['rates']) ||
@@ -50,6 +52,17 @@ class Configurator
             !isset($cross_3t_php['max_depth']) ||
             !isset($cross_3t_php['fees']) ||
             !isset($config_from_configurator['configs']['core_config']['aeron']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['publishers']['gate']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['publishers']['log']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['balance']['channel']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['balance']['destinations']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['balance']['stream_id']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orderbooks']['channel']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orderbooks']['destinations']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orderbooks']['stream_id']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orders']['channel']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orders']['destinations']) ||
+            !isset($config_from_configurator['configs']['core_config']['aeron']['subscribers']['orders']['stream_id']) ||
             !isset($config_from_configurator['markets']) ||
             !isset($config_from_configurator['assets_labels']) ||
             !isset($config_from_configurator['routes'])
@@ -64,6 +77,7 @@ class Configurator
                     "exchanges":[
                         "ftx"
                     ],
+                    "expired_orderbook_time":500000,
                     "min_profit":{
                         "BTC":0,
                         "ETH":0,
@@ -121,6 +135,11 @@ class Configurator
                 }
             }
             ';
+            echo PHP_EOL;
+
+            print_r($cross_3t_php);
+            print_r($config_from_configurator);
+            echo PHP_EOL;
 
             die('Dead');
 

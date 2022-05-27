@@ -167,6 +167,8 @@ class Main
 
                 echo '[' . date('Y-m-d H:i:s') . '] Division by zero Deal Amount. Error Message: ' . $e->getMessage() . PHP_EOL;
 
+                sleep(1);
+
                 break;
 
             }
