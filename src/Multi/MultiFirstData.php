@@ -22,8 +22,8 @@ class MultiFirstData
             // нужены publisher, отправлять команды на сервер гейта
             Aeron::checkConnection(
                 $gate_publishers[$exchange] = new Publisher(
-                    $config['aeron']['publishers']['gate'][$exchange]['channel'],
-                    $config['aeron']['publishers']['gate'][$exchange]['stream_id']
+                    $config['aeron']['publishers']['gates'][$exchange]['channel'],
+                    $config['aeron']['publishers']['gates'][$exchange]['stream_id']
                 )
             );
 
