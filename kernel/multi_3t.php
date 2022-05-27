@@ -38,7 +38,7 @@ while (true) {
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
 
         // запускаем алгоритм и получаем лучший результат
-        if ($best_result = $cross_3t->run($balances, $orderbooks)) {
+        if ($best_result = $cross_3t->run($balances, $orderbooks, true)) {
 
             // для каждого шага, если результат выпал на текущую биржу, отправить сообщение на создание ордера
             foreach (['step_one', 'step_two', 'step_three'] as $step) {
