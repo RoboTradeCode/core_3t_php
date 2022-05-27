@@ -40,11 +40,11 @@
     "publishers": {
       "gates": {
         "binance": {
-          "channel": "aeron:udp?control=172.31.12.44:40455|control-mode=dynamic",
+          "channel": "aeron:udp?control=172.31.12.44:40453|control-mode=dynamic",
           "stream_id": 1004
         },
         "ascendex": {
-          "channel": "aeron:ipc",
+          "channel": "aeron:udp?control=172.31.12.44:40452|control-mode=dynamic",
           "stream_id": 1004
         }
       },
