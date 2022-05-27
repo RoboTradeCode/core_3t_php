@@ -27,7 +27,7 @@ class Cross3T extends Main
      * @param array $orderbooks Ордербуки, с разных бирж
      * @return array Возвращает результат
      */
-    public function run(array $balances, array $orderbooks): array
+    public function run(array $balances, array $orderbooks, bool $multi = false): array
     {
 
         $results = [];
@@ -38,10 +38,7 @@ class Cross3T extends Main
 
             if ($best_orderbooks = $this->findBestOrderbooks($route, $balances, $orderbooks)) {
 
-                $orderbook = $this->getOrderbook(
-                    $combinations,
-                    $best_orderbooks
-                );
+                $orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi);
 
                 $results[] = $this->getResults(
                     $this->config['max_deal_amounts'][$combinations['main_asset_name']],
@@ -124,7 +121,7 @@ class Cross3T extends Main
 
         foreach ($route as $source) {
 
-            $deal_amount_potential = $balances[$this->config['exchange']][$source['source_asset']]['free'] ?? $this->config['max_deal_amounts'][$source['source_asset']];
+            $deal_amount_potential = $this->config['max_deal_amounts'][$source['source_asset']];
 
             $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
 
@@ -296,14 +293,18 @@ class Cross3T extends Main
      * @param array $best_orderbooks Лучшие ордербуки
      * @return array Три шага ордербука
      */
-    public function getOrderbook(array $combinations, array $best_orderbooks): array
+    public function getOrderbook(array $combinations, array $best_orderbooks, bool $multi): array
     {
 
         foreach (
             ['step_one' => 'step_one_symbol', 'step_two' => 'step_two_symbol', 'step_three' => 'step_three_symbol'] as $step => $step_symbol
         ) {
 
-            foreach ($this->config['markets'] as $market) {
+            $markets = $multi
+                ? $this->config[$best_orderbooks[$combinations[$step_symbol]]['exchange']]['markets']
+                : $this->config['markets'];
+
+            foreach ($markets as $market) {
 
                 if ($market['common_symbol'] == $combinations[$step_symbol]) {
 
