@@ -18,7 +18,7 @@ $memcached->flush();
 $config = MultiConfigurator::getConfig(dirname(__DIR__) . '/config/multi_3t.json');
 
 // Формируем все неободимые соеденения, классы и т. п.
-[$robotrade_apis, $logs, $gate_publishers, $gates, $log_publisher, $multi_core] = MultiFirstData::get($config);
+[$robotrade_apis, $log, $gate_publishers, $gates, $log_publisher, $multi_core] = MultiFirstData::get($config);
 
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config, ['debug' => $config['debug'], 'made_html_vision_file' => $config['made_html_vision_file']]);
@@ -75,7 +75,7 @@ while (true) {
 
             }
 
-            $log_publisher->offer($logs[$best_result[$step]['exchange']]->sendExpectedTriangle($best_result));
+            $log_publisher->offer($log->sendExpectedTriangle($best_result));
 
         }
 

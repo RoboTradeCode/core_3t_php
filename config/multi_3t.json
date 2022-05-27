@@ -1,6 +1,8 @@
 {
   "node": "core",
+  "exchange": "multi",
   "algorithm": "multi_3t_php",
+  "instance": "multi_3t_php",
   "instances": {
     "binance": "1",
     "ascendex": "1"
