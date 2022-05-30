@@ -34,6 +34,8 @@ function handler_orderbooks(string $message): void
                 $data['data']
             );
 
+            echo '[OK] OrderBook Ok: ' . $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'] . PHP_EOL;
+
         } else {
 
             echo '[ERROR] handler_orderbooks Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
