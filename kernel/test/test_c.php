@@ -118,6 +118,6 @@ while (true) {
 
     }
 
-    test_c . phpprint_r(array_keys($memcached_data));
+    print_r(array_keys($memcached_data));
 
 }
