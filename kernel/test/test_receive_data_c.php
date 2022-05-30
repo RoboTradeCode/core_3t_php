@@ -2,6 +2,7 @@
 
 use Src\Aeron;
 use Aeron\Subscriber;
+use Src\DiscreteTime;
 
 require dirname(__DIR__, 2) . '/index.php';
 require dirname(__DIR__, 2) . '/config/common_config.php';
@@ -17,10 +18,12 @@ $config = $common_config['config'];
 
 $balances = [];
 
+$discrete_time = new DiscreteTime();
+
 function handler_orderbooks(string $message): void
 {
 
-    global $memcached;
+    global $memcached, $discrete_time;
 
     // если данные пришли
     if ($data = Aeron::messageDecode($message)) {
@@ -34,7 +37,11 @@ function handler_orderbooks(string $message): void
                 $data['data']
             );
 
-            echo '[' . date('Y-m-d H:i:s') . ']  OrderBook Ok: ' . $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol']  . PHP_EOL;
+            if ($discrete_time->proof()) {
+
+                echo '[' . date('Y-m-d H:i:s') . ']  OrderBook Ok: ' . $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol']  . PHP_EOL;
+
+            }
 
         } else {
 
