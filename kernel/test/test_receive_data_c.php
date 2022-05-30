@@ -127,9 +127,21 @@ function handler_orders(string $message): void
 // subscribers подключение
 $subscriber_orderbooks = new Subscriber('handler_orderbooks', $config['aeron']['subscribers']['orderbooks']['channel'], $config['aeron']['subscribers']['orderbooks']['stream_id']);
 
+foreach ($config['aeron']['subscribers']['orderbooks']['destinations'] as $destination) {
+    $subscriber_orderbooks->addDestination($destination);
+}
+
 $subscriber_balances = new Subscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
 
+foreach ($config['aeron']['subscribers']['balance']['destinations'] as $destination) {
+    $subscriber_orderbooks->addDestination($destination);
+}
+
 $subscriber_orders = new Subscriber('handler_orders', $config['aeron']['subscribers']['orders']['channel'], $config['aeron']['subscribers']['orders']['stream_id']);
+
+foreach ($config['aeron']['subscribers']['orders']['destinations'] as $destination) {
+    $subscriber_orderbooks->addDestination($destination);
+}
 
 while (true) {
 
