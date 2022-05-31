@@ -11,12 +11,12 @@ require dirname(__DIR__, 2) . '/config/common_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
+$balances = [];
+
 $common_config = CORES['test_receive_data_c'];
 
 // получаем конфиг от конфигуратора
 $config = $common_config['config'];
-
-$balances = [];
 
 $discrete_time = new DiscreteTime();
 
@@ -30,6 +30,8 @@ function handler_orderbooks(string $message): void
 
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'orderbook' && isset($data['data'])) {
+
+            $data['data']['core_timestamp'] = microtime(true);
 
             // записать в memcached
             $memcached->set(
