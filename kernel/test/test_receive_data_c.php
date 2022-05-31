@@ -145,13 +145,13 @@ foreach ($config['aeron']['subscribers']['orderbooks']['destinations'] as $desti
 $subscriber_balances = new Subscriber('handler_balances', $config['aeron']['subscribers']['balance']['channel'], $config['aeron']['subscribers']['balance']['stream_id']);
 
 foreach ($config['aeron']['subscribers']['balance']['destinations'] as $destination) {
-    $subscriber_orderbooks->addDestination($destination);
+    $subscriber_balances->addDestination($destination);
 }
 
 $subscriber_orders = new Subscriber('handler_orders', $config['aeron']['subscribers']['orders']['channel'], $config['aeron']['subscribers']['orders']['stream_id']);
 
 foreach ($config['aeron']['subscribers']['orders']['destinations'] as $destination) {
-    $subscriber_orderbooks->addDestination($destination);
+    $subscriber_orders->addDestination($destination);
 }
 
 while (true) {
