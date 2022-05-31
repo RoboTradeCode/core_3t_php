@@ -19,6 +19,8 @@ class MultiFirstData
             // API для формирования сообщения для отправки по aeron
             $robotrade_apis[$exchange] = new Api($exchange, $config['algorithm'], $config['node'], $config['instances'][$exchange]);
 
+            echo '[' . date('Y-m-d H:i:s') . '] Try ' . $exchange . ' ' . $config['aeron']['publishers']['gates'][$exchange]['channel'] . ' ' . $config['aeron']['publishers']['gates'][$exchange]['stream_id'] . PHP_EOL;
+
             // нужены publisher, отправлять команды на сервер гейта
             Aeron::checkConnection(
                 $gate_publishers[$exchange] = new Publisher(
