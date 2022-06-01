@@ -74,16 +74,20 @@ while (true) {
 
                 if ($best_result[$step]['exchange'] == $common_config['exchange']) {
 
-                    $gate_publisher->offer(
-                        $robotrade_api->createOrder(
-                            $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
-                            'market',
-                            $best_result[$step]['orderType'],
-                            $best_result[$step]['amount'],
-                            $best_result[$step]['price'],
-                            'Create order ' . $step
-                        )
+                    $message = $robotrade_api->createOrder(
+                        $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
+                        'market',
+                        $best_result[$step]['orderType'],
+                        $best_result[$step]['amount'],
+                        $best_result[$step]['price'],
+                        'Create order ' . $step
                     );
+
+                    // отправить гейту на постановку ордера
+                    $gate_publisher->offer($message);
+
+                    // отправить в лог сервер, что ордер постановился
+                    $log_publisher->offer($message);
 
                     echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'] . ' Type: ' . $best_result[$step]['orderType'] . ' Amount: ' . $best_result[$step]['amount'] . ' Price: ' . $best_result[$step]['price'] . PHP_EOL;
 
@@ -98,6 +102,7 @@ while (true) {
 
             }
 
+            // отправить на лог сервер теоретические расчеты
             $log_publisher->offer($log->sendExpectedTriangle($best_result));
 
             // Запрос на получение баланса
