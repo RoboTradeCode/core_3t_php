@@ -91,7 +91,33 @@ class Main
 
         $html .= '</table>';
 
-        $html .= '<br /><br /> Balances: <pre>' . json_encode($balances, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Orderbooks: <pre>' . json_encode($orderbooks, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Best results: <pre>' . json_encode($best_result, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Results: <pre>' . json_encode($results, JSON_PRETTY_PRINT) . '</pre>';
+        $sum_balances = [];
+
+        foreach ($balances as $balance) {
+
+            foreach ($balance as $asset => $b) {
+
+                $sum_balances[$asset]['free'] = 0;
+                $sum_balances[$asset]['used'] = 0;
+                $sum_balances[$asset]['total'] = 0;
+
+            }
+
+        }
+
+        foreach ($balances as $balance) {
+
+            foreach ($balance as $asset => $b) {
+
+                $sum_balances[$asset]['free'] += $b['free'];
+                $sum_balances[$asset]['used'] += $b['used'];
+                $sum_balances[$asset]['total'] += $b['total'];
+
+            }
+
+        }
+
+        $html .= '<br /><br /> All Balances: <pre>' . json_encode($sum_balances, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Balances: <pre>' . json_encode($balances, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Orderbooks: <pre>' . json_encode($orderbooks, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Best results: <pre>' . json_encode($best_result, JSON_PRETTY_PRINT) . '</pre> <br /><br /> Results: <pre>' . json_encode($results, JSON_PRETTY_PRINT) . '</pre>';
 
         $index = fopen($file_path, 'w');
 
