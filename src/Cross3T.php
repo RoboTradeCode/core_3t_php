@@ -119,6 +119,8 @@ class Cross3T extends Main
     public function findBestOrderbooks(array $route, array $balances, array $orderbooks): array
     {
 
+        $best_orderbooks = [];
+
         foreach ($route as $source) {
 
             $deal_amount_potential = $this->config['max_deal_amounts'][$source['source_asset']];
@@ -202,7 +204,7 @@ class Cross3T extends Main
 
         }
 
-        return $best_orderbooks ?? [];
+        return (count($best_orderbooks) == 3) ? $best_orderbooks : [];
 
     }
 
