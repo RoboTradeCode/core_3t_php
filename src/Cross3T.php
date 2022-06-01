@@ -334,7 +334,7 @@ class Cross3T extends Main
                 'amountAsset' => $market_config['base_asset'] ?? '',
                 'priceAsset' => $market_config['quote_asset'] ?? '',
                 'exchange' => $best_orderbooks[$combinations[$step_symbol]]['exchange'] ?? '',
-                'fee' => $config['fees'][$best_orderbooks[$combinations[$step_symbol]]['exchange']] ?? 0,
+                'fee' => $this->config['fees'][$best_orderbooks[$combinations[$step_symbol]]['exchange']],
             ];
 
         }
