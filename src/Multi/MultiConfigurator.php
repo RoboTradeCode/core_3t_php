@@ -19,7 +19,7 @@ class MultiConfigurator
         foreach ($config['exchanges'] as $exchange) {
 
             $config_from_configurator = json_decode(
-                file_get_contents('https://configurator.robotrade.io/' . $exchange . '/' . $config['instances'][$exchange] . '?only_new=false'),
+                self::file_get_contents_ssl('https://configurator.robotrade.io/' . $exchange . '/' . $config['instances'][$exchange] . '?only_new=false'),
                 true
             )['data'];
 
@@ -50,6 +50,40 @@ class MultiConfigurator
         $config['markets'] = $markets;
 
         return $config;
+
+    }
+
+    /**
+     * Делает curl запрос
+     * @param string $url Url адрес
+     * @return bool|string возвращает контент
+     */
+    private static function file_get_contents_ssl(string $url): bool|string
+    {
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+
+        curl_setopt($ch, CURLOPT_HEADER, false);
+
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        curl_setopt($ch, CURLOPT_REFERER, $url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3000); // 3 sec.
+
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10000); // 10 sec.
+
+        $result = curl_exec($ch);
+
+        curl_close($ch);
+
+        return $result;
 
     }
 
