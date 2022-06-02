@@ -57,25 +57,31 @@ class Cross3T extends Main
 
         }
 
-        $best_result = $this->getBestResult($results, $this->config['min_profit']);
+        if ($results) {
 
-        if (isset($this->common_config['debug']) && $this->common_config['debug']) {
+            $best_result = $this->getBestResult($results, $this->config['min_profit']);
 
-            $var = str_split(time());
+            if (isset($this->common_config['debug']) && $this->common_config['debug']) {
 
-            $var = end($var);
+                $var = str_split(time());
 
-            if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var) || $best_result) {
+                $var = end($var);
 
-                $this->madeHtmlVision($results, $best_result, $orderbooks, $balances, $this->common_config['made_html_vision_file']);
+                if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var) || $best_result) {
 
-                $this->previous = $var;
+                    $this->madeHtmlVision($results, $best_result, $orderbooks, $balances, $this->common_config['made_html_vision_file']);
+
+                    $this->previous = $var;
+
+                }
 
             }
 
+            return $best_result;
+
         }
 
-        return $best_result;
+        return [];
 
     }
 
@@ -118,6 +124,8 @@ class Cross3T extends Main
      */
     public function findBestOrderbooks(array $route, array $balances, array $orderbooks): array
     {
+
+        $best_orderbooks = [];
 
         foreach ($route as $source) {
 
@@ -202,7 +210,7 @@ class Cross3T extends Main
 
         }
 
-        return $best_orderbooks ?? [];
+        return (count($best_orderbooks) == 3) ? $best_orderbooks : [];
 
     }
 
@@ -326,7 +334,7 @@ class Cross3T extends Main
                 'amountAsset' => $market_config['base_asset'] ?? '',
                 'priceAsset' => $market_config['quote_asset'] ?? '',
                 'exchange' => $best_orderbooks[$combinations[$step_symbol]]['exchange'] ?? '',
-                'fee' => $config['fees'][$best_orderbooks[$combinations[$step_symbol]]['exchange']] ?? 0,
+                'fee' => $this->config['fees'][$best_orderbooks[$combinations[$step_symbol]]['exchange']],
             ];
 
         }

@@ -1,13 +1,13 @@
 {
-    "require": {
-        "ext-pdo": "*",
-        "ext-memcached": "*"
-    },
-
+  "require": {
+    "ext-pdo": "*",
+    "ext-memcached": "*",
+    "ext-curl": "*"
+  },
   "autoload": {
     "psr-4": {
-      "Src\\" : "src/",
-      "robotrade\\" : "libs/PHP-API"
+      "Src\\": "src/",
+      "robotrade\\": "libs/PHP-API"
     }
   }
 }

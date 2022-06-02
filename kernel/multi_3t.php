@@ -43,17 +43,20 @@ while (true) {
             // для каждого шага, если результат выпал на текущую биржу, отправить сообщение на создание ордера
             foreach (['step_one', 'step_two', 'step_three'] as $step) {
 
-                // отправить гейту на постановку ордера
-                $gate_publishers[$best_result[$step]['exchange']]->offer(
-                    $robotrade_apis[$best_result[$step]['exchange']]->createOrder(
-                        $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
-                        'market',
-                        $best_result[$step]['orderType'],
-                        $best_result[$step]['amount'],
-                        $best_result[$step]['price'],
-                        'Create order ' . $step
-                    )
+                $message = $robotrade_apis[$best_result[$step]['exchange']]->createOrder(
+                    $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
+                    'market',
+                    $best_result[$step]['orderType'],
+                    $best_result[$step]['amount'],
+                    $best_result[$step]['price'],
+                    'Create order ' . $step
                 );
+
+                // отправить гейту на постановку ордера
+                $gate_publishers[$best_result[$step]['exchange']]->offer($message);
+
+                // отправить в лог сервер, что ордер постановился
+                $log_publisher->offer($message);
 
                 echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' .
                     $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'] .
@@ -75,6 +78,7 @@ while (true) {
 
             }
 
+            // отправить на лог сервер теоретические расчеты
             $log_publisher->offer($log->sendExpectedTriangle($best_result));
 
         }
