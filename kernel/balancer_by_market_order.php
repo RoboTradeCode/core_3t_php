@@ -21,6 +21,12 @@ $common_config = CORES['balancer_by_market_order'];
 
 $config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
+$config_api = Configurator::getConfig($common_config['exchange'], $common_config['instance']);
+
+$config['assets_labels'] = $config_api['assets_labels'];
+
+$config['markets'] = $config_api['markets'];
+
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
