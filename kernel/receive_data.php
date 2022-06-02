@@ -35,10 +35,12 @@ if ($common_config['send_ping_to_log_server']) {
 
 }
 
+$i = 0;
+
 function handler_orderbooks(string $message): void
 {
 
-    global $memcached;
+    global $memcached, $i;
 
     // если данные пришли
     if ($data = Aeron::messageDecode($message)) {
@@ -54,6 +56,8 @@ function handler_orderbooks(string $message): void
                 $data['data']
             );
 
+            $i++;
+
         } else {
 
             echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
@@ -67,7 +71,7 @@ function handler_orderbooks(string $message): void
 function handler_balances(string $message): void
 {
 
-    global $memcached, $balances;
+    global $memcached, $balances, $i;
 
     // если данные пришли
     if ($data = Aeron::messageDecode($message)) {
@@ -94,6 +98,8 @@ function handler_balances(string $message): void
                 $data['exchange'] . '_' . $data['action'],
                 $balances[$data['exchange']]
             );
+
+            $i++;
 
         } else {
 
@@ -127,12 +133,6 @@ while (true) {
     $subscriber_balances->poll();
 
     if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
-
-        if (isset($i)) {
-            $i++;
-        } else {
-            $i = 0;
-        }
 
         $publisher->offer($log->sendWorkCore($i));
 
