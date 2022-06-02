@@ -7,6 +7,7 @@ class Cross3T extends Main
 
     private array $config;
     public array $common_config;
+    private int $interation;
 
     /**
      * @param array $config Вся конфигурация приходящяя от агента
@@ -17,6 +18,8 @@ class Cross3T extends Main
         $this->config = $config;
 
         $this->common_config = $common_config;
+
+        $this->interation = 0;
 
     }
 
@@ -29,8 +32,6 @@ class Cross3T extends Main
      */
     public function run(array $balances, array $orderbooks, bool $multi = false): array
     {
-
-        $results = [];
 
         foreach ($this->config['routes'] as $route) {
 
@@ -57,7 +58,7 @@ class Cross3T extends Main
 
         }
 
-        if ($results) {
+        if (isset($results)) {
 
             $best_result = $this->getBestResult($results, $this->config['min_profit']);
 
@@ -77,11 +78,75 @@ class Cross3T extends Main
 
             }
 
+            $this->interation++;
+
             return $best_result;
 
         }
 
         return [];
+
+    }
+
+    public function getInteration(): int
+    {
+
+        return $this->interation;
+
+    }
+
+    /**
+     * Фильтрует баланс, чтобы он был в диапазоне min_deal_amount и max_deal_amount
+     *
+     * @param array $balances Балансы со всех бирж, взятые из memcached
+     * @return void
+     */
+    public function filterBalanceByMinAndMAxDealAmount(array &$balances): void
+    {
+
+        foreach ($balances as $exchange => $balance) {
+
+            foreach ($balance as $asset => $value) {
+
+                if ($value['free'] <= $this->config['min_deal_amounts'][$asset]) {
+
+                    unset($balances[$exchange][$asset]);
+
+                } elseif ($value['free'] >= $this->config['max_deal_amounts'][$asset]) {
+
+                    $balances[$exchange][$asset]['free'] = $this->config['max_deal_amounts'][$asset];
+
+                }
+
+            }
+
+        }
+
+    }
+
+    /**
+     * Проверяет пришел ли новый конфиг и обновляет текущий на новый
+     *
+     * @param array $config Текущая конфигурация
+     * @param array $memcached_data Сырые данные, взятые напрямую из memcached
+     * @return bool
+     */
+    public function proofConfigOnUpdate(array &$config, array &$memcached_data): bool
+    {
+
+        if (isset($memcached_data['config'])) {
+
+            $config = $memcached_data['config'];
+
+            unset($memcached_data['config']);
+
+            echo '[Ok] Config is update' . PHP_EOL;
+
+            return true;
+
+        }
+
+        return false;
 
     }
 
@@ -92,7 +157,7 @@ class Cross3T extends Main
      * @param array $min_profit Минимальная прибыль в main_asset_name
      * @return array Лучший результат
      */
-    public function getBestResult(array $results, array $min_profit): array
+    private function getBestResult(array $results, array $min_profit): array
     {
 
         foreach (array_column($results, 'results') as $items)
@@ -122,7 +187,7 @@ class Cross3T extends Main
      * @param array $orderbooks Ордербуки, с разных бирж
      * @return array Лучшие найденные ордербуки
      */
-    public function findBestOrderbooks(array $route, array $balances, array $orderbooks): array
+    private function findBestOrderbooks(array $route, array $balances, array $orderbooks): array
     {
 
         $best_orderbooks = [];
@@ -215,67 +280,12 @@ class Cross3T extends Main
     }
 
     /**
-     * Фильтрует баланс, чтобы он был в диапазоне min_deal_amount и max_deal_amount
-     *
-     * @param array $balances Балансы со всех бирж, взятые из memcached
-     * @return void
-     */
-    public function filterBalanceByMinAndMAxDealAmount(array &$balances): void
-    {
-
-        foreach ($balances as $exchange => $balance) {
-
-            foreach ($balance as $asset => $value) {
-
-                if ($value['free'] <= $this->config['min_deal_amounts'][$asset]) {
-
-                    unset($balances[$exchange][$asset]);
-
-                } elseif ($value['free'] >= $this->config['max_deal_amounts'][$asset]) {
-
-                    $balances[$exchange][$asset]['free'] = $this->config['max_deal_amounts'][$asset];
-
-                }
-
-            }
-
-        }
-
-    }
-
-    /**
-     * Проверяет пришел ли новый конфиг и обновляет текущий на новый
-     *
-     * @param array $config Текущая конфигурация
-     * @param array $memcached_data Сырые данные, взятые напрямую из memcached
-     * @return bool
-     */
-    public function proofConfigOnUpdate(array &$config, array &$memcached_data): bool
-    {
-
-        if (isset($memcached_data['config'])) {
-
-            $config = $memcached_data['config'];
-
-            unset($memcached_data['config']);
-
-            echo '[Ok] Config is update' . PHP_EOL;
-
-            return true;
-
-        }
-
-        return false;
-
-    }
-
-    /**
      * Возвращает комбинацию для использования переменной в getResults()
      *
      * @param array $route Маршрут от конфигуратора в одном треугольнике
      * @return array Массив комбинации
      */
-    public function getCombinations(array $route): array
+    private function getCombinations(array $route): array
     {
 
         $step_one = array_shift($route);
@@ -301,7 +311,7 @@ class Cross3T extends Main
      * @param array $best_orderbooks Лучшие ордербуки
      * @return array Три шага ордербука
      */
-    public function getOrderbook(array $combinations, array $best_orderbooks, bool $multi): array
+    private function getOrderbook(array $combinations, array $best_orderbooks, bool $multi): array
     {
 
         foreach (

@@ -83,6 +83,8 @@ while (true) {
 
         }
 
+        $log_publisher->offer($log->sendWorkCore($cross_3t->getInteration()));
+
     } else {
 
         if (empty($balances))
