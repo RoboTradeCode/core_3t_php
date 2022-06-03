@@ -314,7 +314,7 @@ class Cross3T extends Main
             ['step_one' => 'step_one_symbol', 'step_two' => 'step_two_symbol', 'step_three' => 'step_three_symbol'] as $step => $step_symbol
         ) {
 
-            if ($best_orderbooks[$combinations[$step_symbol]]['exchange']) {
+            if (isset($best_orderbooks[$combinations[$step_symbol]]['exchange'])) {
 
                 $markets = $multi
                     ? $this->config['markets'][$best_orderbooks[$combinations[$step_symbol]]['exchange']]
