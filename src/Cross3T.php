@@ -8,6 +8,7 @@ class Cross3T extends Main
     private array $config;
     public array $common_config;
     private int $interation;
+    private DiscreteTime $discret_time;
 
     /**
      * @param array $config Вся конфигурация приходящяя от агента
@@ -18,6 +19,8 @@ class Cross3T extends Main
         $this->config = $config;
 
         $this->common_config = $common_config;
+
+        $this->discret_time = new DiscreteTime();
 
         $this->interation = 0;
 
@@ -62,19 +65,9 @@ class Cross3T extends Main
 
             $best_result = $this->getBestResult($results, $this->config['min_profit']);
 
-            if (isset($this->common_config['debug']) && $this->common_config['debug']) {
+            if (isset($this->common_config['debug']) && $this->common_config['debug'] && $this->discret_time->proof()) {
 
-                $var = str_split(time());
-
-                $var = end($var);
-
-                if (!isset($this->previous) || (in_array($var, [1, 3, 5, 7, 9]) && $this->previous != $var) || $best_result) {
-
-                    $this->madeHtmlVision($results, $best_result, $orderbooks, $balances, $this->common_config['made_html_vision_file']);
-
-                    $this->previous = $var;
-
-                }
+                $this->madeHtmlVision($results, $best_result, $orderbooks, $balances, $this->common_config['made_html_vision_file']);
 
             }
 
