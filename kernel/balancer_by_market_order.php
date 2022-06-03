@@ -155,7 +155,7 @@ do {
 
 } while(empty($balances[$common_config['exchange']]));
 
-$sum_usdt = $balances[$common_config['exchange']]['USDT']['free'] / count($config['assets_labels']) * 0.97;
+$sum_usdt = $balances[$common_config['exchange']]['USDT']['free'] / count($config['assets_labels']) * 0.98;
 
 foreach ($config['assets_labels'] as $assets_label) {
 
