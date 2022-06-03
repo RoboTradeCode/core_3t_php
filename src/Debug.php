@@ -37,6 +37,8 @@ class Debug
 
         fclose($index);
 
+        echo '[' . date('Y-m-d H:i:s') . '] Write to ' . self::$file_path . PHP_EOL;
+
         if($die) die;
 
     }
