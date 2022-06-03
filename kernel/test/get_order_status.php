@@ -41,7 +41,7 @@ do {
 
     $do = true;
 
-    $memcached_data = $memcached->getMulti([$common_config['exchange'] . '_orders']);
+    $memcached_data = $memcached->getMulti([$common_config['exchange'] . '_order_statuses']);
 
     foreach ($memcached_data as $key => $memcached_datum) {
 
