@@ -127,7 +127,7 @@ function handler_orders(string $message): void
 
             } elseif ($data['action'] == 'order_status') {
 
-                $key = $data['exchange'] . '_order_statuses';
+                $key = $data['exchange'] . '_orderStatuses';
 
                 $orders = $memcached->get($key);
 
@@ -137,6 +137,8 @@ function handler_orders(string $message): void
                     $key,
                     $orders
                 );
+
+                print_r($data['data']); echo PHP_EOL;
 
             }
 
