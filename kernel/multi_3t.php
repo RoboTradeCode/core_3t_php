@@ -1,6 +1,7 @@
 <?php
 
 use Src\Cross3T;
+use Src\DiscreteTime;
 use Src\Multi\MultiConfigurator;
 use Src\Multi\MultiFirstData;
 use Aeron\Publisher;
@@ -22,6 +23,8 @@ $config = MultiConfigurator::getConfig(dirname(__DIR__) . '/config/multi_3t.json
 
 // создаем класс cross 3t
 $cross_3t = new Cross3T($config, ['debug' => $config['debug'], 'made_html_vision_file' => $config['made_html_vision_file']]);
+
+$discrete_time = new DiscreteTime();
 
 while (true) {
 
@@ -83,7 +86,11 @@ while (true) {
 
         }
 
-        $log_publisher->offer($log->sendWorkCore($cross_3t->getInteration()));
+        if ($discrete_time->proof()) {
+
+            $log_publisher->offer($log->sendWorkCore($cross_3t->getInteration()));
+
+        }
 
     } else {
 
