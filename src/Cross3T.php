@@ -40,9 +40,16 @@ class Cross3T extends Main
 
             $combinations = $this->getCombinations($route);
 
+            debug($route, 'Route');
+            debug($combinations, 'Combinations');
+
             if ($best_orderbooks = $this->findBestOrderbooks($route, $balances, $orderbooks)) {
 
+                debug($best_orderbooks, 'Best Orderbooks');
+
                 $orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi);
+
+                debug($orderbook, '$this->getOrderbook function return');
 
                 $results[] = $this->getResults(
                     $this->config['max_deal_amounts'][$combinations['main_asset_name']],
@@ -56,6 +63,8 @@ class Cross3T extends Main
                         $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
                     ]
                 );
+
+                debug($results, 'Get Results');
 
             }
 

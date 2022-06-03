@@ -29,6 +29,7 @@ $discrete_time = new DiscreteTime();
 while (true) {
 
     usleep($config['sleep']);
+    sleep(10);
 
     // отформировать и отделить все данные, полученные из memcached
     $all_data = $multi_core->getFormatData($memcached);
@@ -39,6 +40,9 @@ while (true) {
 
     // если есть все необходимые данные
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
+
+        debug($balances, 'Balances');
+        debug($orderbooks, 'OrderBooks');
 
         // запускаем алгоритм и получаем лучший результат
         if ($best_result = $cross_3t->run($balances, $orderbooks, true)) {
