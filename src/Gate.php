@@ -64,6 +64,24 @@ class Gate
     }
 
     /**
+     * Получает статус ордеров
+     *
+     * @param string $id
+     * @param string $symbol
+     * @return $this
+     */
+    public function getOrderStatus(string $id, string $symbol): static
+    {
+
+        $message = 'Get Order status';
+
+        $this->publisher->offer($this->robotrade_api->getOrderStatus($id, $symbol));
+
+        return $this->do($message);
+
+    }
+
+    /**
      * Выводит сообщение на экран какие команды были отправлены
      *
      * @return void
