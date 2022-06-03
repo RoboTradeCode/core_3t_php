@@ -189,6 +189,8 @@ class Main
                     $max_deal_amount
                 );
 
+                Debug::rec($deal_amount);
+
             } catch(Throwable $e) {
 
                 echo '[' . date('Y-m-d H:i:s') . '] Division by zero Deal Amount. Error Message: ' . $e->getMessage() . PHP_EOL;
@@ -628,6 +630,7 @@ class Main
         $min_amount_step_one = $orderbook["step_one"]["limits"]["amount"]["min"] ?? 0;
 
         if ($min_amount_step_one > $stepOne["amount"]) {
+            Debug::rec($stepOne);
             return [
                 "status" => false,
                 "reason" => "Amount limit error (step 1): {$combinations["step_one_symbol"]} min amount: $min_amount_step_one, current amount: {$stepOne["amount"]}"
@@ -638,11 +641,13 @@ class Main
         $cost_limit_step_one = $orderbook["step_one"]["limits"]["cost"]["min"] ?? 0;
 
         if ($cost_limit_step_one > $stepOne["amount"] * $stepOne["price"]) {
+            Debug::rec($stepOne);
             return [
                 "status" => false,
                 "reason" => "Cost limit error (step 1): {$combinations["step_one_symbol"]} min cost: $cost_limit_step_one, current cost: " . ($stepOne["amount"] * $stepOne["price"])
             ];
         }
+        Debug::rec($stepOne);
 
         /* STEP 2 */
         if ($orderbook['step_two']['amountAsset'] == $combinations["asset_one_name"]) {
@@ -717,6 +722,7 @@ class Main
         $min_amount_step_two = $orderbook["step_two"]["limits"]["amount"]["min"] ?? 0;
 
         if ($min_amount_step_two > $stepTwo["amount"]) {
+            Debug::rec($stepTwo);
             return [
                 "status" => false,
                 "reason" => "Amount limit error (step 2): {$combinations["step_two_symbol"]} min amount: $min_amount_step_two, current amount: {$stepTwo["amount"]}"
@@ -727,11 +733,13 @@ class Main
         $cost_limit_step_two = $orderbook["step_two"]["limits"]["cost"]["min"] ?? 0;
 
         if ($cost_limit_step_two > $stepTwo["amount"] * $stepTwo["price"]) {
+            Debug::rec($stepTwo);
             return [
                 "status" => false,
                 "reason" => "Cost limit error (step 2): {$combinations["step_two_symbol"]} min cost: $cost_limit_step_two, current cost: " . ($stepTwo["amount"] * $stepTwo["price"])
             ];
         }
+        Debug::rec($stepTwo);
 
         /* STEP 3 */
         if ($orderbook['step_three']['amountAsset'] != $combinations["main_asset_name"]) {
@@ -810,6 +818,7 @@ class Main
         $min_amount_step_three = $orderbook["step_three"]["limits"]["amount"]["min"] ?? 0;
 
         if ($min_amount_step_three > $stepThree["amount"]) {
+            Debug::rec($stepThree);
             return [
                 "status" => false,
                 "reason" => "Amount limit error (step 3): {$combinations["step_three_symbol"]} min amount: $min_amount_step_three, current amount: {$stepThree["amount"]}"
@@ -820,6 +829,7 @@ class Main
         $cost_limit_step_three = $orderbook["step_three"]["limits"]["cost"]["min"] ?? 0;
 
         if ($cost_limit_step_three > $stepThree["amount"] * $stepThree["price"]) {
+            Debug::rec($stepThree);
             return [
                 "status" => false,
                 "reason" => "Cost limit error (step 3): {$combinations["step_three_symbol"]} min cost: $cost_limit_step_three, current cost: " . ($stepThree["amount"] * $stepThree["price"])
@@ -827,6 +837,7 @@ class Main
         }
 
         $final_result = round(($stepThree["result"] - $deal_amount), 8);
+        Debug::rec($stepThree);
 
         return [
             "result" => $final_result,
