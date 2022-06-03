@@ -13,7 +13,7 @@ $memcached->addServer('localhost', 11211);
 
 $balances = [];
 
-$common_config = CORES['test_receive_data_c'];
+$common_config = CORES['test_receive_data'];
 
 // получаем конфиг от конфигуратора
 $config = $common_config['config'];

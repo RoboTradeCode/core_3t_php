@@ -226,7 +226,7 @@ const CORES = [
         'gate_sleep' => 2, //задержа команд от ядра к гейту (ядро отправило команду и sleep(gate_sleep))
         'config' => CONFIG //конфиг из конфигуратора
     ],
-    'test_c' => [
+    'test_order_create_cancel' => [
         'exchange' => EXCHANGE, //название биржи
         'node' => NODE, //нода
         'instance' => INSTANCE, //instance
@@ -237,7 +237,7 @@ const CORES = [
         'gate_sleep' => 2, //задержа команд от ядра к гейту (ядро отправило команду и sleep(gate_sleep))
         'config' => CONFIG //конфиг из конфигуратора
     ],
-    'test_receive_data_c' => [
+    'test_receive_data' => [
         'exchange' => EXCHANGE, //название биржи
         'node' => NODE, //нода
         'instance' => INSTANCE, //instance

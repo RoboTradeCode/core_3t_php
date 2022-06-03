@@ -12,7 +12,7 @@ require dirname(__DIR__, 2) . '/config/common_config.php';
 $memcached = new Memcached();
 $memcached->addServer('localhost', 11211);
 
-$common_config = CORES['test_c'];
+$common_config = CORES['test_order_create_cancel'];
 
 // получаем конфиг от конфигуратора
 $config = $common_config['config'];
