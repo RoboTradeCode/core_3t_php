@@ -80,11 +80,7 @@ do {
 
     }
 
-    if ($memcached_data) {
-
-        echo '[' . date('Y-m-d H:i:s') . '] Try get rates from memcached orderbooks' . PHP_EOL;
-
-    } else {
+    if (!$memcached_data) {
 
         echo '[' . date('Y-m-d H:i:s') . '] Try get data from memcached' . PHP_EOL;
 

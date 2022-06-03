@@ -107,21 +107,38 @@ function handler_orders(string $message): void
     if ($data = Aeron::messageDecode($message)) {
 
         // если event как data, а node как gate
-        if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'order_created' && isset($data['data'])) {
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
-            // записать в memcached
-            $key = $data['exchange'] . '_orders';
+            if ($data['action'] == 'order_created') {
 
-            $orders = $memcached->get($key);
+                // записать в memcached
+                $key = $data['exchange'] . '_orders';
 
-            $orders[$data['data']['id']] = $data['data'];
+                $orders = $memcached->get($key);
 
-            $memcached->set(
-                $key,
-                $orders
-            );
+                $orders[$data['data']['id']] = $data['data'];
 
-            echo '[OK] Data Order saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
+                $memcached->set(
+                    $key,
+                    $orders
+                );
+
+                echo '[OK] Data Order saved. Node: ' . $data['node'] . ' Action: ' . $data['action'] . PHP_EOL;
+
+            } elseif ($data['action'] == 'order_status') {
+
+                $key = $data['exchange'] . '_order_statuses';
+
+                $orders = $memcached->get($key);
+
+                $orders[$data['data']['id']] = $data['data'];
+
+                $memcached->set(
+                    $key,
+                    $orders
+                );
+
+            }
 
         } else {
 
