@@ -245,6 +245,16 @@ const CORES = [
         'sleep' => 10, //задержа в милисекундах в цикле while
         'gate_sleep' => 2, //задержа команд от ядра к гейту (ядро отправило команду и sleep(gate_sleep))
         'config' => CONFIG //конфиг из конфигуратора
+    ],
+    'test_get_order_status' => [
+        'exchange' => EXCHANGE,
+        'node' => NODE,
+        'instance' => INSTANCE,
+        'algorithm' => 'test_get_order_status',
+        'gate_sleep' => 1,
+        'order_id' => '629934b8d6b4aa0001d5544d',
+        'symbol' => 'BTC/USDT',
+        'config' => CONFIG
     ]
 ];
 
