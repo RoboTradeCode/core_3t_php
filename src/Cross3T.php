@@ -47,25 +47,28 @@ class Cross3T extends Main
 
                 Debug::rec($best_orderbooks, 'Best Orderbooks');
 
-                $orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi);
+                if ($orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi)) {
 
-                Debug::rec($orderbook, '$this->getOrderbook function return');
+                    Debug::rec($orderbook, '$this->getOrderbook function return');
 
-                $results[] = $this->getResults(
-                    $this->config['max_deal_amounts'][$combinations['main_asset_name']],
-                    $this->config['max_depth'],
-                    $this->config['rates'],
-                    $combinations,
-                    $orderbook,
-                    [
-                        $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
-                        $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
-                        $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
-                    ]
-                );
+                    $results[] = $this->getResults(
+                        $this->config['max_deal_amounts'][$combinations['main_asset_name']],
+                        $this->config['max_depth'],
+                        $this->config['rates'],
+                        $combinations,
+                        $orderbook,
+                        [
+                            $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
+                            $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
+                            $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
+                        ]
+                    );
 
-                Debug::rec($results, 'Get Results');
-                Debug::recordToFile(true);
+                    Debug::rec($results, 'Get Results');
+                    Debug::recordToFile(true);
+
+                }
+
 
             }
 
@@ -173,7 +176,7 @@ class Cross3T extends Main
 
             $best_result = $all_results[array_keys($array, max($array))[0]];
 
-            if ($best_result["result"] >= $min_profit[$best_result['main_asset_name']])
+            if ($best_result["result"] > $min_profit[$best_result['main_asset_name']])
                 return $best_result;
 
         }
@@ -321,34 +324,42 @@ class Cross3T extends Main
             ['step_one' => 'step_one_symbol', 'step_two' => 'step_two_symbol', 'step_three' => 'step_three_symbol'] as $step => $step_symbol
         ) {
 
-            $markets = $multi
-                ? $this->config['markets'][$best_orderbooks[$combinations[$step_symbol]]['exchange']]
-                : $this->config['markets'];
+            if (isset($best_orderbooks[$combinations[$step_symbol]]['exchange'])) {
 
-            foreach ($markets as $market) {
+                $markets = $multi
+                    ? $this->config['markets'][$best_orderbooks[$combinations[$step_symbol]]['exchange']]
+                    : $this->config['markets'];
 
-                if ($market['common_symbol'] == $combinations[$step_symbol]) {
+                foreach ($markets as $market) {
 
-                    $market_config = $market;
+                    if ($market['common_symbol'] == $combinations[$step_symbol]) {
 
-                    break;
+                        $market_config = $market;
+
+                        break;
+
+                    }
 
                 }
 
-            }
+                $orderbook[$step] = [
+                    'bids' => $best_orderbooks[$combinations[$step_symbol]]['bids'] ?? [],
+                    'asks' => $best_orderbooks[$combinations[$step_symbol]]['asks'] ?? [],
+                    'symbol' => $combinations[$step_symbol],
+                    'limits' => $market_config['limits'] ?? [],
+                    'price_increment' => $market_config['price_increment'] ?? 0,
+                    'amount_increment' => $market_config['amount_increment'] ?? 0,
+                    'amountAsset' => $market_config['base_asset'] ?? '',
+                    'priceAsset' => $market_config['quote_asset'] ?? '',
+                    'exchange' => $best_orderbooks[$combinations[$step_symbol]]['exchange'],
+                    'fee' => $this->config['fees'][$best_orderbooks[$combinations[$step_symbol]]['exchange']],
+                ];
 
-            $orderbook[$step] = [
-                'bids' => $best_orderbooks[$combinations[$step_symbol]]['bids'] ?? [],
-                'asks' => $best_orderbooks[$combinations[$step_symbol]]['asks'] ?? [],
-                'symbol' => $combinations[$step_symbol],
-                'limits' => $market_config['limits'] ?? [],
-                'price_increment' => $market_config['price_increment'] ?? 0,
-                'amount_increment' => $market_config['amount_increment'] ?? 0,
-                'amountAsset' => $market_config['base_asset'] ?? '',
-                'priceAsset' => $market_config['quote_asset'] ?? '',
-                'exchange' => $best_orderbooks[$combinations[$step_symbol]]['exchange'] ?? '',
-                'fee' => $this->config['fees'][$best_orderbooks[$combinations[$step_symbol]]['exchange']],
-            ];
+            } else {
+
+                return [];
+
+            }
 
         }
 

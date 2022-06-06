@@ -80,8 +80,15 @@ while (true) {
 
             foreach (['step_one', 'step_two', 'step_three'] as $step) {
 
+                if (isset($old_balances) && $old_balances[$best_result[$step]['exchange']] == $balances[$best_result[$step]['exchange']]) {
+                    echo '[' . date('Y-m-d H:i:s') . '] Balance is old. Exchange: ' . $best_result[$step]['exchange'] . ' . ' . json_encode($balances[$best_result[$step]['exchange']]) . PHP_EOL;
+                }
+
                 // удаляем из memcached данные о балансе
                 $memcached->delete($best_result[$step]['exchange'] . '_balances');
+
+                // удаляем из memcached данные об ордербуке
+                $memcached->delete($best_result[$step]['exchange'] . '_orderbook_' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset']);
 
                 // Запрос на получение баланса
                 $gates[$best_result[$step]['exchange']]->getBalances(array_column($config['assets_labels'], 'common'))->send();
@@ -90,6 +97,11 @@ while (true) {
 
             // отправить на лог сервер теоретические расчеты
             $log_publisher->offer($log->sendExpectedTriangle($best_result));
+
+            // отправляет полный баланс на лог сервер
+            $log_publisher->offer($log->sendFullBalances($balances));
+
+            $old_balances = $balances;
 
         }
 
