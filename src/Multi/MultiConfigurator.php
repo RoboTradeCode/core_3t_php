@@ -33,15 +33,23 @@ class MultiConfigurator
 
         if (empty($routes) || empty($assets_labels) || empty($markets)) {
 
-            echo '[' . date('Y-m-d H:i:s') . '] Die $route or $assets_label or $markets empty' . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] Die $routes or $assets_labels or $markets empty' . PHP_EOL;
 
             die();
 
         }
 
-        $route = array_shift($routes);
+        $route = self::reformatRoutesToMulti($routes);
 
-        $assets_label = array_shift($assets_labels);
+        $assets_label = self::reformatAssetLabelsToMulti($assets_labels);
+
+        if (empty($route) || empty($assets_label) ) {
+
+            echo '[' . date('Y-m-d H:i:s') . '] Die $route or $assets_label or $markets empty' . PHP_EOL;
+
+            die();
+
+        }
 
         $config['routes'] = $route;
 
@@ -50,6 +58,68 @@ class MultiConfigurator
         $config['markets'] = $markets;
 
         return $config;
+
+    }
+
+    private static function reformatAssetLabelsToMulti($assets_labels): array
+    {
+
+        $assets = [];
+
+        foreach ($assets_labels as $as_l) {
+
+            $assets = array_merge($assets, array_column($as_l, 'common'));
+
+        }
+
+        foreach (array_unique($assets) as $item) {
+
+            $assets_label[] = ['exchange' => $item, 'common' => $item];
+
+        }
+
+        return $assets_label ?? [];
+
+    }
+
+    private static function reformatRoutesToMulti($routes): array
+    {
+
+        $route = [];
+
+        $exist = false;
+
+        foreach ($routes as $r) {
+
+            foreach ($r as $item) {
+
+                foreach ($route as $it) {
+
+                    if ($it == $item) {
+
+                        $exist = true;
+
+                        break;
+
+                    } else {
+
+                        $exist = false;
+
+                    }
+
+                }
+
+                if (!$exist) {
+
+                    $route[] = $item;
+
+                }
+
+            }
+
+        }
+
+        return $route;
 
     }
 
