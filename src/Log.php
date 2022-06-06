@@ -42,11 +42,18 @@ class Log
 
     }
 
-    private function generateMessage(string $action, mixed $data, string $message = null): bool|string
+    public function sendFullBalances(array $data, string $message = null): bool|string
+    {
+
+        return $this->generateMessage('balance_log', $data, $message, 'command');
+
+    }
+
+    private function generateMessage(string $action, mixed $data, string $message = null, string $event = 'info'): bool|string
     {
 
         return Aeron::messageEncode([
-            'event' => 'info',
+            'event' => $event,
             'exchange' => $this->exchange,
             'node' => $this->node,
             'instance' => $this->instance,
