@@ -166,7 +166,7 @@ class Cross3T extends Main
 
             $best_result = $all_results[array_keys($array, max($array))[0]];
 
-            if ($best_result["result"] >= $min_profit[$best_result['main_asset_name']])
+            if ($best_result["result"] > $min_profit[$best_result['main_asset_name']])
                 return $best_result;
 
         }
