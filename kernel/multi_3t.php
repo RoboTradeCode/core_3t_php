@@ -76,6 +76,9 @@ while (true) {
                 // удаляем из memcached данные о балансе
                 $memcached->delete($best_result[$step]['exchange'] . '_balances');
 
+                // удаляем из memcached данные об ордербуке
+                $memcached->delete($best_result[$step]['exchange'] . '_orderbook_' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset']);
+
                 // Запрос на получение баланса
                 $gates[$best_result[$step]['exchange']]->getBalances(array_column($config['assets_labels'], 'common'))->send();
 
