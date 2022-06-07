@@ -1,7 +1,6 @@
 <?php
 
 use Src\Cross3T;
-use Src\Debug;
 use Src\DiscreteTime;
 use Src\Multi\MultiConfigurator;
 use Src\Multi\MultiFirstData;
@@ -30,7 +29,6 @@ $discrete_time = new DiscreteTime();
 while (true) {
 
     usleep($config['sleep']);
-    sleep(10);
 
     // отформировать и отделить все данные, полученные из memcached
     $all_data = $multi_core->getFormatData($memcached);
