@@ -65,7 +65,15 @@ class Cross3T extends Main
                     );
 
                     Debug::rec($results, 'Get Results');
-                    Debug::recordToFile(true);
+                    Debug::rec(
+                        [
+                            $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
+                            $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
+                            $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
+                        ],
+                        'Balances to get Result'
+                    );
+                    //Debug::recordToFile(true);
 
                 }
 

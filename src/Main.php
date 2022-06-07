@@ -186,7 +186,8 @@ class Main
                     $orderbook_info,
                     $combinations['main_asset_name'],
                     $combinations['main_asset_amount_precision'],
-                    $max_deal_amount
+                    $max_deal_amount,
+                    $balances
                 );
 
                 Debug::rec($deal_amount, 'Deal Amount');
@@ -235,6 +236,14 @@ class Main
                     $max_deal_amount
                 )
             ) {
+
+                break;
+
+            }
+
+            if ($deal_amount['deal_amount_end_status']) {
+
+                $reason = 'Balance ended';
 
                 break;
 
@@ -440,9 +449,48 @@ class Main
         array $orderbook_info,
         string $mainAsset_id,
         float $mainAsset_decimals,
-        float $max_deal_amount
+        float $max_deal_amount,
+        array $balances
     ): array
     {
+
+        Debug::rec($orderbook_info, '$orderbook_info before');
+
+        $step_one_max_deal_amount = empty($orderbook['step_one']['asks'])
+            ? $balances[$orderbook['step_one']['amountAsset']]['free'] * 0.98
+            : $balances[$orderbook['step_one']['priceAsset']]['free'] / $orderbook_info['step_one']['buy_price'] * 0.98;
+
+        $step_two_max_deal_amount = empty($orderbook['step_two']['asks'])
+            ? $balances[$orderbook['step_two']['amountAsset']]['free'] * 0.98
+            : $balances[$orderbook['step_two']['priceAsset']]['free'] / $orderbook_info['step_two']['buy_price'] * 0.98;
+
+        $step_three_max_deal_amount = empty($orderbook['step_three']['asks'])
+            ? $balances[$orderbook['step_three']['amountAsset']]['free'] * 0.98
+            : $balances[$orderbook['step_three']['priceAsset']]['free'] / $orderbook_info['step_three']['buy_price'] * 0.98;
+
+        if (
+            $orderbook_info['step_one']['sell_amount'] > 0 && $orderbook_info['step_one']['sell_amount'] > $step_one_max_deal_amount ||
+            $orderbook_info['step_one']['buy_amount'] > 0 && $orderbook_info['step_one']['buy_amount'] > $step_one_max_deal_amount ||
+            $orderbook_info['step_two']['sell_amount'] > 0 && $orderbook_info['step_two']['sell_amount'] > $step_two_max_deal_amount ||
+            $orderbook_info['step_two']['buy_amount'] > 0 && $orderbook_info['step_two']['buy_amount'] > $step_two_max_deal_amount ||
+            $orderbook_info['step_three']['sell_amount'] > 0 && $orderbook_info['step_three']['sell_amount'] > $step_three_max_deal_amount ||
+            $orderbook_info['step_three']['buy_amount'] > 0 && $orderbook_info['step_three']['buy_amount'] > $step_three_max_deal_amount
+        ) {
+            $deal_amount_end_status = true;
+        } else {
+            $deal_amount_end_status = false;
+        }
+
+        $orderbook_info['step_one']['sell_amount'] = min($orderbook_info['step_one']['sell_amount'], $step_one_max_deal_amount);
+        $orderbook_info['step_one']['buy_amount'] = min($orderbook_info['step_one']['buy_amount'], $step_one_max_deal_amount);
+
+        $orderbook_info['step_two']['sell_amount'] = min($orderbook_info['step_two']['sell_amount'], $step_two_max_deal_amount);
+        $orderbook_info['step_two']['buy_amount'] = min($orderbook_info['step_two']['buy_amount'], $step_two_max_deal_amount);
+
+        $orderbook_info['step_three']['sell_amount'] = min($orderbook_info['step_three']['sell_amount'], $step_three_max_deal_amount);
+        $orderbook_info['step_three']['buy_amount'] = min($orderbook_info['step_three']['buy_amount'], $step_three_max_deal_amount);
+
+        Debug::rec($orderbook_info, '$orderbook_info after');
 
         //Step 1
         $deal_amount_stepOne = ($orderbook['step_one']['amountAsset'] == $mainAsset_id) ? $orderbook_info['step_one']['sell_amount'] : $orderbook_info['step_one']['buy_amount'] * $orderbook_info['step_one']['buy_price'];
@@ -467,7 +515,8 @@ class Main
             "min" => $deal_amount_min,
             "step_one" => $this->incrementNumber($deal_amount_stepOne, $mainAsset_decimals),
             "step_two" => $this->incrementNumber($deal_amount_stepTwo ?? 0, $mainAsset_decimals),
-            "step_three" => $this->incrementNumber($deal_amount_stepThree ?? 0, $mainAsset_decimals)
+            "step_three" => $this->incrementNumber($deal_amount_stepThree ?? 0, $mainAsset_decimals),
+            "deal_amount_end_status" => $deal_amount_end_status
         ];
 
     }
