@@ -27,8 +27,6 @@ $cross_3t = new Cross3T($config, ['debug' => $config['debug'], 'made_html_vision
 
 $discrete_time = new DiscreteTime();
 
-Debug::initPath($config['made_html_vision_file']);
-
 while (true) {
 
     usleep($config['sleep']);
@@ -43,9 +41,6 @@ while (true) {
 
     // если есть все необходимые данные
     if (!empty($balances) && !empty($orderbooks) && !empty($config)) {
-
-        Debug::rec($balances, 'Balances');
-        Debug::rec($orderbooks, 'OrderBooks');
 
         // запускаем алгоритм и получаем лучший результат
         if ($best_result = $cross_3t->run($balances, $orderbooks, true)) {
