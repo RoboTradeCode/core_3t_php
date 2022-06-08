@@ -249,8 +249,7 @@ class Main
                     $orderbook_info,
                     $combinations['main_asset_name'],
                     $combinations['main_asset_amount_precision'],
-                    $max_deal_amount,
-                    $balances
+                    $max_deal_amount
                 );
 
             } catch(Throwable $e) {
@@ -582,8 +581,7 @@ class Main
         array $orderbook_info,
         string $mainAsset_id,
         float $mainAsset_decimals,
-        float $max_deal_amount,
-        array $balances
+        float $max_deal_amount
     ): array
     {
 
@@ -604,7 +602,9 @@ class Main
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] / $orderbook_info['step_two']['sell_price'] / $orderbook_info['step_one']['sell_price'];
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] * $orderbook_info['step_two']['buy_price'] / $orderbook_info['step_one']['sell_price'];
 
-        $deal_amount_min = $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0, $max_deal_amount), $mainAsset_decimals);
+        $deal_amount_min = $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo, $deal_amount_stepThree), $mainAsset_decimals);
+
+        if ($deal_amount_min >= $max_deal_amount) $deal_amount_min = $max_deal_amount;
 
         return [
             "min" => $deal_amount_min,
