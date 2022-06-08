@@ -71,10 +71,10 @@ class Cross3T extends Main
 
                 $this->madeHtmlVision($results, $best_result, $orderbooks, $balances, $this->common_config['made_html_vision_file']);
 
-                if ($best_result) {
-                    $this->madeHtmlVisionForBestResult($best_result, $this->common_config['made_html_vision_for_best_result_file']);
-                }
+            }
 
+            if (isset($this->common_config['debug']) && $best_result) {
+                $this->madeHtmlVisionForBestResult($best_result, $this->common_config['made_html_vision_for_best_result_file']);
             }
 
             $this->interation++;
