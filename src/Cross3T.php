@@ -45,7 +45,6 @@ class Cross3T extends Main
                 if ($orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi)) {
 
                     $results[] = $this->getResults(
-                        $this->config['max_deal_amounts'][$combinations['main_asset_name']],
                         $this->config['max_depth'],
                         $this->config['rates'],
                         $combinations,
