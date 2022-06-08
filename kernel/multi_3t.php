@@ -22,7 +22,7 @@ $config = MultiConfigurator::getConfig(dirname(__DIR__) . '/config/multi_3t.json
 [$robotrade_apis, $log, $gate_publishers, $gates, $log_publisher, $multi_core] = MultiFirstData::get($config);
 
 // создаем класс cross 3t
-$cross_3t = new Cross3T($config, ['debug' => $config['debug'], 'made_html_vision_file' => $config['made_html_vision_file']]);
+$cross_3t = new Cross3T($config, ['debug' => $config['debug'], 'made_html_vision_file' => $config['made_html_vision_file'], 'made_html_vision_for_best_result_file' => $config['made_html_vision_for_best_result_file']]);
 
 $discrete_time = new DiscreteTime();
 
