@@ -240,25 +240,29 @@ class Main
 
         while (true) {
 
-            $this->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
+            if ($max_deal_amount != 0) {
 
-            try {
+                $this->getOrderbookInfo($orderbook_info, $orderbook, $deal_amount, $max_deal_amount);
 
-                $deal_amount = $this->DealAmount(
-                    $orderbook,
-                    $orderbook_info,
-                    $combinations['main_asset_name'],
-                    $combinations['main_asset_amount_precision'],
-                    $max_deal_amount
-                );
+                try {
 
-            } catch(Throwable $e) {
+                    $deal_amount = $this->DealAmount(
+                        $orderbook,
+                        $orderbook_info,
+                        $combinations['main_asset_name'],
+                        $combinations['main_asset_amount_precision'],
+                        $max_deal_amount
+                    );
 
-                echo '[' . date('Y-m-d H:i:s') . '] Division by zero Deal Amount. Error Message: ' . $e->getMessage() . PHP_EOL;
+                } catch(Throwable $e) {
 
-                sleep(1);
+                    echo '[' . date('Y-m-d H:i:s') . '] Division by zero Deal Amount. Error Message: ' . $e->getMessage() . PHP_EOL;
 
-                break;
+                    sleep(1);
+
+                    break;
+
+                }
 
             }
 
@@ -562,7 +566,7 @@ class Main
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] / $orderbook_info['step_two']['sell_price'] / $orderbook_info['step_one']['sell_price'];
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] * $orderbook_info['step_two']['buy_price'] / $orderbook_info['step_one']['sell_price'];
 
-        return $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo ?? 0, $deal_amount_stepThree ?? 0), $mainAsset_decimals);
+        return $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo, $deal_amount_stepThree), $mainAsset_decimals);
 
     }
 
@@ -602,15 +606,15 @@ class Main
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['priceAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] / $orderbook_info['step_two']['sell_price'] / $orderbook_info['step_one']['sell_price'];
         elseif ($orderbook['step_three']['priceAsset'] == $orderbook['step_two']['amountAsset'] && $orderbook['step_three']['amountAsset'] == $orderbook['step_one']['amountAsset']) $deal_amount_stepThree = $orderbook_info['step_three']['buy_amount'] * $orderbook_info['step_three']['buy_price'] * $orderbook_info['step_two']['buy_price'] / $orderbook_info['step_one']['sell_price'];
 
-        $deal_amount_min = $this->incrementNumber(min($deal_amount_stepOne, $deal_amount_stepTwo, $deal_amount_stepThree), $mainAsset_decimals);
+        $deal_amount_min = min($deal_amount_stepOne, $deal_amount_stepTwo, $deal_amount_stepThree);
 
         if ($deal_amount_min >= $max_deal_amount) $deal_amount_min = $max_deal_amount;
 
         return [
             "min" => $deal_amount_min,
-            "step_one" => $this->incrementNumber($deal_amount_stepOne, $mainAsset_decimals),
-            "step_two" => $this->incrementNumber($deal_amount_stepTwo ?? 0, $mainAsset_decimals),
-            "step_three" => $this->incrementNumber($deal_amount_stepThree ?? 0, $mainAsset_decimals)
+            "step_one" => $deal_amount_stepOne,
+            "step_two" => $deal_amount_stepTwo,
+            "step_three" => $deal_amount_stepThree
         ];
 
     }
