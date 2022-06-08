@@ -8,12 +8,69 @@ class Main
 {
 
     /**
-     * Made html vision file into cache folder
+     * Made html vision for best result file into folder
+     *
+     * @param array $best_result The best result
+     * @param string $file_path
+     * @return void
+     */
+    public function madeHtmlVisionForBestResult(array $best_result, string $file_path): void
+    {
+
+        $date = date("d.m.y H:i:s", time());
+
+        $html = <<<HTML
+         <style> body {font-family: monospace;} table {border-collapse: collapse;} td, th {border: 1px solid #000; padding: 5px;} th {font-weight: bold;}</style>
+         <i>Generated: $date</i><br /><br />
+
+        <table>
+        <tr><th>#</th><th>Triangle</th><th>Step 1</th><th>Step 2</th><th>Step 3</th><th>Result</th></tr>
+        HTML;
+
+        if ($best_result) {
+
+            $result_first_step = ($best_result["step_one"]["orderType"] == 'buy') ? $best_result["deal_amount"] : $best_result["step_one"]["amount"];
+
+            $table = "<tr><td>0</td>";
+
+            $calculations = "<td><strong>{$best_result["main_asset_name"]} -> {$best_result["asset_one_name"]} -> {$best_result["asset_two_name"]}</strong><br /><small>Deal: " . $this->format($best_result["deal_amount"]) . " {$best_result["main_asset_name"]}<br />Max: {$best_result["expected_data"]["max_deal_amount"]}" . "</small></td>";
+
+            $calculations .= "<td>Market: {$best_result["step_one"]["amountAssetName"]} -> {$best_result["step_one"]["priceAssetName"]} ({$best_result["step_one"]["orderType"]})<br />Position: {$best_result["step_one"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepOne_sell_price"]} ({$best_result["expected_data"]["stepOne_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepOne_buy_price"]} ({$best_result["expected_data"]["stepOne_buy_amount"]})<br />Result: <span style=\"color: red;\">-{$result_first_step} {$best_result["main_asset_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span><br />{$best_result["step_one"]["exchange"]}</td>";
+
+            $calculations .= "<td>Market: {$best_result["step_two"]["amountAssetName"]} -> {$best_result["step_two"]["priceAssetName"]} ({$best_result["step_two"]["orderType"]})<br />Position: {$best_result["step_two"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepTwo_sell_price"]} ({$best_result["expected_data"]["stepTwo_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepTwo_buy_price"]} ({$best_result["expected_data"]["stepTwo_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($best_result["step_one"]["result"]) . " {$best_result["asset_one_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_two"]["result"]) . " {$best_result["asset_two_name"]}</span><br />{$best_result["step_two"]["exchange"]}</td>";
+
+            $calculations .= "<td>Market: {$best_result["step_three"]["amountAssetName"]} -> {$best_result["step_three"]["priceAssetName"]} ({$best_result["step_three"]["orderType"]})<br />Position: {$best_result["step_three"]["dom_position"]}<br />Sell: {$best_result["expected_data"]["stepThree_sell_price"]} ({$best_result["expected_data"]["stepThree_sell_amount"]})<br />Buy: {$best_result["expected_data"]["stepThree_buy_price"]} ({$best_result["expected_data"]["stepThree_buy_amount"]})<br />Result: <span style=\"color: red;\">-" . $this->format($best_result["step_two"]["result"]) . " {$best_result["asset_two_name"]}</span>, <span style=\"color: green;\">+" . $this->format($best_result["step_three"]["result"]) . " {$best_result["main_asset_name"]}</span><br />{$best_result["step_three"]["exchange"]}</td>";
+
+            $calculations .= "<td><span style=\"color: " . (($best_result["result"] > 0) ? "green" : "red;") . ";\">" . $this->format($best_result["result"]) . " {$best_result["main_asset_name"]}</span></td>";
+
+            $calculations .= "</tr>";
+
+            $table .= $calculations;
+
+            $html .= $table;
+
+            $html .= '<tr><td colspan="6" style="background-color: grey; color: #fff; text-align: center;"> Best Result </td></tr>' . '<tr><td colspan="6" style="border-left: 0; border-right: 0;">&nbsp;</td></tr>';
+
+            $html .= '</table>';
+
+        }
+
+        $index = fopen($file_path, 'w');
+
+        fwrite($index, $html);
+
+        fclose($index);
+
+    }
+
+    /**
+     * Made html vision file into folder
      *
      * @param array $results All results
      * @param array $best_result The best result
      * @param array $orderbooks All orderbooks
      * @param array $balances All balances
+     * @param string $file_path
      * @return void
      */
     public function madeHtmlVision(array $results, array $best_result, array $orderbooks, array $balances, string $file_path): void
