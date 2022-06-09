@@ -66,7 +66,7 @@ do {
 
                 $do = true;
 
-                echo 'No pair in memcached: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] No pair in memcached: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
                 break;
 
@@ -76,11 +76,11 @@ do {
 
         }
 
-        echo 'Try get rates from memcached orderbooks' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Try get rates from memcached orderbooks' . PHP_EOL;
 
     } else {
 
-        echo 'Try get data from memcached' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Try get data from memcached' . PHP_EOL;
 
     }
 
@@ -120,9 +120,14 @@ foreach ($config['assets_labels'] as $assets_label) {
                     'Create Balancer order'
                 )
             ); echo PHP_EOL;
+
+            usleep(500000);
+
+        } else {
+            echo '[' . date('Y-m-d H:i:s') . '] Empty precisions!!! ' . EXCHANGE . PHP_EOL;
         }
 
-        echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
     }
 
@@ -151,7 +156,7 @@ do {
     // балансы
     $balances = $all_data['balances'];
 
-    echo 'Try get balances from memcached' . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] Try get balances from memcached' . PHP_EOL;
 
 } while(empty($balances[$common_config['exchange']]));
 
@@ -191,11 +196,13 @@ foreach ($config['assets_labels'] as $assets_label) {
             )
         ); echo PHP_EOL;
 
-        echo 'Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+        usleep(500000);
+
+        echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
     } else {
 
-        echo 'Empty precision Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Empty precision Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
 
     }
 
@@ -224,7 +231,7 @@ do {
     // балансы
     $balances = $all_data['balances'];
 
-    echo 'Try get balances from memcached' . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] Try get balances from memcached' . PHP_EOL;
 
 } while(empty($balances[$common_config['exchange']]));
 
