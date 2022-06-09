@@ -777,7 +777,7 @@ class Main
         if ($min_amount_step_one > $stepOne["amount"]) {
             return [
                 "status" => false,
-                "reason" => "Amount limit error (step 1): {$combinations["step_one_symbol"]} min amount: $min_amount_step_one, current amount: {$stepOne["amount"]}"
+                "reason" => "Amount limit error (step 1): {$combinations["step_one_symbol"]} min amount: $min_amount_step_one, current amount: {$stepOne["amount"]}, order type: {$stepOne["orderType"]}, exchange: {$stepOne["exchange"]}, deal amount: {$deal_amount}"
             ];
         }
 
@@ -787,7 +787,7 @@ class Main
         if ($cost_limit_step_one > $stepOne["amount"] * $stepOne["price"]) {
             return [
                 "status" => false,
-                "reason" => "Cost limit error (step 1): {$combinations["step_one_symbol"]} min cost: $cost_limit_step_one, current cost: " . ($stepOne["amount"] * $stepOne["price"])
+                "reason" => "Cost limit error (step 1): {$combinations["step_one_symbol"]} min cost: $cost_limit_step_one, current cost: " . ($stepOne["amount"] * $stepOne["price"]) . " current amount: {$stepOne["amount"]}, order type: {$stepOne["orderType"]}, exchange: {$stepOne["exchange"]}, deal amount: {$deal_amount}"
             ];
         }
 
@@ -866,7 +866,7 @@ class Main
         if ($min_amount_step_two > $stepTwo["amount"]) {
             return [
                 "status" => false,
-                "reason" => "Amount limit error (step 2): {$combinations["step_two_symbol"]} min amount: $min_amount_step_two, current amount: {$stepTwo["amount"]}"
+                "reason" => "Amount limit error (step 2): {$combinations["step_two_symbol"]} min amount: $min_amount_step_two, current amount: {$stepTwo["amount"]}, order type: {$stepTwo["orderType"]}, exchange: {$stepTwo["exchange"]}, deal amount: {$deal_amount}"
             ];
         }
 
@@ -876,7 +876,7 @@ class Main
         if ($cost_limit_step_two > $stepTwo["amount"] * $stepTwo["price"]) {
             return [
                 "status" => false,
-                "reason" => "Cost limit error (step 2): {$combinations["step_two_symbol"]} min cost: $cost_limit_step_two, current cost: " . ($stepTwo["amount"] * $stepTwo["price"])
+                "reason" => "Cost limit error (step 2): {$combinations["step_two_symbol"]} min cost: $cost_limit_step_two, current cost: " . ($stepTwo["amount"] * $stepTwo["price"]) . " current amount: {$stepTwo["amount"]}, order type: {$stepTwo["orderType"]}, exchange: {$stepTwo["exchange"]}, deal amount: {$deal_amount}"
             ];
         }
 
@@ -959,7 +959,7 @@ class Main
         if ($min_amount_step_three > $stepThree["amount"]) {
             return [
                 "status" => false,
-                "reason" => "Amount limit error (step 3): {$combinations["step_three_symbol"]} min amount: $min_amount_step_three, current amount: {$stepThree["amount"]}"
+                "reason" => "Amount limit error (step 3): {$combinations["step_three_symbol"]} min amount: $min_amount_step_three, current amount: {$stepThree["amount"]}, current amount: {$stepThree["amount"]}, order type: {$stepThree["orderType"]}, exchange: {$stepThree["exchange"]}, deal amount: {$deal_amount}"
             ];
         }
 
@@ -969,7 +969,7 @@ class Main
         if ($cost_limit_step_three > $stepThree["amount"] * $stepThree["price"]) {
             return [
                 "status" => false,
-                "reason" => "Cost limit error (step 3): {$combinations["step_three_symbol"]} min cost: $cost_limit_step_three, current cost: " . ($stepThree["amount"] * $stepThree["price"])
+                "reason" => "Cost limit error (step 3): {$combinations["step_three_symbol"]} min cost: $cost_limit_step_three, current cost: " . ($stepThree["amount"] * $stepThree["price"]) . " current amount: {$stepThree["amount"]}, order type: {$stepThree["orderType"]}, exchange: {$stepThree["exchange"]}, deal amount: {$deal_amount}"
             ];
         }
 
