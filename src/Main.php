@@ -279,7 +279,7 @@ class Main
 
                 $results[] = $result;
 
-            } elseif (!$result["status"]) {
+            } elseif (!$result["status"] && $deal_amount == $max_deal_amount) {
 
                 $reason = $result["reason"];
 
