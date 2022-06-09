@@ -250,7 +250,6 @@ class Main
                         $orderbook,
                         $orderbook_info,
                         $combinations['main_asset_name'],
-                        $combinations['main_asset_amount_precision'],
                         $max_deal_amount
                     );
 
@@ -584,7 +583,6 @@ class Main
         array $orderbook,
         array $orderbook_info,
         string $mainAsset_id,
-        float $mainAsset_decimals,
         float $max_deal_amount
     ): array
     {
