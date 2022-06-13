@@ -528,16 +528,16 @@ class Main
             $orderbook_info['step_three']['sell_price'] = $orderbook["step_three"]["bids"]["0"]["0"];
 
         $step_one_max_deal_amount = empty($orderbook['step_one']['asks'])
-            ? $balances[$orderbook['step_one']['amountAsset']]['free'] * 0.98
-            : $balances[$orderbook['step_one']['priceAsset']]['free'] / $orderbook_info['step_one']['buy_price'] * 0.98;
+            ? $balances[$orderbook['step_one']['amountAsset']]['free'] * 0.95
+            : $balances[$orderbook['step_one']['priceAsset']]['free'] / $orderbook_info['step_one']['buy_price'] * 0.95;
 
         $step_two_max_deal_amount = empty($orderbook['step_two']['asks'])
-            ? $balances[$orderbook['step_two']['amountAsset']]['free'] * 0.98
-            : $balances[$orderbook['step_two']['priceAsset']]['free'] / $orderbook_info['step_two']['buy_price'] * 0.98;
+            ? $balances[$orderbook['step_two']['amountAsset']]['free'] * 0.95
+            : $balances[$orderbook['step_two']['priceAsset']]['free'] / $orderbook_info['step_two']['buy_price'] * 0.95;
 
         $step_three_max_deal_amount = empty($orderbook['step_three']['asks'])
-            ? $balances[$orderbook['step_three']['amountAsset']]['free'] * 0.98
-            : $balances[$orderbook['step_three']['priceAsset']]['free'] / $orderbook_info['step_three']['buy_price'] * 0.98;
+            ? $balances[$orderbook['step_three']['amountAsset']]['free'] * 0.95
+            : $balances[$orderbook['step_three']['priceAsset']]['free'] / $orderbook_info['step_three']['buy_price'] * 0.95;
 
         $orderbook_info['step_one']['sell_amount'] = $step_one_max_deal_amount;
         $orderbook_info['step_one']['buy_amount'] = $step_one_max_deal_amount;
