@@ -62,7 +62,17 @@ do {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            if (!isset($orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+            if (!isset($rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && isset($orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+
+                $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']] = $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']];
+
+            }
+
+        }
+
+        foreach ($config['assets_labels'] as $assets_label) {
+
+            if (!isset($rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
 
                 $do = true;
 
@@ -106,7 +116,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                     'market',
                     'sell',
                     $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
-                    $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                    $rates[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
                     'Create Balancer order'
                 )
             );
@@ -116,7 +126,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                     'market',
                     'sell',
                     $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
-                    $orderbooks[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                    $rates[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
                     'Create Balancer order'
                 )
             ); echo PHP_EOL;
@@ -180,8 +190,8 @@ foreach ($config['assets_labels'] as $assets_label) {
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
-                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
-                $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
+                $precisions['amount_increment'] * floor(($sum_usdt / $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+                $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
                 'Create Balancer order'
             )
         );
@@ -190,8 +200,8 @@ foreach ($config['assets_labels'] as $assets_label) {
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
-                $precisions['amount_increment'] * floor(($sum_usdt / $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
-                $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
+                $precisions['amount_increment'] * floor(($sum_usdt / $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+                $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
                 'Create Balancer order'
             )
         ); echo PHP_EOL;
