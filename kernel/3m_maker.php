@@ -54,7 +54,7 @@ while (true) {
             $symbol = $config['3m_maker_markets'][$exchange];
 
             // если есть балансы данной биржи и ордербук данного рынка
-            if (isset($balances[$exchange]) && isset($orderbooks[$symbol][$exchange]) && isset($orderbooks['ETH/USDT'][$exchange]) && isset($orderbooks['BTC/ETH'][$exchange])) {
+            if (isset($balances[$exchange]) && isset($orderbooks[$symbol][$exchange]) && isset($orderbooks['ETH/USDT'][$exchange]) && isset($orderbooks['ETH/BTC'][$exchange])) {
 
                 // берем данные price_increment и amount_increment для данной биржи и рынка
                 $market = $m3_maker->getMarket($exchange, $symbol);
@@ -195,7 +195,7 @@ while (true) {
                     echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/USDT"][$exchange])' . PHP_EOL;
 
                 if (!isset($orderbooks['BTC/ETH'][$exchange]))
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["BTC/ETH"][$exchange])' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/BTC"][$exchange])' . PHP_EOL;
 
                 sleep(1);
 
