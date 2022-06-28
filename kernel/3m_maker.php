@@ -183,6 +183,22 @@ while (true) {
 
                 }
 
+            } else {
+
+                if (!isset($balances[$exchange]))
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($balances[$exchange])' . PHP_EOL;
+
+                if (!isset($orderbooks[$symbol][$exchange]))
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks[$symbol][$exchange]' . PHP_EOL;
+
+                if (!isset($orderbooks['ETH/USDT'][$exchange]))
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/USDT"][$exchange])' . PHP_EOL;
+
+                if (!isset($orderbooks['BTC/ETH'][$exchange]))
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["BTC/ETH"][$exchange])' . PHP_EOL;
+
+                sleep(1);
+
             }
 
         }
