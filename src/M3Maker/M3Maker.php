@@ -13,6 +13,8 @@ class M3Maker
 
         $this->config = $this->receiveConfig($file_path);
 
+        $this->interation = 0;
+
     }
 
     public function getConfig(): array
