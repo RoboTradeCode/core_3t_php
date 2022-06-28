@@ -194,7 +194,7 @@ while (true) {
                 if (!isset($orderbooks['ETH/USDT'][$exchange]))
                     echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/USDT"][$exchange])' . PHP_EOL;
 
-                if (!isset($orderbooks['BTC/ETH'][$exchange]))
+                if (!isset($orderbooks['ETH/BTC'][$exchange]))
                     echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/BTC"][$exchange])' . PHP_EOL;
 
                 sleep(1);
