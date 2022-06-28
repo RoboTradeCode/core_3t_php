@@ -1,0 +1,45 @@
+{
+  "node": "core",
+  "exchange": "spread",
+  "algorithm": "3m_maker_php",
+  "instance": "3m_maker_php",
+  "order_pairs": 2,
+  "interval": 0.1,
+  "expired_orderbook_time": 10000000,
+  "send_command_to_get_status_time": 5000000,
+  "sleep": 10,
+  "exchanges": [
+    "binance",
+    "exmo"
+  ],
+  "instances": {
+    "binance": "1",
+    "exmo": "1"
+  },
+  "3m_maker_markets": {
+    "binance": "BTC/USDT",
+    "exmo": "BTC/USDT"
+  },
+  "deal_amounts": {
+    "BTC": 0.01,
+    "USDT": 200
+  },
+  "aeron": {
+    "publishers": {
+      "gates": {
+        "binance": {
+          "channel": "aeron:udp?control=172.31.12.44:40453|control-mode=dynamic",
+          "stream_id": 1004
+        },
+        "exmo": {
+          "channel": "aeron:udp?control=172.31.12.44:40447|control-mode=dynamic",
+          "stream_id": 1004
+        }
+      },
+      "log": {
+        "channel": "aeron:udp?endpoint=3.66.183.27:44444",
+        "stream_id": 1008
+      }
+    }
+  }
+}
