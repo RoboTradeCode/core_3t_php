@@ -52,7 +52,7 @@ function handler_orderbooks(string $message): void
 
             // записать в memcached
             $memcached->set(
-                $data['exchange'] . '_' . $data['action'] . '_' . $data['data']['symbol'],
+                $data['exchange'] . '_orderbook' . '_' . $data['data']['symbol'],
                 $data['data']
             );
 
@@ -95,7 +95,7 @@ function handler_balances(string $message): void
 
             // записать в memcached
             $memcached->set(
-                $data['exchange'] . '_' . $data['action'],
+                $data['exchange'] . '_balances',
                 $balances[$data['exchange']]
             );
 
@@ -104,6 +104,48 @@ function handler_balances(string $message): void
         } else {
 
             echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+
+        }
+
+    }
+
+}
+
+function handler_orders(string $message): void
+{
+
+    global $memcached;
+
+    // если данные пришли
+    if ($data = Aeron::messageDecode($message)) {
+
+        // если event как data, а node как gate
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
+
+            if ($data['action'] == 'order_created' || $data['action'] == 'order_status') {
+
+                $key = $data['exchange'] . '_orders';
+
+                $orders = $memcached->get($key);
+
+                $orders[$data['data']['id']] = $data['data'];
+
+                $memcached->set(
+                    $key,
+                    $orders
+                );
+
+            } else {
+
+                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Action not correct' . $data['action'] . PHP_EOL;
+
+            }
+
+        } else {
+
+            print_r($message); echo PHP_EOL;
+
+            echo '[ERROR] handler_orders Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
 
@@ -124,6 +166,12 @@ foreach ($config['aeron']['subscribers']['balance']['destinations'] as $destinat
     $subscriber_balances->addDestination($destination);
 }
 
+$subscriber_orders = new Subscriber('handler_orders', $config['aeron']['subscribers']['orders']['channel'], $config['aeron']['subscribers']['orders']['stream_id']);
+
+foreach ($config['aeron']['subscribers']['orders']['destinations'] as $destination) {
+    $subscriber_orders->addDestination($destination);
+}
+
 while (true) {
 
     usleep($common_config['sleep']);
@@ -131,6 +179,8 @@ while (true) {
     $subscriber_orderbooks->poll();
 
     $subscriber_balances->poll();
+
+    $subscriber_orders->poll();
 
     if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
 
