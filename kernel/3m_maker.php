@@ -66,10 +66,10 @@ while (true) {
                     list($base_asset, $quote_asset) = explode('/', $symbol);
 
                     // считаем profit bid
-                    $profit_bid = $orderbooks['ETH/USDT'][$exchange]['bids'][0][0] / $orderbooks['BTC/ETH'][$exchange]['asks'][0][0];
+                    $profit_bid = $orderbooks['ETH/USDT'][$exchange]['bids'][0][0] / $orderbooks['ETH/BTC'][$exchange]['asks'][0][0];
 
                     // считаем profit ask
-                    $profit_ask = $orderbooks['ETH/USDT'][$exchange]['asks'][0][0] / $orderbooks['BTC/ETH'][$exchange]['bids'][0][0];
+                    $profit_ask = $orderbooks['ETH/USDT'][$exchange]['asks'][0][0] / $orderbooks['ETH/BTC'][$exchange]['bids'][0][0];
 
                     // находим все, что в сетке ниже $best_bid и выше $best_ask
                     [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
