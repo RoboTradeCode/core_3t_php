@@ -172,7 +172,7 @@ while (true) {
                         // отправить на лог сервер ошибку
                         $api->sendErrorToLogServer($exchange, '($sell_orders + $buy_orders) != 2 * $config[$order_pairs]');
 
-                        sleep(1);
+                        sleep(5);
 
                     }
 
