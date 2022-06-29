@@ -36,14 +36,18 @@ class Api
     private function sendCommandToGate(string $exchange, string $message): void
     {
 
-        $this->gate_publishers[$exchange]->offer($message);
+        $code = $this->gate_publishers[$exchange]->offer($message);
+
+        echo '[' . date('Y-m-d H:i:s') . '] Send to gate message. Code: ' . $code . PHP_EOL;
 
     }
 
     private function sendToLog(string $message): void
     {
 
-        $this->log_publisher->offer($message);
+        $code = $this->log_publisher->offer($message);
+
+        echo '[' . date('Y-m-d H:i:s') . '] Send to log server message. Code: ' . $code . PHP_EOL;
 
     }
 
