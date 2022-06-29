@@ -113,7 +113,7 @@ while (true) {
                                 // перезаписать в memcached, только нужные реальные ордера
                                 $memcached->set(
                                     $exchange . '_orders',
-                                    $real_orders
+                                    $real_orders[$exchange]
                                 );
 
                             }
