@@ -81,7 +81,7 @@ while (true) {
                     if (($sell_orders + $buy_orders) == 2 * $config['order_pairs']) {
 
                         // получаем массив ордлеров на продажу и покупку
-                        $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher);
+                        $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
 
                         // если у нас есть реальные ордера
                         if (isset($real_orders[$exchange])) {

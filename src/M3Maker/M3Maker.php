@@ -114,7 +114,7 @@ class M3Maker
 
     }
 
-    public function getOrders(int $sell_orders, int $buy_orders, string $symbol, array $lower, array $higher): array
+    public function getOrders(int $sell_orders, int $buy_orders, string $symbol, array $lower, array $higher, float $price, float $amount_increment): array
     {
 
         // берем base_asset и quote_asset для данного рынка
@@ -140,7 +140,7 @@ class M3Maker
                 'symbol' => $symbol,
                 'type' => 'limit',
                 'side' => 'buy',
-                'amount' => $this->config['deal_amounts'][$quote_asset],
+                'amount' => $this->incrementNumber($this->config['deal_amounts'][$quote_asset] / $price, $amount_increment),
                 'price' => array_pop($lower)
             ];
 
