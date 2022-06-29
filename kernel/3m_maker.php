@@ -90,7 +90,7 @@ while (true) {
                             [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders[$exchange]);
 
                             // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
-/*                            if (!empty($must_real_orders)) {
+                            if (!empty($must_real_orders)) {
 
                                 // пройтись по каждому элемента массива
                                 foreach ($must_real_orders as $must_real_key => $must_real_order) {
@@ -111,12 +111,12 @@ while (true) {
                                 }
 
                                 // перезаписать в memcached, только нужные реальные ордера
-                                $memcached->set(
-                                    $exchange . '_orders',
-                                    $real_orders[$exchange]
-                                );
+//                                $memcached->set(
+//                                    $exchange . '_orders',
+//                                    $real_orders[$exchange]
+//                                );
 
-                            }*/
+                            }
 
                             // если массив теоретических ордеров, которые должны быть поставлены не пуст
                             if (!empty($must_orders)) {
