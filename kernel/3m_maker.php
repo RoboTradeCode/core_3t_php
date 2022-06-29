@@ -131,8 +131,10 @@ while (true) {
 
                             }
 
+                            // если существут переменная $microtimes для данной биржи, то
                             if (isset($microtimes[$exchange])) {
 
+                                // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
                                 if ((microtime(true) - $microtimes[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
 
                                     // пройтись по всем реальным ордерам
@@ -143,23 +145,44 @@ while (true) {
 
                                     }
 
+                                    // обновить время переменной $microtimes для данной биржи
                                     $microtimes[$exchange] = microtime(true);
 
                                 }
 
                             } else {
 
+                                // зафиксировать первоначальное время переменной $microtimes для данной биржи
                                 $microtimes[$exchange] = microtime(true);
 
                             }
 
+                            // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
+                            if (isset($was_send_create_orders[$exchange]))
+                                unset($was_send_create_orders[$exchange]);
+
                         } else {
 
-                            // пройтись по всем ордерам
-                            foreach ($orders as $order) {
+                            // если нет переменной $was_send_create_orders для данной биржи, то это означает, что пока нет первой постановки ордеров
+                            if (!isset($was_send_create_orders[$exchange])) {
 
-                                // отправить на постановку ордеров
-                                $api->createOrder($exchange, $order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
+                                // пройтись по всем ордерам
+                                foreach ($orders as $order) {
+
+                                    // отправить на постановку ордеров
+                                    $api->createOrder($exchange, $order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
+
+                                }
+
+                                // создать переменную $was_send_create_orders для биржи, чтобы понимать, что постановка на первоначальные ордера были выставлены
+                                $was_send_create_orders[$exchange] = true;
+
+                            } else {
+
+                                // выводит сообщение, что не может получить ордера от гейтов
+                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates' . PHP_EOL;
+
+                                sleep(1);
 
                             }
 
@@ -167,6 +190,7 @@ while (true) {
 
                     } else {
 
+                        // выводит, что сумма количества ордеров на продажу и покупку не соответствует суммарному количеству ордеров, которые необходимо поставить
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] ($sell_orders + $buy_orders) != 2 * $config[$order_pairs]' . PHP_EOL;
 
                         // отправить на лог сервер ошибку
@@ -185,17 +209,21 @@ while (true) {
 
             } else {
 
+                // Выводит в консоль сообщения, что нет $balances[$exchange]
                 if (!isset($balances[$exchange]))
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($balances[$exchange])' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($balances[$exchange])' . PHP_EOL;
 
+                // Выводит в консоль сообщения, что нет $orderbooks[$symbol][$exchange]
                 if (!isset($orderbooks[$symbol][$exchange]))
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks[$symbol][$exchange]' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbol][$exchange]' . PHP_EOL;
 
+                // Выводит в консоль сообщения, что нет $orderbooks["ETH/USDT"][$exchange]
                 if (!isset($orderbooks['ETH/USDT'][$exchange]))
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/USDT"][$exchange])' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks["ETH/USDT"][$exchange])' . PHP_EOL;
 
+                // Выводит в консоль сообщения, что нет $orderbooks["ETH/BTC"][$exchange]
                 if (!isset($orderbooks['ETH/BTC'][$exchange]))
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: !isset($orderbooks["ETH/BTC"][$exchange])' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks["ETH/BTC"][$exchange])' . PHP_EOL;
 
                 sleep(1);
 
