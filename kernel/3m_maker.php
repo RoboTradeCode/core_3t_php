@@ -34,6 +34,9 @@ while (true) {
     // задержка между каждым циклом
     usleep($config['sleep']);
 
+    //DEBUG ONLY
+    $m3_maker->sleepDebug(); //DEBUG ONLY
+
     // берем данные из memcached
     if ($memcached_data = $memcached->getMulti($multi_core->keys)) {
 
@@ -82,14 +85,37 @@ while (true) {
                     // если в сумме количество ордеров верно, то делать расчеты дальше
                     if (($sell_orders + $buy_orders) == 2 * $config['order_pairs']) {
 
+                        //DEBUG ONLY
+                        $m3_maker->printArray(
+                            [
+                                'profit_bid' => $profit_bid,
+                                'profit_ask' => $profit_ask,
+                                'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0],
+                                'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0]
+                            ],
+                            'Profit bid, ask, Best Orderbook'
+                        ); //DEBUG ONLY
+
                         // получаем массив ордеров на продажу и покупку
                         $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
+
+                        //DEBUG ONLY
+                        $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
 
                         // если у нас есть реальные ордера
                         if (isset($real_orders[$exchange])) {
 
                             // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
                             [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders[$exchange]);
+
+                            //DEBUG ONLY
+                            $m3_maker->printOrders($real_orders[$exchange], 'Real Orders'); //DEBUG ONLY
+
+                            //DEBUG ONLY
+                            $m3_maker->printOrders($must_real_orders, 'Real Orders for Cancel'); //DEBUG ONLY
+
+                            //DEBUG ONLY
+                            $m3_maker->printOrders($must_orders, 'Must Create Orders'); //DEBUG ONLY
 
                             // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
                             if (!empty($must_real_orders)) {
