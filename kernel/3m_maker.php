@@ -20,11 +20,13 @@ $m3_maker = new M3Maker(dirname(__DIR__) . '/config/3m_maker.json');
 // получение конфигов
 $config = $m3_maker->getConfig();
 
+// класс Api для работы с гейтами и лог сервером
 $api = new Api($config);
 
 // класс для формирования данных, взятых из memcached
 $multi_core = new MemcachedData($config['exchanges'], $config['markets'], $config['expired_orderbook_time']);
 
+// класс для вызова функции раз в две секунды
 $discrete_time = new DiscreteTime();
 
 while (true) {
@@ -71,7 +73,7 @@ while (true) {
                     // считаем profit ask
                     $profit_ask = $orderbooks['ETH/USDT'][$exchange]['asks'][0][0] / $orderbooks['ETH/BTC'][$exchange]['bids'][0][0];
 
-                    // находим все, что в сетке ниже $best_bid и выше $best_ask
+                    // находим все, что в сетке ниже $profit_bid и выше $profit_ask
                     [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
 
                     // найти количество ордеров на продажу и количество ореров на покупку
@@ -80,7 +82,7 @@ while (true) {
                     // если в сумме количество ордеров верно, то делать расчеты дальше
                     if (($sell_orders + $buy_orders) == 2 * $config['order_pairs']) {
 
-                        // получаем массив ордлеров на продажу и покупку
+                        // получаем массив ордеров на продажу и покупку
                         $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
 
                         // если у нас есть реальные ордера
