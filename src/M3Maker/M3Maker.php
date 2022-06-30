@@ -223,12 +223,12 @@ class M3Maker
 
     }
 
-    public function printOrders(array $orders, string $message): void
+    public function printOrders(array $orders, string $head_message): void
     {
 
         if ($this->debugMode()) {
 
-            echo PHP_EOL . $message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
+            echo PHP_EOL . $head_message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
 
             foreach ($orders as $order) {
 
@@ -241,23 +241,23 @@ class M3Maker
 
             }
 
-            echo $message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
+            echo $head_message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
 
         }
 
     }
 
-    public function printArray(array $array, string $message): void
+    public function printArray(array $array, string $head_message): void
     {
 
         if ($this->debugMode()) {
 
-            echo PHP_EOL . $message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
+            echo PHP_EOL . $head_message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
 
             foreach ($array as $key => $arr)
                 echo '[' . date('Y-m-d H:i:s') . '] ' . $key . ' ' . $arr . PHP_EOL;
 
-            echo $message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
+            echo $head_message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
 
         }
 
