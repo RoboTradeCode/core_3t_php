@@ -223,6 +223,57 @@ class M3Maker
 
     }
 
+    public function printOrders(array $orders, string $message): void
+    {
+
+        if ($this->debugMode()) {
+
+            echo $message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
+
+            foreach ($orders as $order) {
+
+                $message = '[' . date('Y-m-d H:i:s') . '] Price ' . $order['price'] . ' Side ' . $order['side'];
+
+                if (isset($order['status']))
+                    $message .= ' Status ' . $order['status'];
+
+                echo $message . PHP_EOL;
+
+            }
+
+            echo $message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL;
+
+        }
+
+    }
+
+    public function printArray(array $array, string $message): void
+    {
+
+        if ($this->debugMode()) {
+
+            echo $message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
+
+            foreach ($array as $key => $arr)
+                echo '[' . date('Y-m-d H:i:s') . '] ' . $key . ' ' . $arr . PHP_EOL;
+
+            echo $message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL;
+
+        }
+
+    }
+
+
+    private function debugMode(): bool
+    {
+
+        if (isset($this->config['debug']))
+            return $this->config['debug'];
+
+        return false;
+
+    }
+
     private function receiveConfig(string $file_path)
     {
 
