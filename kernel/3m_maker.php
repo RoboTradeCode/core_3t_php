@@ -88,10 +88,10 @@ while (true) {
                         //DEBUG ONLY
                         $m3_maker->printArray(
                             [
-                                'profit_bid' => $profit_bid,
-                                'profit_ask' => $profit_ask,
                                 'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0],
-                                'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0]
+                                'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0],
+                                'profit_ask' => $profit_ask,
+                                'profit_bid' => $profit_bid,
                             ],
                             'Profit bid, ask, Best Orderbook'
                         ); //DEBUG ONLY
