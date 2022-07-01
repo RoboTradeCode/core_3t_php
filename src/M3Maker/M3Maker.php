@@ -93,7 +93,11 @@ class M3Maker
             foreach ($must_real_orders as $must_real_key => $real_order) {
 
                 // если цена уже поставленного ордера совпадает с теоретическим и статус этого ордера open
-                if (bccomp($real_order['price'], $must_order['price'], 8) == 0  && $real_order['status'] == 'open') {
+                if (
+                    bccomp($real_order['price'], $must_order['price'], 8) == 0  &&
+                    $real_order['side'] == $must_order['side'] &&
+                    $real_order['status'] == 'open'
+                ) {
 
                     // удалить из теоретического массива ордеров данный ордер
                     unset($must_orders[$must_key]);
