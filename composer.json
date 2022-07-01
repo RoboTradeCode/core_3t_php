@@ -2,7 +2,8 @@
   "require": {
     "ext-pdo": "*",
     "ext-memcached": "*",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "ext-bcmath": "*"
   },
   "autoload": {
     "psr-4": {
