@@ -3,6 +3,7 @@
 namespace Src;
 
 use Aeron\Publisher;
+use Exception;
 use robotrade\Api;
 
 class Gate
@@ -41,7 +42,15 @@ class Gate
 
         $message = 'Cancel All orders';
 
-        $this->publisher->offer($this->robotrade_api->cancelAllOrders($message));
+        try {
+
+            $this->publisher->offer($this->robotrade_api->cancelAllOrders($message));
+
+        } catch (Exception $e) {
+
+            echo '[' . date('Y-m-d H:i:s') . '] Gate()->cancelAllOrders() Throw Exception: ' . $e->getMessage() . PHP_EOL;
+
+        }
 
         return $this->do($message);
 
@@ -57,25 +66,15 @@ class Gate
 
         $message = 'Get All Balances';
 
-        $this->publisher->offer($this->robotrade_api->getBalances($assets));
+        try {
 
-        return $this->do($message);
+            $this->publisher->offer($this->robotrade_api->getBalances($assets));
 
-    }
+        } catch (Exception $e) {
 
-    /**
-     * Получает статус ордеров
-     *
-     * @param string $id
-     * @param string $symbol
-     * @return $this
-     */
-    public function getOrderStatus(string $id, string $symbol): static
-    {
+            echo '[' . date('Y-m-d H:i:s') . '] Gate()->getBalances() Throw Exception: ' . $e->getMessage() . PHP_EOL;
 
-        $message = 'Get Order status';
-
-        $this->publisher->offer($this->robotrade_api->getOrderStatus($id, $symbol));
+        }
 
         return $this->do($message);
 
