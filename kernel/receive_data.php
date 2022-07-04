@@ -60,7 +60,7 @@ function handler_orderbooks(string $message): void
 
         } else {
 
-            echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+            echo '[ERROR] Orderbook data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
 
@@ -77,15 +77,15 @@ function handler_balances(string $message): void
     if ($data = Aeron::messageDecode($message)) {
 
         // если event как data, а node как gate
-        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data']['assets'])) {
 
             if (empty($balances)) {
 
-                $balances[$data['exchange']] = $data['data'];
+                $balances[$data['exchange']] = $data['data']['assets'];
 
             } else {
 
-                foreach ($data['data'] as $asset => $datum) {
+                foreach ($data['data']['assets'] as $asset => $datum) {
 
                     $balances[$data['exchange']][$asset] = $datum;
 
@@ -103,7 +103,7 @@ function handler_balances(string $message): void
 
         } else {
 
-            echo '[ERROR] Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+            echo '[ERROR] Balances data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
 
@@ -122,30 +122,22 @@ function handler_orders(string $message): void
         // если event как data, а node как gate
         if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
-            if ($data['action'] == 'order_created' || $data['action'] == 'order_status') {
+            $key = $data['exchange'] . '_orders';
 
-                $key = $data['exchange'] . '_orders';
+            $orders = $memcached->get($key);
 
-                $orders = $memcached->get($key);
+            $orders[$data['data']['client_order_id']] = $data['data'];
 
-                $orders[$data['data']['id']] = $data['data'];
-
-                foreach ($orders as $k => $order) {
-                    if (in_array($order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
-                        unset($orders[$k]);
-                    }
+            foreach ($orders as $k => $order) {
+                if (in_array($order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
+                    unset($orders[$k]);
                 }
-
-                $memcached->set(
-                    $key,
-                    $orders
-                );
-
-            } else {
-
-                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Action not correct' . $data['action'] . PHP_EOL;
-
             }
+
+            $memcached->set(
+                $key,
+                $orders
+            );
 
         } else {
 
