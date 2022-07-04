@@ -130,9 +130,9 @@ function handler_orders(string $message): void
 
                 $orders[$data['data']['id']] = $data['data'];
 
-                foreach ($orders as $key => $order) {
+                foreach ($orders as $k => $order) {
                     if (in_array($order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
-                        unset($orders[$key]);
+                        unset($orders[$k]);
                     }
                 }
 
