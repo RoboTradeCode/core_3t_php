@@ -47,6 +47,7 @@ while (true) {
             foreach (['step_one', 'step_two', 'step_three'] as $step) {
 
                 $message = $robotrade_apis[$best_result[$step]['exchange']]->createOrder(
+                    $robotrade_apis[$best_result[$step]['exchange']]->generateUUID() . '|Multi3t',
                     $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
                     'market',
                     $best_result[$step]['orderType'],
