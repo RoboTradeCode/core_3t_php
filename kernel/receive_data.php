@@ -46,7 +46,7 @@ function handler_orderbooks(string $message): void
     if ($data = Aeron::messageDecode($message)) {
 
         // если event как data, а node как gate
-        if ($data['event'] == 'data' && $data['node'] == 'gate' && $data['action'] == 'orderbook' && isset($data['data'])) {
+        if ($data['event'] == 'data' && $data['node'] == 'gate' && isset($data['data'])) {
 
             $data['data']['core_timestamp'] = microtime(true);
 
