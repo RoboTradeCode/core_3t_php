@@ -132,7 +132,7 @@ while (true) {
                                     } else {
 
                                         // отправить по aeron на отмену ордеров
-                                        $api->cancelOrder($exchange, $must_real_order['id'], $must_real_order['symbol']);
+                                        $api->cancelOrder($exchange, $must_real_order['client_order_id'], $must_real_order['symbol']);
 
                                     }
 
@@ -153,7 +153,7 @@ while (true) {
 
                             }
 
-                            // если существут переменная $microtimes для данной биржи, то
+                            // если существут переменная $micro-times для данной биржи, то
                             if (isset($microtimes[$exchange])) {
 
                                 // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
@@ -163,7 +163,7 @@ while (true) {
                                     foreach ($real_orders[$exchange] as $real_order) {
 
                                         // отправить по aeron на получение статусов ордеров
-                                        $api->getOrderStatus($exchange, $real_order['id'], $real_order['symbol']);
+                                        $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
 
                                     }
 

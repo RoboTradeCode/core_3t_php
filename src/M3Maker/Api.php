@@ -68,32 +68,32 @@ class Api
 
     }
 
-    public function getOrderStatus(string $exchange, string $id, string $symbol): void
+    public function getOrderStatus(string $exchange, string $client_order_id, string $symbol): void
     {
 
-        $message = $this->robotrade_apis[$exchange]->getOrderStatus($id, $symbol, 'Get status order ' . $id);
+        $message = $this->robotrade_apis[$exchange]->getOrderStatus($client_order_id, $symbol, 'Get status order ' . $client_order_id);
 
         // отправить гейту сообщение
         $this->sendCommandToGate($exchange, $message);
 
         echo '[' . date('Y-m-d H:i:s') . '] Send to gate get status order. Id: ' .
-            $id .
+            $client_order_id .
             ' Symbol: ' . $symbol .
             ' Exchange: ' . $exchange .
             PHP_EOL;
 
     }
 
-    public function cancelOrder(string $exchange, string $id, string $symbol): void
+    public function cancelOrder(string $exchange, string $client_order_id, string $symbol): void
     {
 
-        $message = $this->robotrade_apis[$exchange]->cancelOrder($id, $symbol, 'Cancel order ' . $id);
+        $message = $this->robotrade_apis[$exchange]->cancelOrder($client_order_id, $symbol, 'Cancel order ' . $client_order_id);
 
         // отправить гейту сообщение
         $this->sendCommandToGate($exchange, $message);
 
         echo '[' . date('Y-m-d H:i:s') . '] Send to gate cancel order. Id: ' .
-            $id .
+            $client_order_id .
             ' Symbol: ' . $symbol .
             ' Exchange: ' . $exchange .
             PHP_EOL;
@@ -106,6 +106,7 @@ class Api
         if (in_array($type, ['limit', 'market']) && in_array($side, ['buy', 'sell'])) {
 
             $message = $this->robotrade_apis[$exchange]->createOrder(
+                $this->robotrade_apis[$exchange]->generateUUID() . '|M3Maker',
                 $symbol,
                 $type,
                 $side,
