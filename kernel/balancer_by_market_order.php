@@ -112,6 +112,7 @@ foreach ($config['assets_labels'] as $assets_label) {
         if (!empty($precisions)) {
             $publisher->offer(
                 $robotrade_api->createOrder(
+                    $robotrade_api->generateUUID() . '|Balancer',
                     $assets_label['common'] . '/USDT',
                     'market',
                     'sell',
@@ -122,6 +123,7 @@ foreach ($config['assets_labels'] as $assets_label) {
             );
             print_r(
                 $robotrade_api->createOrder(
+                    $robotrade_api->generateUUID() . '|Balancer',
                     $assets_label['common'] . '/USDT',
                     'market',
                     'sell',
@@ -187,6 +189,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         $publisher->offer(
             $robotrade_api->createOrder(
+                $robotrade_api->generateUUID() . '|Balancer',
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
@@ -197,6 +200,7 @@ foreach ($config['assets_labels'] as $assets_label) {
         );
         print_r(
             $robotrade_api->createOrder(
+                $robotrade_api->generateUUID() . '|Balancer',
                 $assets_label['common'] . '/USDT',
                 'market',
                 'buy',
