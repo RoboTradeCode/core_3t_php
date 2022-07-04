@@ -126,7 +126,11 @@ function handler_orders(string $message): void
 
             $orders = $memcached->get($key);
 
-            $orders[$data['data']['client_order_id']] = $data['data'];
+            foreach ($data['data'] as $datum) {
+
+                $orders[$datum['client_order_id']] = $datum;
+
+            }
 
             foreach ($orders as $k => $order) {
                 if (in_array($order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
