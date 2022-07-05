@@ -6,6 +6,7 @@ use Src\DiscreteTime;
 use Src\Log;
 use Aeron\Publisher;
 use Aeron\Subscriber;
+use Src\Storage;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -64,6 +65,10 @@ function handler_orderbooks(string $message): void
 
         }
 
+    } else {
+
+        Storage::recordLog('Can not decode message orderbooks', ['$message' => $message]);
+
     }
 
 }
@@ -106,6 +111,10 @@ function handler_balances(string $message): void
             echo '[ERROR] Balances data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
+
+    } else {
+
+        Storage::recordLog('Can not decode message balances', ['$message' => $message]);
 
     }
 
@@ -150,6 +159,10 @@ function handler_orders(string $message): void
             echo '[ERROR] handler_orders Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
 
         }
+
+    } else {
+
+        Storage::recordLog('Can not decode message orders', ['$message' => $message]);
 
     }
 
