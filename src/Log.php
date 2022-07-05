@@ -31,14 +31,14 @@ class Log
     public function sendWorkCore(int $data, string $message = null): bool|string
     {
 
-        return $this->generateMessage('ping', $data, $message);
+        return $this->generateMessage('ping', $data, $message, 'data');
 
     }
 
     public function sendExpectedTriangle(array $data, string $message = null): bool|string
     {
 
-        return $this->generateMessage('expected_triangle', $data, $message);
+        return $this->generateMessage('expected_triangle', $data, $message, 'data');
 
     }
 
