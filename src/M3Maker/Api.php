@@ -6,6 +6,7 @@ use Src\Aeron;
 use Src\Gate;
 use Src\Log;
 use Aeron\Publisher;
+use Src\Storage;
 
 class Api
 {
@@ -38,6 +39,9 @@ class Api
 
         $code = $this->gate_publishers[$exchange]->offer($message);
 
+        if ($code <= 0)
+            Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
         echo '[' . date('Y-m-d H:i:s') . '] Send to gate message. Code: ' . $code . PHP_EOL;
 
     }
@@ -46,6 +50,9 @@ class Api
     {
 
         $code = $this->log_publisher->offer($message);
+
+        if ($code <= 0)
+            Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
         echo '[' . date('Y-m-d H:i:s') . '] Send to log server message. Code: ' . $code . PHP_EOL;
 

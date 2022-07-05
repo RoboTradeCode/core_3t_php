@@ -6,6 +6,7 @@ use Src\Configurator;
 use Src\Core;
 use Src\Gate;
 use Aeron\Publisher;
+use Src\Storage;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -110,28 +111,23 @@ foreach ($config['assets_labels'] as $assets_label) {
         }
 
         if (!empty($precisions)) {
-            $publisher->offer(
-                $robotrade_api->createOrder(
-                    $robotrade_api->generateUUID() . '|Balancer',
-                    $assets_label['common'] . '/USDT',
-                    'market',
-                    'sell',
-                    $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
-                    $rates[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
-                    'Create Balancer order'
-                )
+
+            $message = $robotrade_api->createOrder(
+                $robotrade_api->generateUUID() . '|Balancer',
+                $assets_label['common'] . '/USDT',
+                'market',
+                'sell',
+                $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
+                $rates[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                'Create Balancer order'
             );
-            print_r(
-                $robotrade_api->createOrder(
-                    $robotrade_api->generateUUID() . '|Balancer',
-                    $assets_label['common'] . '/USDT',
-                    'market',
-                    'sell',
-                    $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
-                    $rates[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
-                    'Create Balancer order'
-                )
-            ); echo PHP_EOL;
+
+            $code = $publisher->offer($message);
+
+            if ($code <= 0)
+                Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
+            print_r($message); echo PHP_EOL;
 
             usleep(500000);
 
@@ -187,28 +183,22 @@ foreach ($config['assets_labels'] as $assets_label) {
 
     if (!empty($precisions)) {
 
-        $publisher->offer(
-            $robotrade_api->createOrder(
-                $robotrade_api->generateUUID() . '|Balancer',
-                $assets_label['common'] . '/USDT',
-                'market',
-                'buy',
-                $precisions['amount_increment'] * floor(($sum_usdt / $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
-                $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
-                'Create Balancer order'
-            )
+        $message = $robotrade_api->createOrder(
+            $robotrade_api->generateUUID() . '|Balancer',
+            $assets_label['common'] . '/USDT',
+            'market',
+            'buy',
+            $precisions['amount_increment'] * floor(($sum_usdt / $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+            $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
+            'Create Balancer order'
         );
-        print_r(
-            $robotrade_api->createOrder(
-                $robotrade_api->generateUUID() . '|Balancer',
-                $assets_label['common'] . '/USDT',
-                'market',
-                'buy',
-                $precisions['amount_increment'] * floor(($sum_usdt / $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
-                $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
-                'Create Balancer order'
-            )
-        ); echo PHP_EOL;
+
+        $code = $publisher->offer($message);
+
+        if ($code <= 0)
+            Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
+        print_r($message); echo PHP_EOL;
 
         usleep(500000);
 

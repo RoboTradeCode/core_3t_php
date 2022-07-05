@@ -44,7 +44,12 @@ class Gate
 
         try {
 
-            $this->publisher->offer($this->robotrade_api->cancelAllOrders($message));
+            $mes = $this->robotrade_api->cancelAllOrders($message);
+
+            $code = $this->publisher->offer($mes);
+
+            if ($code <= 0)
+                Storage::recordLog('Aeron to gate server code is: '. $code, ['$mes' => $mes]);
 
         } catch (Exception $e) {
 
@@ -68,7 +73,12 @@ class Gate
 
         try {
 
-            $this->publisher->offer($this->robotrade_api->getBalances($assets));
+            $mes = $this->robotrade_api->getBalances($assets);
+
+            $code = $this->publisher->offer($mes);
+
+            if ($code <= 0)
+                Storage::recordLog('Aeron to gate server code is: '. $code, ['$mes' => $mes]);
 
         } catch (Exception $e) {
 

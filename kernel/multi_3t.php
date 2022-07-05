@@ -5,6 +5,7 @@ use Src\DiscreteTime;
 use Src\Multi\MultiConfigurator;
 use Src\Multi\MultiFirstData;
 use Aeron\Publisher;
+use Src\Storage;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -61,10 +62,16 @@ while (true) {
                 );
 
                 // отправить гейту на постановку ордера
-                $gate_publishers[$best_result[$step]['exchange']]->offer($message);
+                $code = $gate_publishers[$best_result[$step]['exchange']]->offer($message);
+
+                if ($code <= 0)
+                    Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
 
                 // отправить в лог сервер, что ордер постановился
-                $log_publisher->offer($message);
+                $code = $log_publisher->offer($message);
+
+                if ($code <= 0)
+                    Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
                 echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' .
                     $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'] .
@@ -90,10 +97,16 @@ while (true) {
             }
 
             // отправить на лог сервер теоретические расчеты
-            $log_publisher->offer($log->sendExpectedTriangle($best_result));
+            $code = $log_publisher->offer($log->sendExpectedTriangle($best_result));
+
+            if ($code <= 0)
+                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
             // отправляет полный баланс на лог сервер
-            $log_publisher->offer($log->sendFullBalances($balances));
+            $code = $log_publisher->offer($log->sendFullBalances($balances));
+
+            if ($code <= 0)
+                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
             sleep(3);
 
@@ -101,7 +114,12 @@ while (true) {
 
         if ($discrete_time->proof()) {
 
-            $log_publisher->offer($log->sendWorkCore($cross_3t->getInteration()));
+            $message = $log->sendWorkCore($cross_3t->getInteration());
+
+            $code = $log_publisher->offer($message);
+
+            if ($code <= 0)
+                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
         }
 
