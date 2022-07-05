@@ -199,7 +199,19 @@ while (true) {
 
     if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
 
-        $publisher->offer($log->sendWorkCore($i));
+        $mes = $log->sendWorkCore($i);
+
+        $code = $publisher->offer($mes);
+
+        if ($code <= 0) {
+
+            Storage::recordLog('Aeron to log server code is: ' . $code, ['$mes' => $mes]);
+
+            $mes_array = json_decode($mes, true);
+
+            $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $mes, 'Can not send ping from receive data to log server');
+
+        }
 
     }
 

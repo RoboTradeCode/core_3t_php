@@ -39,8 +39,15 @@ class Api
 
         $code = $this->gate_publishers[$exchange]->offer($message);
 
-        if ($code <= 0)
+        if ($code <= 0) {
+
             Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
+            $mes_array = json_decode($message, true);
+
+            $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
+
+        }
 
         echo '[' . date('Y-m-d H:i:s') . '] Send to gate message. Code: ' . $code . PHP_EOL;
 
@@ -51,8 +58,15 @@ class Api
 
         $code = $this->log_publisher->offer($message);
 
-        if ($code <= 0)
+        if ($code <= 0) {
+
             Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+
+            $mes_array = json_decode($message, true);
+
+            $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
+
+        }
 
         echo '[' . date('Y-m-d H:i:s') . '] Send to log server message. Code: ' . $code . PHP_EOL;
 

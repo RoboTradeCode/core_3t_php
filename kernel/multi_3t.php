@@ -64,14 +64,28 @@ while (true) {
                 // отправить гейту на постановку ордера
                 $code = $gate_publishers[$best_result[$step]['exchange']]->offer($message);
 
-                if ($code <= 0)
+                if ($code <= 0) {
+
                     Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
+                    $mes_array = json_decode($message, true);
+
+                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send gate to create order in multi_3t.php');
+
+                }
 
                 // отправить в лог сервер, что ордер постановился
                 $code = $log_publisher->offer($message);
 
-                if ($code <= 0)
+                if ($code <= 0) {
+
                     Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+
+                    $mes_array = json_decode($message, true);
+
+                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send message to log server in multi_3t.php');
+
+                }
 
                 echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' .
                     $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'] .
@@ -99,14 +113,28 @@ while (true) {
             // отправить на лог сервер теоретические расчеты
             $code = $log_publisher->offer($log->sendExpectedTriangle($best_result));
 
-            if ($code <= 0)
+            if ($code <= 0) {
+
                 Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+
+                $mes_array = json_decode($message, true);
+
+                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send message about expected triangles to log server in multi_3t.php');
+
+            }
 
             // отправляет полный баланс на лог сервер
             $code = $log_publisher->offer($log->sendFullBalances($balances));
 
-            if ($code <= 0)
+            if ($code <= 0) {
+
                 Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+
+                $mes_array = json_decode($message, true);
+
+                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send full balance to log server in multi_3t.php');
+
+            }
 
             sleep(3);
 
@@ -118,8 +146,15 @@ while (true) {
 
             $code = $log_publisher->offer($message);
 
-            if ($code <= 0)
+            if ($code <= 0) {
+
                 Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+
+                $mes_array = json_decode($message, true);
+
+                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send ping to log server in multi_3t.php');
+
+            }
 
         }
 

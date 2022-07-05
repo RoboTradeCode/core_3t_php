@@ -28,6 +28,13 @@ class Log
 
     }
 
+    public function sendErrorToLogServer(string $action, null|string $data = "", string $message = null): void
+    {
+
+        sendHttpLog($this->robotrade_api->error($action, $data, $message));
+
+    }
+
     public function sendWorkCore(int $data, string $message = null): bool|string
     {
 

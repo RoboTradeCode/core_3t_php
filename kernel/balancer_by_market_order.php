@@ -6,6 +6,7 @@ use Src\Configurator;
 use Src\Core;
 use Src\Gate;
 use Aeron\Publisher;
+use Src\Log;
 use Src\Storage;
 
 require dirname(__DIR__) . '/index.php';
@@ -43,6 +44,9 @@ $gate->cancelAllOrders()->getBalances(array_column($config['assets_labels'], 'co
 
 // создаем класс для работы с ядром
 $core = new Core($config);
+
+// Класс формата логов
+$log = new Log($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
 // если есть все необходимые данные
 do {
@@ -124,8 +128,15 @@ foreach ($config['assets_labels'] as $assets_label) {
 
             $code = $publisher->offer($message);
 
-            if ($code <= 0)
+            if ($code <= 0) {
+
                 Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
+                $mes_array = json_decode($message, true);
+
+                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not create order in balancer_by_market_order.php');
+
+            }
 
             print_r($message); echo PHP_EOL;
 
@@ -195,8 +206,15 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         $code = $publisher->offer($message);
 
-        if ($code <= 0)
+        if ($code <= 0) {
+
             Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+
+            $mes_array = json_decode($message, true);
+
+            $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not create order in balancer_by_market_order.php');
+
+        }
 
         print_r($message); echo PHP_EOL;
 
