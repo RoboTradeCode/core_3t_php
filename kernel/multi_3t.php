@@ -46,8 +46,12 @@ while (true) {
             // для каждого шага, если результат выпал на текущую биржу, отправить сообщение на создание ордера
             foreach (['step_one', 'step_two', 'step_three'] as $step) {
 
+                $client_order_id = $robotrade_apis[$best_result[$step]['exchange']]->generateUUID() . '|Multi3t';
+
+                $best_result[$step]['client_order_id'] = $client_order_id;
+
                 $message = $robotrade_apis[$best_result[$step]['exchange']]->createOrder(
-                    $robotrade_apis[$best_result[$step]['exchange']]->generateUUID() . '|Multi3t',
+                    $client_order_id,
                     $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
                     'market',
                     $best_result[$step]['orderType'],
