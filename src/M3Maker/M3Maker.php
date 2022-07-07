@@ -31,6 +31,48 @@ class M3Maker
 
     }
 
+    public function countProfit(string $exchange, array $orderbooks, array $symbols_for_profit_bid_and_ask, string $base_asset, string $quote_asset): array
+    {
+
+        list($base_asset_one, $quote_asset_one) = explode('/', $symbols_for_profit_bid_and_ask[0]);
+
+        list($base_asset_two) = explode('/', $symbols_for_profit_bid_and_ask[1]);
+
+
+        foreach (['bids' => 'asks', 'asks' => 'bids'] as $item => $reverse_item) {
+
+            $first = $orderbooks[$symbols_for_profit_bid_and_ask[0]][$exchange][$item][0][0];
+
+            $second = $orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange][$reverse_item][0][0];
+
+            $profits[$item] = (
+                ($base_asset_one != $base_asset && $base_asset_one != $quote_asset)
+                    ? (
+                        ($base_asset_one == $base_asset_two)
+                            ? (
+                                ($quote_asset_one == $quote_asset) ? $first / $second : $second / $first
+                            )
+                            : (
+                                ($quote_asset_one == $quote_asset) ? $first * $second : 1 / ($first * $second)
+                            )
+                )
+                    : (
+                        ($quote_asset_one == $base_asset_two)
+                            ? (
+                                ($base_asset_one == $quote_asset) ? 1 / ($first * $second) : $first * $second
+                            )
+                            : (
+                                ($base_asset_one == $quote_asset) ? $second / $first : $first / $second
+                            )
+                )
+            );
+
+        }
+
+        return [$profits['bids'], $profits['asks']];
+
+    }
+
     public function getGrids(array $orderbook, float $price_increment): array
     {
 
