@@ -105,14 +105,21 @@ while (true) {
                             //DEBUG ONLY
                             $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
 
+                            // фильтруем ордера только для одного символа
+                            if (isset($real_orders[$exchange]))
+                                $real_orders_for_symbol = array_filter(
+                                    $real_orders[$exchange],
+                                    fn($real_order_for_symbol) => $real_order_for_symbol['symbol'] == $symbol
+                                );
+
                             // если у нас есть реальные ордера
-                            if (isset($real_orders[$exchange])) {
+                            if (isset($real_orders[$exchange]) && !empty($real_orders_for_symbol)) {
 
                                 // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
-                                [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders[$exchange]);
+                                [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
 
                                 //DEBUG ONLY
-                                $m3_maker->printOrders($real_orders[$exchange], 'Real Orders'); //DEBUG ONLY
+                                $m3_maker->printOrders($real_orders_for_symbol, 'Real Orders'); //DEBUG ONLY
 
                                 //DEBUG ONLY
                                 $m3_maker->printOrders($must_real_orders, 'Real Orders for Cancel'); //DEBUG ONLY
@@ -130,7 +137,7 @@ while (true) {
                                         if (in_array($must_real_order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
 
                                             // удалить его из массива реальных ордеров
-                                            unset($real_orders[$exchange][$must_real_key]);
+                                            unset($real_orders_for_symbol[$must_real_key]);
 
                                         } else {
 
@@ -163,7 +170,7 @@ while (true) {
                                     if ((microtime(true) - $microtimes[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
 
                                         // пройтись по всем реальным ордерам
-                                        foreach ($real_orders[$exchange] as $real_order) {
+                                        foreach ($real_orders_for_symbol as $real_order) {
 
                                             // отправить по aeron на получение статусов ордеров
                                             $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
