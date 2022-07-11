@@ -211,19 +211,19 @@ class M3Maker
 
     }
 
-    public function getTheNumberOfSellAndBuyOrders(array $balances, string $exchange, string $base_asset, string $quote_asset): array
+    public function getTheNumberOfSellAndBuyOrders(array $balances, string $exchange, string $base_asset, string $quote_asset, string $field = 'total'): array
     {
 
         // берем баланс для определенной биржи
         $balance_exchange = $balances[$exchange];
 
         // если в сумме по deal_amount для base asset можем поставить нужное количество ордеров, то
-        if ($balance_exchange[$base_asset]['total'] / $this->config['deal_amounts'][$base_asset] >= $this->config['order_pairs']) {
+        if ($balance_exchange[$base_asset][$field] / $this->config['deal_amounts'][$base_asset] >= $this->config['order_pairs']) {
 
             // смотрим сколько хватит поставить ордеров на покупку
-            $buy_orders = ($balance_exchange[$quote_asset]['total'] / $this->config['deal_amounts'][$quote_asset] >= $this->config['order_pairs'])
+            $buy_orders = ($balance_exchange[$quote_asset][$field] / $this->config['deal_amounts'][$quote_asset] >= $this->config['order_pairs'])
                 ? $this->config['order_pairs']
-                : intval($balance_exchange[$quote_asset]['total'] / $this->config['deal_amounts'][$quote_asset]);
+                : intval($balance_exchange[$quote_asset][$field] / $this->config['deal_amounts'][$quote_asset]);
 
             // количество ордеров на продажу
             $sell_orders = $this->config['order_pairs'] + $this->config['order_pairs'] - $buy_orders;
@@ -231,7 +231,7 @@ class M3Maker
         } else {
 
             // количество ордеров на продажу ставим столько сколько максимально возможно
-            $sell_orders = intval($balance_exchange[$base_asset]['total'] / $this->config['deal_amounts'][$base_asset]);
+            $sell_orders = intval($balance_exchange[$base_asset][$field] / $this->config['deal_amounts'][$base_asset]);
 
             // количество ордеров на покупку
             $buy_orders = $this->config['order_pairs'] + $this->config['order_pairs'] - $sell_orders;
@@ -240,8 +240,8 @@ class M3Maker
 
         // если по балансу все проходит, то функция возвращает нужные количества
         if (
-            $balance_exchange[$base_asset]['total'] / $this->config['deal_amounts'][$base_asset] >= $sell_orders &&
-            $balance_exchange[$quote_asset]['total'] / $this->config['deal_amounts'][$quote_asset] >= $buy_orders
+            $balance_exchange[$base_asset][$field] / $this->config['deal_amounts'][$base_asset] >= $sell_orders &&
+            $balance_exchange[$quote_asset][$field] / $this->config['deal_amounts'][$quote_asset] >= $buy_orders
         ) {
 
             $this->interation++;

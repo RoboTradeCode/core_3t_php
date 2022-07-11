@@ -86,7 +86,7 @@ while (true) {
                         [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
 
                         // найти количество ордеров на продажу и количество ореров на покупку
-                        [$sell_orders, $buy_orders] = $m3_maker->getTheNumberOfSellAndBuyOrders($balances, $exchange, $base_asset, $quote_asset);
+                        [$sell_orders, $buy_orders] = $m3_maker->getTheNumberOfSellAndBuyOrders($balances, $exchange, $base_asset, $quote_asset, 'free');
 
                         // если в сумме количество ордеров верно, то делать расчеты дальше
                         if (($sell_orders + $buy_orders) == 2 * $config['order_pairs']) {
