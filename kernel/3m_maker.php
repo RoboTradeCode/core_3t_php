@@ -183,13 +183,13 @@ while (true) {
                                 }
 
                                 // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
-                                if (isset($was_send_create_orders[$exchange]))
-                                    unset($was_send_create_orders[$exchange]);
+                                if (isset($was_send_create_orders[$exchange][$symbol]))
+                                    unset($was_send_create_orders[$exchange][$symbol]);
 
                             } else {
 
                                 // если нет переменной $was_send_create_orders для данной биржи, то это означает, что пока нет первой постановки ордеров
-                                if (!isset($was_send_create_orders[$exchange])) {
+                                if (!isset($was_send_create_orders[$exchange][$symbol])) {
 
                                     // пройтись по всем ордерам
                                     foreach ($orders as $order) {
@@ -200,12 +200,12 @@ while (true) {
                                     }
 
                                     // создать переменную $was_send_create_orders для биржи, чтобы понимать, что постановка на первоначальные ордера были выставлены
-                                    $was_send_create_orders[$exchange] = true;
+                                    $was_send_create_orders[$exchange][$symbol] = true;
 
                                 } else {
 
                                     // выводит сообщение, что не может получить ордера от гейтов
-                                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates' . PHP_EOL;
+                                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates for exchange: ' . $exchange . ' and symbol: ' . $symbol . PHP_EOL;
 
                                     sleep(1);
 
