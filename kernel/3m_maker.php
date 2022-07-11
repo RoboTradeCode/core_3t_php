@@ -68,7 +68,7 @@ while (true) {
                 ) {
 
                     //DEBUG ONLY
-                    $m3_maker->printBalances($balances[$exchange]);//DEBUG ONLY
+                    $m3_maker->printBalances($balances[$exchange], $exchange);//DEBUG ONLY
 
                     // берем данные price_increment и amount_increment для данной биржи и рынка
                     $market = $m3_maker->getMarket($exchange, $symbol);

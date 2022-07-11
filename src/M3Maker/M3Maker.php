@@ -309,17 +309,17 @@ class M3Maker
 
     }
 
-    public function printBalances(array $balances): void
+    public function printBalances(array $balances, string $exchange): void
     {
 
         if ($this->debugMode()) {
 
-            echo PHP_EOL . $data['exchange'] . ' [START]---------------------------------------------------------------------------------' . PHP_EOL;
+            echo PHP_EOL . 'Balances: ' . $exchange . ' [START]---------------------------------------------------------------------------------' . PHP_EOL;
 
             foreach ($balances as $asset => $balance)
                 echo '[' . date('Y-m-d H:i:s') . '] ' . $asset . ' (free: ' . $balance['free'] . ' | used: ' . $balance['used'] . ' | total: ' . $balance['total'] . ') ' . PHP_EOL;
 
-            echo $data['exchange'] . ' [END]----------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
+            echo 'Balances: ' . $exchange . ' [END]----------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
 
         }
 
