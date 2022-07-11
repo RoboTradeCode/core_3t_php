@@ -67,6 +67,9 @@ while (true) {
                     isset($orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange])
                 ) {
 
+                    //DEBUG ONLY
+                    $m3_maker->printBalances($balances[$exchange]);//DEBUG ONLY
+
                     // берем данные price_increment и amount_increment для данной биржи и рынка
                     $market = $m3_maker->getMarket($exchange, $symbol);
 
