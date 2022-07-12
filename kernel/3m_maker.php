@@ -1,9 +1,9 @@
 <?php
 
-use Src\DiscreteTime;
 use Src\M3Maker\Api;
 use Src\M3Maker\MemcachedData;
 use Src\M3Maker\M3Maker;
+use Src\Time;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -25,9 +25,6 @@ $api = new Api($config);
 
 // класс для формирования данных, взятых из memcached
 $multi_core = new MemcachedData($config['exchanges'], $config['markets'], $config['expired_orderbook_time']);
-
-// класс для вызова функции раз в две секунды
-$discrete_time = new DiscreteTime();
 
 while (true) {
 
@@ -273,7 +270,7 @@ while (true) {
         }
 
         // каждые 2 секунды выполняется условие
-        if ($discrete_time->proof()) {
+        if (Time::timeUp(1)) {
 
             // отправить пинг на лог сервер
             $api->sendPingToLogServer($m3_maker->getInteration());

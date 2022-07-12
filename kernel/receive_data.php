@@ -2,11 +2,11 @@
 
 use Src\Aeron;
 use Src\Configurator;
-use Src\DiscreteTime;
 use Src\Log;
 use Aeron\Publisher;
 use Aeron\Subscriber;
 use Src\Storage;
+use Src\Time;
 
 require dirname(__DIR__) . '/index.php';
 require dirname(__DIR__) . '/config/common_config.php';
@@ -24,8 +24,6 @@ $config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfi
 
 // Нужные классы для отправки данных на лог сервер
 if ($common_config['send_ping_to_log_server']) {
-
-    $discrete_time = new DiscreteTime();
 
     $log = new Log($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
 
@@ -197,7 +195,7 @@ while (true) {
 
     $subscriber_orders->poll();
 
-    if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($discrete_time) && isset($log) && $discrete_time->proof()) {
+    if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($log) && Time::timeUp(1)) {
 
         $mes = $log->sendWorkCore($i);
 
