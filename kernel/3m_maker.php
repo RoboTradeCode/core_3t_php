@@ -85,19 +85,19 @@ while (true) {
                         // найти количество ордеров на продажу и количество ореров на покупку
                         [$sell_orders, $buy_orders] = $m3_maker->getTheNumberOfSellAndBuyOrders($balances, $exchange, $base_asset, $quote_asset, 'free');
 
+                        //DEBUG ONLY
+                        $m3_maker->printArray(
+                            [
+                                'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0],
+                                'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0],
+                                'profit_ask' => $profit_ask,
+                                'profit_bid' => $profit_bid,
+                            ],
+                            'Profit bid, ask, Best Orderbook'
+                        ); //DEBUG ONLY
+
                         // если в сумме количество ордеров верно, то делать расчеты дальше
                         if (($sell_orders + $buy_orders) == 2 * $config['order_pairs']) {
-
-                            //DEBUG ONLY
-                            $m3_maker->printArray(
-                                [
-                                    'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0],
-                                    'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0],
-                                    'profit_ask' => $profit_ask,
-                                    'profit_bid' => $profit_bid,
-                                ],
-                                'Profit bid, ask, Best Orderbook'
-                            ); //DEBUG ONLY
 
                             // получаем массив ордеров на продажу и покупку
                             $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
@@ -221,6 +221,55 @@ while (true) {
                             }
 
                         } else {
+
+                            $sell_orders = $config['order_pairs'];
+
+                            $buy_orders = $config['order_pairs'];
+
+                            // получаем массив ордеров на продажу и покупку
+                            $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
+
+                            //DEBUG ONLY
+                            $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
+
+                            // фильтруем ордера только для одного символа
+                            if (isset($real_orders[$exchange]))
+                                $real_orders_for_symbol = array_filter(
+                                    $real_orders[$exchange],
+                                    fn($real_order_for_symbol) => $real_order_for_symbol['symbol'] == $symbol
+                                );
+
+                            // если у нас есть реальные ордера
+                            if (isset($real_orders[$exchange]) && !empty($real_orders_for_symbol)) {
+
+                                // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
+                                [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
+
+                                //DEBUG ONLY
+                                $m3_maker->printOrders($real_orders_for_symbol, 'Real Orders'); //DEBUG ONLY
+
+                                //DEBUG ONLY
+                                $m3_maker->printOrders($must_real_orders, 'Real Orders for Cancel'); //DEBUG ONLY
+
+                                // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
+                                if (!empty($must_real_orders)) {
+
+                                    // пройтись по каждому элемента массива
+                                    foreach ($must_real_orders as $must_real_key => $must_real_order) {
+
+                                        // если статус закрыт, отменен, истек или отклонён
+                                        if (!in_array($must_real_order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
+
+                                            // отправить по aeron на отмену ордеров
+                                            $api->cancelOrder($exchange, $must_real_order['client_order_id'], $must_real_order['symbol']);
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
 
                             // выводит, что сумма количества ордеров на продажу и покупку не соответствует суммарному количеству ордеров, которые необходимо поставить
                             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] ($sell_orders + $buy_orders) != 2 * $config[$order_pairs]' . PHP_EOL;
