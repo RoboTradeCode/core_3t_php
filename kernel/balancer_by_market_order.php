@@ -67,9 +67,16 @@ do {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            if (!isset($rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && isset($orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+            $symbol_pair = $assets_label['common'] . '/USDT';
+            $reverse_symbol_pair = 'USDT/' . $assets_label['common'];
 
-                $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']] = $orderbooks[$assets_label['common'] . '/USDT'][$common_config['exchange']];
+            if (!isset($rates[$symbol_pair][$common_config['exchange']]) && isset($orderbooks[$symbol_pair][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+
+                $rates[$symbol_pair][$common_config['exchange']] = $orderbooks[$symbol_pair][$common_config['exchange']];
+
+            } elseif (!isset($rates[$reverse_symbol_pair][$common_config['exchange']]) && isset($orderbooks[$reverse_symbol_pair][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+
+                $rates[$reverse_symbol_pair][$common_config['exchange']] = $orderbooks[$reverse_symbol_pair][$common_config['exchange']];
 
             }
 
@@ -77,11 +84,18 @@ do {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            if (!isset($rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+            $symbol_pair = $assets_label['common'] . '/USDT';
+            $reverse_symbol_pair = 'USDT/' . $assets_label['common'];
+
+            if (
+                !isset($rates[$symbol_pair][$common_config['exchange']]) &&
+                !isset($rates[$reverse_symbol_pair][$common_config['exchange']]) &&
+                $assets_label['common'] != 'USDT'
+            ) {
 
                 $do = true;
 
-                echo '[' . date('Y-m-d H:i:s') . '] No pair in memcached: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] No pair in memcached: ' . $symbol_pair . ' or: ' . $reverse_symbol_pair . PHP_EOL;
 
                 break;
 
@@ -107,8 +121,12 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         $precisions = '';
 
+        $reverse = !isset($rates[$assets_label['common'] . '/USDT'][EXCHANGE]);
+
+        $symbol_pair = $reverse ? 'USDT/' . $assets_label['common'] : $assets_label['common'] . '/USDT' ;
+
         foreach ($config['markets'] as $market) {
-            if ($market['common_symbol'] == $assets_label['common'] . '/USDT') {
+            if ($market['common_symbol'] == $symbol_pair) {
                 $precisions = $market;
                 break;
             }
@@ -118,11 +136,13 @@ foreach ($config['assets_labels'] as $assets_label) {
 
             $message = $robotrade_api->createOrder(
                 $robotrade_api->generateUUID() . '|Balancer',
-                $assets_label['common'] . '/USDT',
+                $symbol_pair,
                 'market',
-                'sell',
-                $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
-                $rates[$assets_label['common'] . '/USDT'][EXCHANGE]['bids'][0][0],
+                $reverse ? 'buy' : 'sell',
+                $reverse
+                    ? $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free'] / $rates[$symbol_pair][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment'])
+                    : $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
+                $rates[$symbol_pair][EXCHANGE]['bids'][0][0],
                 'Create Balancer order'
             );
 
@@ -143,7 +163,9 @@ foreach ($config['assets_labels'] as $assets_label) {
             usleep(500000);
 
         } else {
-            echo '[' . date('Y-m-d H:i:s') . '] Empty precisions!!! ' . EXCHANGE . PHP_EOL;
+
+            echo '[' . date('Y-m-d H:i:s') . '][ERROR] Empty precisions!!! ' . EXCHANGE . PHP_EOL;
+
         }
 
         echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
@@ -185,8 +207,12 @@ foreach ($config['assets_labels'] as $assets_label) {
 
     $precisions = '';
 
+    $reverse = !isset($rates[$assets_label['common'] . '/USDT'][EXCHANGE]);
+
+    $symbol_pair = $reverse ? 'USDT/' . $assets_label['common'] : $assets_label['common'] . '/USDT' ;
+
     foreach ($config['markets'] as $market) {
-        if ($market['common_symbol'] == $assets_label['common'] . '/USDT' && $assets_label['common'] != 'USDT') {
+        if ($market['common_symbol'] == $symbol_pair && $assets_label['common'] != 'USDT') {
             $precisions = $market;
             break;
         }
@@ -196,11 +222,13 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         $message = $robotrade_api->createOrder(
             $robotrade_api->generateUUID() . '|Balancer',
-            $assets_label['common'] . '/USDT',
+            $symbol_pair,
             'market',
-            'buy',
-            $precisions['amount_increment'] * floor(($sum_usdt / $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
-            $rates[$assets_label['common'] . '/USDT'][$common_config['exchange']]['bids'][0][0],
+            $reverse ? 'sell' : 'buy',
+            $reverse
+                ? $precisions['amount_increment'] * floor($sum_usdt / $precisions['amount_increment'])
+                : $precisions['amount_increment'] * floor(($sum_usdt / $rates[$symbol_pair][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment']),
+            $rates[$symbol_pair][$common_config['exchange']]['bids'][0][0],
             'Create Balancer order'
         );
 
