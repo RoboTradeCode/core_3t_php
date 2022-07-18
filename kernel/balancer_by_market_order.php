@@ -21,6 +21,8 @@ $memcached->flush();
 
 $common_config = CORES['balancer_by_market_order'];
 
+$base_symbol = $common_config['main_asset'] ?? 'USDT';
+
 $config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
 
 $config_api = Configurator::getConfig($common_config['exchange'], $common_config['instance']);
@@ -67,14 +69,14 @@ do {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            $symbol_pair = $assets_label['common'] . '/USDT';
-            $reverse_symbol_pair = 'USDT/' . $assets_label['common'];
+            $symbol_pair = $assets_label['common'] . '/' . $base_symbol;
+            $reverse_symbol_pair = $base_symbol . '/' . $assets_label['common'];
 
-            if (!isset($rates[$symbol_pair][$common_config['exchange']]) && isset($orderbooks[$symbol_pair][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+            if (!isset($rates[$symbol_pair][$common_config['exchange']]) && isset($orderbooks[$symbol_pair][$common_config['exchange']]) && $assets_label['common'] != $base_symbol) {
 
                 $rates[$symbol_pair][$common_config['exchange']] = $orderbooks[$symbol_pair][$common_config['exchange']];
 
-            } elseif (!isset($rates[$reverse_symbol_pair][$common_config['exchange']]) && isset($orderbooks[$reverse_symbol_pair][$common_config['exchange']]) && $assets_label['common'] != 'USDT') {
+            } elseif (!isset($rates[$reverse_symbol_pair][$common_config['exchange']]) && isset($orderbooks[$reverse_symbol_pair][$common_config['exchange']]) && $assets_label['common'] != $base_symbol) {
 
                 $rates[$reverse_symbol_pair][$common_config['exchange']] = $orderbooks[$reverse_symbol_pair][$common_config['exchange']];
 
@@ -84,13 +86,13 @@ do {
 
         foreach ($config['assets_labels'] as $assets_label) {
 
-            $symbol_pair = $assets_label['common'] . '/USDT';
-            $reverse_symbol_pair = 'USDT/' . $assets_label['common'];
+            $symbol_pair = $assets_label['common'] . '/' . $base_symbol;
+            $reverse_symbol_pair = $base_symbol . '/' . $assets_label['common'];
 
             if (
                 !isset($rates[$symbol_pair][$common_config['exchange']]) &&
                 !isset($rates[$reverse_symbol_pair][$common_config['exchange']]) &&
-                $assets_label['common'] != 'USDT'
+                $assets_label['common'] != $base_symbol
             ) {
 
                 $do = true;
@@ -117,13 +119,13 @@ do {
 
 foreach ($config['assets_labels'] as $assets_label) {
 
-    if ($balances[$common_config['exchange']][$assets_label['common']]['free'] > 0 && $assets_label['common'] != 'USDT') {
+    if ($balances[$common_config['exchange']][$assets_label['common']]['free'] > 0 && $assets_label['common'] != $base_symbol) {
 
         $precisions = '';
 
-        $reverse = !isset($rates[$assets_label['common'] . '/USDT'][EXCHANGE]);
+        $reverse = !isset($rates[$assets_label['common'] . '/' . $base_symbol][EXCHANGE]);
 
-        $symbol_pair = $reverse ? 'USDT/' . $assets_label['common'] : $assets_label['common'] . '/USDT' ;
+        $symbol_pair = $reverse ? $base_symbol . '/' . $assets_label['common'] : $assets_label['common'] . '/' . $base_symbol ;
 
         foreach ($config['markets'] as $market) {
             if ($market['common_symbol'] == $symbol_pair) {
@@ -168,7 +170,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         }
 
-        echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/' . $base_symbol . PHP_EOL;
 
     }
 
@@ -201,18 +203,18 @@ do {
 
 } while(empty($balances[$common_config['exchange']]));
 
-$sum_usdt = $balances[$common_config['exchange']]['USDT']['free'] / count($config['assets_labels']) * 0.98;
+$sum_usdt = $balances[$common_config['exchange']][$base_symbol]['free'] / count($config['assets_labels']) * 0.98;
 
 foreach ($config['assets_labels'] as $assets_label) {
 
     $precisions = '';
 
-    $reverse = !isset($rates[$assets_label['common'] . '/USDT'][EXCHANGE]);
+    $reverse = !isset($rates[$assets_label['common'] . '/' . $base_symbol][EXCHANGE]);
 
-    $symbol_pair = $reverse ? 'USDT/' . $assets_label['common'] : $assets_label['common'] . '/USDT' ;
+    $symbol_pair = $reverse ? $base_symbol . '/' . $assets_label['common'] : $assets_label['common'] . '/' . $base_symbol ;
 
     foreach ($config['markets'] as $market) {
-        if ($market['common_symbol'] == $symbol_pair && $assets_label['common'] != 'USDT') {
+        if ($market['common_symbol'] == $symbol_pair && $assets_label['common'] != $base_symbol) {
             $precisions = $market;
             break;
         }
@@ -248,11 +250,11 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         usleep(500000);
 
-        echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Create Balancer order Pair: ' . $assets_label['common'] . '/' . $base_symbol . PHP_EOL;
 
     } else {
 
-        echo '[' . date('Y-m-d H:i:s') . '] Empty precision Pair: ' . $assets_label['common'] . '/USDT' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Empty precision Pair: ' . $assets_label['common'] . '/' . $base_symbol . PHP_EOL;
 
     }
 
