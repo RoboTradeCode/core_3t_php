@@ -69,6 +69,8 @@ while (true) {
                         isset($orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange])
                     ) {
 
+                        echo PHP_EOL . $exchange . ' ' . $symbol . ' [START][START][START][START][START][START][START][START][START][START][START][START][START][START]-------------------------------------------' . PHP_EOL;
+
                         // берем данные price_increment и amount_increment для данной биржи и рынка
                         $market = $m3_maker->getMarket($exchange, $symbol);
 
@@ -289,6 +291,8 @@ while (true) {
                             $grids[$exchange][$symbol] = $m3_maker->getGrids($orderbooks[$symbol][$exchange], $market['price_increment']);
 
                         }
+
+                        echo PHP_EOL . $exchange . ' ' . $symbol . ' [END][END][END][END][END][END][END][END][END][END][END][END][END][END]-------------------------------------------' . PHP_EOL;
 
                     } else {
 

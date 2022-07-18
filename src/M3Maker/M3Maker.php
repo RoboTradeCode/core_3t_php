@@ -278,7 +278,7 @@ class M3Maker
 
             foreach ($orders as $order) {
 
-                $message = '[' . date('Y-m-d H:i:s') . '] Price ' . $order['price'] . ' Side ' . $order['side'];
+                $message = '[' . date('Y-m-d H:i:s') . '] Price ' . $order['price'] . ' Side ' . $order['side'] . ' Amount: ' . ($order['amount'] ?? 'null');
 
                 if (isset($order['status']))
                     $message .= ' Status ' . $order['status'];
