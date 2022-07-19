@@ -2,6 +2,7 @@
 
 namespace Src\M3Maker;
 
+use Exception;
 use Src\Aeron;
 use Src\Gate;
 use Src\Log;
@@ -37,15 +38,23 @@ class Api
     private function sendCommandToGate(string $exchange, string $message): void
     {
 
-        $code = $this->gate_publishers[$exchange]->offer($message);
+        try {
 
-        if ($code <= 0) {
+            $code = $this->gate_publishers[$exchange]->offer($message);
 
-            Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+            if ($code <= 0) {
 
-            $mes_array = json_decode($message, true);
+                Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
 
-            $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
+                $mes_array = json_decode($message, true);
+
+                $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
+
+            }
+
+        } catch (Exception $e) {
+
+            Storage::recordLog('Src\M3Maker\Api.php sendCommandToGate() Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
         }
 
@@ -56,15 +65,23 @@ class Api
     private function sendToLog(string $message): void
     {
 
-        $code = $this->log_publisher->offer($message);
+        try {
 
-        if ($code <= 0) {
+            $code = $this->log_publisher->offer($message);
 
-            Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+            if ($code <= 0) {
 
-            $mes_array = json_decode($message, true);
+                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
-            $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
+                $mes_array = json_decode($message, true);
+
+                $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
+
+            }
+
+        } catch (Exception $e) {
+
+            Storage::recordLog('Src\M3Maker\Api.php sendToLog() Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
         }
 

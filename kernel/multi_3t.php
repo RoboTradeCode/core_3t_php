@@ -59,29 +59,45 @@ while (true) {
                     'Create order ' . $step
                 );
 
-                // отправить гейту на постановку ордера
-                $code = $gate_publishers[$best_result[$step]['exchange']]->offer($message);
+                try {
 
-                if ($code <= 0) {
+                    // отправить гейту на постановку ордера
+                    $code = $gate_publishers[$best_result[$step]['exchange']]->offer($message);
 
-                    Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message]);
+                    if ($code <= 0) {
 
-                    $mes_array = json_decode($message, true);
+                        Storage::recordLog('Aeron to gate server code is: '. $code, ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
-                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send gate to create order in multi_3t.php');
+                        $mes_array = json_decode($message, true);
+
+                        $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send gate to create order in multi_3t.php');
+
+                    }
+
+                } catch (Exception $e) {
+
+                    Storage::recordLog('Aeron made a fatal error', ['$message' => $message]);
 
                 }
 
-                // отправить в лог сервер, что ордер постановился
-                $code = $log_publisher->offer($message);
+                try {
 
-                if ($code <= 0) {
+                    // отправить в лог сервер, что ордер постановился
+                    $code = $log_publisher->offer($message);
 
-                    Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+                    if ($code <= 0) {
 
-                    $mes_array = json_decode($message, true);
+                        Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
-                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send message to log server in multi_3t.php');
+                        $mes_array = json_decode($message, true);
+
+                        $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send message to log server in multi_3t.php');
+
+                    }
+
+                } catch (Exception $e) {
+
+                    Storage::recordLog('Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
                 }
 
@@ -108,29 +124,45 @@ while (true) {
 
             }
 
-            // отправить на лог сервер теоретические расчеты
-            $code = $log_publisher->offer($log->sendExpectedTriangle($best_result));
+            try {
 
-            if ($code <= 0) {
+                // отправить на лог сервер теоретические расчеты
+                $code = $log_publisher->offer($log->sendExpectedTriangle($best_result));
 
-                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+                if ($code <= 0) {
 
-                $mes_array = json_decode($message, true);
+                    Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
-                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send message about expected triangles to log server in multi_3t.php');
+                    $mes_array = json_decode($message, true);
+
+                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send message about expected triangles to log server in multi_3t.php');
+
+                }
+
+            } catch (Exception $e) {
+
+                Storage::recordLog('Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
             }
 
-            // отправляет полный баланс на лог сервер
-            $code = $log_publisher->offer($log->sendFullBalances($balances));
+            try {
 
-            if ($code <= 0) {
+                // отправляет полный баланс на лог сервер
+                $code = $log_publisher->offer($log->sendFullBalances($balances));
 
-                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+                if ($code <= 0) {
 
-                $mes_array = json_decode($message, true);
+                    Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
-                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send full balance to log server in multi_3t.php');
+                    $mes_array = json_decode($message, true);
+
+                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send full balance to log server in multi_3t.php');
+
+                }
+
+            } catch (Exception $e) {
+
+                Storage::recordLog('Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
             }
 
@@ -142,15 +174,23 @@ while (true) {
 
             $message = $log->sendWorkCore($cross_3t->getInteration());
 
-            $code = $log_publisher->offer($message);
+            try {
 
-            if ($code <= 0) {
+                $code = $log_publisher->offer($message);
 
-                Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
+                if ($code <= 0) {
 
-                $mes_array = json_decode($message, true);
+                    Storage::recordLog('Aeron to log server code is: '. $code, ['$message' => $message]);
 
-                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send ping to log server in multi_3t.php');
+                    $mes_array = json_decode($message, true);
+
+                    $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not send ping to log server in multi_3t.php');
+
+                }
+
+            } catch (Exception $e) {
+
+                Storage::recordLog('Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
 
             }
 

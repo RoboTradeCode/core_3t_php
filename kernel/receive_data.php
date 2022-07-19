@@ -199,15 +199,23 @@ while (true) {
 
         $mes = $log->sendWorkCore($i);
 
-        $code = $publisher->offer($mes);
+        try {
 
-        if ($code <= 0) {
+            $code = $publisher->offer($mes);
 
-            Storage::recordLog('Aeron to log server code is: ' . $code, ['$mes' => $mes]);
+            if ($code <= 0) {
 
-            $mes_array = json_decode($mes, true);
+                Storage::recordLog('Aeron to log server code is: ' . $code, ['$mes' => $mes]);
 
-            $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $mes, 'Can not send ping from receive data to log server');
+                $mes_array = json_decode($mes, true);
+
+                $log->sendErrorToLogServer($mes_array['action'] ?? 'error', $mes, 'Can not send ping from receive data to log server');
+
+            }
+
+        } catch (Exception $e) {
+
+            Storage::recordLog('Aeron made a fatal error', ['$mes' => $mes, '$e->getMessage()' => $e->getMessage()]);
 
         }
 

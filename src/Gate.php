@@ -46,10 +46,19 @@ class Gate
 
             $mes = $this->robotrade_api->cancelAllOrders($message);
 
-            $code = $this->publisher->offer($mes);
+            try {
 
-            if ($code <= 0)
-                Storage::recordLog('Aeron to gate server code is: '. $code, ['$mes' => $mes]);
+                $code = $this->publisher->offer($mes);
+
+                if ($code <= 0)
+                    Storage::recordLog('Aeron to gate server code is: '. $code, ['$mes' => $mes]);
+
+            } catch (Exception $e) {
+
+                Storage::recordLog('Gate.php Aeron made a fatal error', ['$mes' => $mes, '$e->getMessage()' => $e->getMessage()]);
+
+            }
+
 
         } catch (Exception $e) {
 
@@ -75,10 +84,18 @@ class Gate
 
             $mes = $this->robotrade_api->getBalances($assets);
 
-            $code = $this->publisher->offer($mes);
+            try {
 
-            if ($code <= 0)
-                Storage::recordLog('Aeron to gate server code is: '. $code, ['$mes' => $mes]);
+                $code = $this->publisher->offer($mes);
+
+                if ($code <= 0)
+                    Storage::recordLog('Aeron to gate server code is: '. $code, ['$mes' => $mes]);
+
+            } catch (Exception $e) {
+
+                Storage::recordLog('Gate.php Aeron made a fatal error', ['$mes' => $mes, '$e->getMessage()' => $e->getMessage()]);
+
+            }
 
         } catch (Exception $e) {
 
