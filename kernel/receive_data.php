@@ -102,6 +102,11 @@ function handler_balances(string $message): void
                 $balances[$data['exchange']]
             );
 
+            echo $data['exchange'] . '----------------------------------------------------------------------------------' . PHP_EOL;
+            foreach ($balances[$data['exchange']] as $asset => $balance)
+                echo '[' . date('Y-m-d H:i:s') . '] ' . $asset . ' (free: ' . $balance['free'] . ' | used: ' . $balance['used'] . ' | total: ' . $balance['total'] . ') ' . PHP_EOL;
+            echo $data['exchange'] . '----------------------------------------------------------------------------------' . PHP_EOL;
+
             $i++;
 
         } else {
@@ -144,6 +149,11 @@ function handler_orders(string $message): void
                     unset($orders[$k]);
                 }
             }
+
+            echo PHP_EOL . 'Real Orders----------------------------------------------------------------------------------' . PHP_EOL;
+            foreach ($orders as $order)
+                echo '[' . date('Y-m-d H:i:s') . '] client_order_id: ' . $order['client_order_id'] . ' Price ' . $order['price'] . ' Side ' . $order['side'] . ' Status ' . $order['status'] . PHP_EOL;
+            echo 'Real Orders----------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
 
             $memcached->set(
                 $key,
