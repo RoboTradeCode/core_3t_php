@@ -187,9 +187,9 @@ class Main
     /**
      * Возвращает результат треугольника
      *
-     * @param float $max_deal_amount Максимальный размер сделки в main_asset
      * @param int $max_depth Максимальная глубина в стакан
      * @param array $rates Курсы
+     * @param array $max_deal_amounts Максимальный размер сделки в main_asset
      * @param array $combinations Комбинация
      * @param array $orderbook Три шага ордербука
      * @param array $balances Балансы
@@ -198,6 +198,7 @@ class Main
     public function getResults(
         int $max_depth,
         array $rates,
+        array $max_deal_amounts,
         array $combinations,
         array $orderbook,
         array $balances,
@@ -235,6 +236,7 @@ class Main
             $orderbook,
             $combinations['main_asset_name'],
             $combinations['main_asset_amount_precision'],
+            $max_deal_amounts,
             $balances
         );
 
@@ -502,6 +504,7 @@ class Main
         array $orderbook,
         string $mainAsset_id,
         float $mainAsset_decimals,
+        array $max_deal_amounts,
         array $balances
     ): float
     {
@@ -527,17 +530,21 @@ class Main
         if (isset($orderbook["step_three"]["bids"]["0"]["0"]) && isset($orderbook["step_three"]["bids"]["0"]["1"]))
             $orderbook_info['step_three']['sell_price'] = $orderbook["step_three"]["bids"]["0"]["0"];
 
-        $step_one_max_deal_amount = empty($orderbook['step_one']['asks'])
-            ? $balances[$orderbook['step_one']['amountAsset']]['free'] * 0.95
-            : $balances[$orderbook['step_one']['priceAsset']]['free'] / $orderbook_info['step_one']['buy_price'] * 0.95;
+//        $step_one_max_deal_amount = empty($orderbook['step_one']['asks'])
+//            ? $balances[$orderbook['step_one']['amountAsset']]['free'] * 0.95
+//            : $balances[$orderbook['step_one']['priceAsset']]['free'] / $orderbook_info['step_one']['buy_price'] * 0.95;
+//
+//        $step_two_max_deal_amount = empty($orderbook['step_two']['asks'])
+//            ? $balances[$orderbook['step_two']['amountAsset']]['free'] * 0.95
+//            : $balances[$orderbook['step_two']['priceAsset']]['free'] / $orderbook_info['step_two']['buy_price'] * 0.95;
+//
+//        $step_three_max_deal_amount = empty($orderbook['step_three']['asks'])
+//            ? $balances[$orderbook['step_three']['amountAsset']]['free'] * 0.95
+//            : $balances[$orderbook['step_three']['priceAsset']]['free'] / $orderbook_info['step_three']['buy_price'] * 0.95;
 
-        $step_two_max_deal_amount = empty($orderbook['step_two']['asks'])
-            ? $balances[$orderbook['step_two']['amountAsset']]['free'] * 0.95
-            : $balances[$orderbook['step_two']['priceAsset']]['free'] / $orderbook_info['step_two']['buy_price'] * 0.95;
-
-        $step_three_max_deal_amount = empty($orderbook['step_three']['asks'])
-            ? $balances[$orderbook['step_three']['amountAsset']]['free'] * 0.95
-            : $balances[$orderbook['step_three']['priceAsset']]['free'] / $orderbook_info['step_three']['buy_price'] * 0.95;
+        $step_one_max_deal_amount = $max_deal_amounts[$orderbook['step_one']['amountAsset']];
+        $step_two_max_deal_amount = $max_deal_amounts[$orderbook['step_two']['amountAsset']];
+        $step_three_max_deal_amount = $max_deal_amounts[$orderbook['step_three']['amountAsset']];
 
         $orderbook_info['step_one']['sell_amount'] = $step_one_max_deal_amount;
         $orderbook_info['step_one']['buy_amount'] = $step_one_max_deal_amount;
@@ -728,10 +735,10 @@ class Main
             ];
 
             // Balance check (step 1, sell)
-            if ($deal_amount > $balances[$combinations["main_asset_name"]]["free"]) {
-                $status = false;
-                $reason = "Not enough balance (step 1, sell). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
-            }
+//            if ($deal_amount > $balances[$combinations["main_asset_name"]]["free"]) {
+//                $status = false;
+//                $reason = "Not enough balance (step 1, sell). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
+//            }
 
         } else {
 
@@ -758,10 +765,10 @@ class Main
             ];
 
             // Balance check (step 1, buy)
-            if ($deal_amount > $balances[$combinations["main_asset_name"]]["free"]) {
-                $status = false;
-                $reason = "Not enough balance (step 1, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
-            }
+//            if ($deal_amount > $balances[$combinations["main_asset_name"]]["free"]) {
+//                $status = false;
+//                $reason = "Not enough balance (step 1, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
+//            }
 
             // Subtract fee (step 1)
             $stepOne["result"] = $this->incrementNumber(
@@ -817,10 +824,10 @@ class Main
             ];
 
             // Balance check (step 1, sell)
-            if ($stepOne["result"] > $balances[$orderbook['step_two']['amountAsset']]["free"]) {
-                $status = false;
-                $reason = "Not enough balance (step 2, sell). Asset: {$stepTwo["amountAssetName"]} ({$balances[$orderbook['step_two']['amountAsset']]["free"]} < {$stepOne["result"]})";
-            }
+//            if ($stepOne["result"] > $balances[$orderbook['step_two']['amountAsset']]["free"]) {
+//                $status = false;
+//                $reason = "Not enough balance (step 2, sell). Asset: {$stepTwo["amountAssetName"]} ({$balances[$orderbook['step_two']['amountAsset']]["free"]} < {$stepOne["result"]})";
+//            }
 
         } else {
 
@@ -847,10 +854,10 @@ class Main
             ];
 
             // Balance check (step 2, buy)
-            if ($stepOne["result"] > $balances[$orderbook['step_two']['priceAsset']]["free"]) {
-                $status = false;
-                $reason = "Not enough balance (step 2, buy). Asset: {$stepTwo["priceAssetName"]} ({$balances[$orderbook['step_two']['priceAsset']]["free"]} < {$stepOne["result"]})";
-            }
+//            if ($stepOne["result"] > $balances[$orderbook['step_two']['priceAsset']]["free"]) {
+//                $status = false;
+//                $reason = "Not enough balance (step 2, buy). Asset: {$stepTwo["priceAssetName"]} ({$balances[$orderbook['step_two']['priceAsset']]["free"]} < {$stepOne["result"]})";
+//            }
 
             // Subtract fee (step 2)
             $stepTwo["result"] = $this->incrementNumber(
@@ -906,10 +913,10 @@ class Main
             ];
 
             // Balance check (step 2, sell)
-            if ($stepTwo["result"] > $balances[$orderbook['step_three']['amountAsset']]["free"]) {
-                $status = false;
-                $reason = "Not enough balance (step 3, sell). Asset: {$stepThree["amountAssetName"]} ({$balances[$orderbook['step_three']['amountAsset']]["free"]} < {$stepTwo["result"]})";
-            }
+//            if ($stepTwo["result"] > $balances[$orderbook['step_three']['amountAsset']]["free"]) {
+//                $status = false;
+//                $reason = "Not enough balance (step 3, sell). Asset: {$stepThree["amountAssetName"]} ({$balances[$orderbook['step_three']['amountAsset']]["free"]} < {$stepTwo["result"]})";
+//            }
 
         } else {
 
@@ -939,10 +946,10 @@ class Main
             ];
 
             // Balance check (step 2, buy)
-            if ($step_three_result > $balances[$combinations["main_asset_name"]]["free"]) {
-                $status = false;
-                $reason = "Not enough balance (step 3, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $step_three_result)";
-            }
+//            if ($step_three_result > $balances[$combinations["main_asset_name"]]["free"]) {
+//                $status = false;
+//                $reason = "Not enough balance (step 3, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $step_three_result)";
+//            }
 
 
             // Subtract fee (step 3)

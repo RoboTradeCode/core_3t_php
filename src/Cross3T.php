@@ -47,6 +47,7 @@ class Cross3T extends Main
                     $results[] = $this->getResults(
                         $this->config['max_depth'],
                         $this->config['rates'],
+                        $this->config['max_deal_amounts'],
                         $combinations,
                         $orderbook,
                         [
