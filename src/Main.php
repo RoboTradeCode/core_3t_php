@@ -770,13 +770,13 @@ class Main
 //                $reason = "Not enough balance (step 1, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $deal_amount)";
 //            }
 
-            // Subtract fee (step 1)
-            $stepOne["result"] = $this->incrementNumber(
-                $stepOne["result"] - $stepOne["result"] / 100 * $orderbook["step_one"]['fee'],
-                $orderbook["step_one"]['amount_increment']
-            );
-
         }
+
+        // Subtract fee (step 1)
+        $stepOne["result"] = $this->incrementNumber(
+            $stepOne["result"] - $stepOne["result"] / 100 * $orderbook["step_one"]['fee'],
+            $orderbook["step_one"]['amount_increment']
+        );
 
         // Amount limit check (step 1)
         $min_amount_step_one = $orderbook["step_one"]["limits"]["amount"]["min"] ?? 0;
@@ -859,13 +859,13 @@ class Main
 //                $reason = "Not enough balance (step 2, buy). Asset: {$stepTwo["priceAssetName"]} ({$balances[$orderbook['step_two']['priceAsset']]["free"]} < {$stepOne["result"]})";
 //            }
 
-            // Subtract fee (step 2)
-            $stepTwo["result"] = $this->incrementNumber(
-                $stepTwo["result"] - $stepTwo["result"] / 100 * $orderbook["step_two"]['fee'],
-                $orderbook["step_two"]['amount_increment']
-            );
-
         }
+
+        // Subtract fee (step 2)
+        $stepTwo["result"] = $this->incrementNumber(
+            $stepTwo["result"] - $stepTwo["result"] / 100 * $orderbook["step_two"]['fee'],
+            $orderbook["step_two"]['amount_increment']
+        );
 
         // Amount limit check (step 2)
         $min_amount_step_two = $orderbook["step_two"]["limits"]["amount"]["min"] ?? 0;
@@ -951,14 +951,13 @@ class Main
 //                $reason = "Not enough balance (step 3, buy). Asset: {$combinations["main_asset_name"]} ({$balances[$combinations["main_asset_name"]]["free"]} < $step_three_result)";
 //            }
 
-
-            // Subtract fee (step 3)
-            $stepThree["result"] = $this->incrementNumber(
-                $stepThree["result"] - $stepThree["result"] / 100 * $orderbook["step_three"]['fee'],
-                $orderbook["step_three"]['amount_increment']
-            );
-
         }
+
+        // Subtract fee (step 3)
+        $stepThree["result"] = $this->incrementNumber(
+            $stepThree["result"] - $stepThree["result"] / 100 * $orderbook["step_three"]['fee'],
+            $orderbook["step_three"]['amount_increment']
+        );
 
         //Amount limit check (step 3)
         $min_amount_step_three = $orderbook["step_three"]["limits"]["amount"]["min"] ?? 0;
