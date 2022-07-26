@@ -160,7 +160,7 @@ class M3Maker
 
     }
 
-    public function getOrders(int $sell_orders, int $buy_orders, string $symbol, array $lower, array $higher, float $price, float $amount_increment): array
+    public function getOrders(int $sell_orders, int $buy_orders, string $symbol, array $lower, array $higher, float $price, float $amount_increment, string $deal_amounts = 'deal_amounts'): array
     {
 
         // берем base_asset и quote_asset для данного рынка
@@ -173,7 +173,7 @@ class M3Maker
                 'symbol' => $symbol,
                 'type' => 'limit',
                 'side' => 'sell',
-                'amount' => $this->config['deal_amounts'][$base_asset],
+                'amount' => $this->config[$deal_amounts][$base_asset],
                 'price' => array_shift($higher)
             ];
 
@@ -186,7 +186,7 @@ class M3Maker
                 'symbol' => $symbol,
                 'type' => 'limit',
                 'side' => 'buy',
-                'amount' => $this->incrementNumber($this->config['deal_amounts'][$quote_asset] / $price, $amount_increment),
+                'amount' => $this->incrementNumber($this->config[$deal_amounts][$quote_asset] / $price, $amount_increment),
                 'price' => array_pop($lower)
             ];
 
@@ -252,6 +252,23 @@ class M3Maker
 
         // в случае нехватк балансов, возвращаются нули
         return [0, 0];
+
+    }
+
+    public function getTheNumberOfSellAndBuyOrdersByFullBalance(array $balances, string $exchange, string $base_asset, string $quote_asset, string $field = 'total'): array
+    {
+
+        // берем баланс для определенной биржи
+        $balance_exchange = $balances[$exchange];
+
+        // смотрим сколько хватит поставить ордеров на покупку
+        $buy_orders = intval($balance_exchange[$quote_asset][$field] * 0.96 / $this->config['max_deal_amounts'][$quote_asset]) - 1;
+
+        // количество ордеров на продажу ставим столько сколько максимально возможно
+        $sell_orders = intval($balance_exchange[$base_asset][$field] * 0.96 / $this->config['max_deal_amounts'][$base_asset]) - 1;
+
+        // в случае нехватк балансов, возвращаются нули
+        return [$sell_orders, $buy_orders];
 
     }
 
