@@ -16,6 +16,11 @@ class MultiConfigurator
 
         $config = json_decode(file_get_contents($multi_config_path), true);
 
+        $config = json_decode(
+            self::file_get_contents_ssl('https://configurator.robotrade.io/' . $config['exchange'] . '/' . $config['instance'] . '?only_new=false'),
+            true
+        )['data']['configs']['core_config'];
+
         foreach ($config['exchanges'] as $exchange) {
 
             $config_from_configurator = json_decode(

@@ -366,6 +366,11 @@ class M3Maker
         // Получает конфиг из файла spread_bot.json
         $config = json_decode(file_get_contents($file_path), true);
 
+        $config = json_decode(
+            $this->file_get_contents_ssl('https://configurator.robotrade.io/' . $config['exchange'] . '/' . $config['instance'] . '?only_new=false'),
+            true
+        )['data']['configs']['core_config'];
+
         foreach ($config['exchanges'] as $exchange) {
 
             $config_from_configurator = json_decode(
