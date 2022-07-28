@@ -100,7 +100,7 @@ while (true) {
                             ); //DEBUG ONLY
 
                             // получаем массив ордеров на продажу и покупку
-                            $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment'], 'max_deal_amounts');
+                            $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
 
                             //DEBUG ONLY
                             $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
