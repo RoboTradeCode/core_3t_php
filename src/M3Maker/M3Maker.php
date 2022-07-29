@@ -262,10 +262,10 @@ class M3Maker
         $balance_exchange = $balances[$exchange];
 
         // смотрим сколько хватит поставить ордеров на покупку
-        $buy_orders = intval(($balance_exchange[$quote_asset][$field] * 0.96 - $this->config['max_deal_amounts'][$quote_asset]) / $this->config['deal_amounts'][$quote_asset]) - 1;
+        $buy_orders = intval(($balance_exchange[$quote_asset][$field] * 0.98 - $this->config['max_deal_amounts'][$quote_asset]) / $this->config['deal_amounts'][$quote_asset]);
 
         // количество ордеров на продажу ставим столько сколько максимально возможно
-        $sell_orders = intval(($balance_exchange[$base_asset][$field] * 0.96 - $this->config['max_deal_amounts'][$base_asset]) / $this->config['deal_amounts'][$base_asset]) - 1;
+        $sell_orders = intval(($balance_exchange[$base_asset][$field] * 0.98 - $this->config['max_deal_amounts'][$base_asset]) / $this->config['deal_amounts'][$base_asset]);
 
         // в случае нехватк балансов, возвращаются нули
         return [$sell_orders, $buy_orders];
