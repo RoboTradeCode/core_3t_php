@@ -192,6 +192,8 @@ class Cross3T extends Main
 
         $best_orderbooks = [];
 
+        $fees = $this->config['fees'];
+
         foreach ($route as $source) {
 
             $deal_amount_potential = $this->config['max_deal_amounts'][$source['source_asset']];
@@ -256,7 +258,7 @@ class Cross3T extends Main
 
                     }
 
-                    $potential_amounts[$exchange] = $amount;
+                    $potential_amounts[$exchange] = $amount * (1 - $fees[$exchange] / 100);
 
                 }
 
