@@ -272,6 +272,71 @@ class M3Maker
 
     }
 
+    public function getTheNumberOfSellAndBuyOrdersByFullBalanceOnAllMarkets(array $balances, array $symbols, string $field = 'total'): array
+    {
+
+        $all_orders = [];
+
+        foreach ($balances as $symbol => $balance)
+            $all_orders[$symbol] = intval(($balance[$field] * 0.98 - $this->config['max_deal_amounts'][$symbol]) / $this->config['deal_amounts'][$symbol]);
+
+        foreach ($symbols as $market) {
+
+            $sell_orders_all_markets[$market] = 0;
+
+            $buy_orders_all_markets[$market] = 0;
+
+        }
+
+        if (isset($sell_orders_all_markets) && isset($buy_orders_all_markets)) {
+
+            foreach ($all_orders as $symbol => $all_order) {
+
+                $count = $all_order;
+
+                while ($count > 0) {
+
+                    foreach ($symbols as $market) {
+
+                        if ($count > 0) {
+
+                            list($base_asset, $quote_asset) = explode('/', $market);
+
+                            if ($symbol == $base_asset) {
+
+                                $sell_orders_all_markets[$market] += 1;
+
+                                $count--;
+
+                            } elseif ($symbol == $quote_asset) {
+
+                                $buy_orders_all_markets[$market] += 1;
+
+                                $count--;
+
+                            }
+
+                        } else {
+
+                            break 2;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return [$sell_orders_all_markets, $buy_orders_all_markets];
+
+        }
+
+        // в случае нехватк балансов, возвращаются нули
+        return [[], []];
+
+    }
+
     public function getInteration(): int
     {
 
