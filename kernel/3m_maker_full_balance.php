@@ -153,41 +153,65 @@ while (true) {
                                 // если массив теоретических ордеров, которые должны быть поставлены не пуст
                                 if (!empty($must_orders)) {
 
-                                    // пройтись по каждому элементу массива
-                                    foreach ($must_orders as $must_key => $must_order) {
+                                    if (!isset($real_orders_for_symbols_backup[$exchange][$symbol]) || count($real_orders_for_symbol) != $real_orders_for_symbols_backup[$exchange][$symbol]) {
 
-                                        // отправить по aeron на постановку ордеров
-                                        $api->createOrder($exchange, $must_order['symbol'], $must_order['type'], $must_order['side'], $must_order['amount'], $must_order['price']);
+                                        // пройтись по каждому элементу массива
+                                        foreach ($must_orders as $must_key => $must_order) {
+
+                                            // отправить по aeron на постановку ордеров
+                                            $api->createOrder($exchange, $must_order['symbol'], $must_order['type'], $must_order['side'], $must_order['amount'], $must_order['price']);
+
+                                            break;
+
+                                        }
+
+                                        $real_orders_for_symbols_backup[$exchange][$symbol] = count($real_orders_for_symbol);
+
+                                    } else {
+
+                                        if (isset($microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol])) {
+
+                                            if ((microtime(true) - $microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol]) >= $config['expired_command_to_create_order'] / 1000000) {
+
+                                                unset($real_orders_for_symbols_backup[$exchange][$symbol]);
+
+                                            }
+
+                                        } else {
+
+                                            $microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol] = microtime(true);
+
+                                        }
 
                                     }
 
                                 }
 
                                 // если существут переменная $micro-times для данной биржи, то
-                                if (isset($microtimes[$exchange])) {
-
-                                    // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
-                                    if ((microtime(true) - $microtimes[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
-
-                                        // пройтись по всем реальным ордерам
-                                        foreach ($real_orders_for_symbol as $real_order) {
-
-                                            // отправить по aeron на получение статусов ордеров
-                                            $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
-
-                                        }
-
-                                        // обновить время переменной $microtimes для данной биржи
-                                        $microtimes[$exchange] = microtime(true);
-
-                                    }
-
-                                } else {
-
-                                    // зафиксировать первоначальное время переменной $microtimes для данной биржи
-                                    $microtimes[$exchange] = microtime(true);
-
-                                }
+//                                if (isset($microtimes[$exchange])) {
+//
+//                                    // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
+//                                    if ((microtime(true) - $microtimes[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
+//
+//                                        // пройтись по всем реальным ордерам
+//                                        foreach ($real_orders_for_symbol as $real_order) {
+//
+//                                            // отправить по aeron на получение статусов ордеров
+//                                            $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
+//
+//                                        }
+//
+//                                        // обновить время переменной $microtimes для данной биржи
+//                                        $microtimes[$exchange] = microtime(true);
+//
+//                                    }
+//
+//                                } else {
+//
+//                                    // зафиксировать первоначальное время переменной $microtimes для данной биржи
+//                                    $microtimes[$exchange] = microtime(true);
+//
+//                                }
 
                                 // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
                                 if (isset($was_send_create_orders[$exchange][$symbol]))
