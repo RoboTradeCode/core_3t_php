@@ -228,6 +228,8 @@ while (true) {
                                         // отправить на постановку ордеров
                                         $api->createOrder($exchange, $order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
 
+                                        break;
+
                                     }
 
                                     // создать переменную $was_send_create_orders для биржи, чтобы понимать, что постановка на первоначальные ордера были выставлены
