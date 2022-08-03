@@ -237,6 +237,20 @@ while (true) {
 
                                 } else {
 
+                                    if (isset($microtimes_for_was_send_create_orders[$exchange][$symbol])) {
+
+                                        if ((microtime(true) - $microtimes_for_was_send_create_orders[$exchange][$symbol][$exchange]) >= $config['expired_command_to_create_order'] / 1000000) {
+
+                                            unset($was_send_create_orders[$exchange][$symbol]);
+
+                                        }
+
+                                    } else {
+
+                                        $microtimes_for_was_send_create_orders[$exchange][$symbol] = microtime(true);
+
+                                    }
+
                                     // выводит сообщение, что не может получить ордера от гейтов
                                     echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates for exchange: ' . $exchange . ' and symbol: ' . $symbol . PHP_EOL;
 
