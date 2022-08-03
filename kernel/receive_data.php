@@ -162,9 +162,35 @@ function handler_orders(string $message): void
 
         } else {
 
-            print_r($message); echo PHP_EOL;
+            if ($data['event'] == 'error' && $data['node'] == 'gate' && $data['action'] == 'cancel_orders' && isset($data['data'])) {
 
-            echo '[ERROR] handler_orders Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+                $key = $data['exchange'] . '_orders';
+
+                $orders = $memcached->get($key);
+
+                foreach ($data['data'] as $datum) {
+
+                    unset($orders[$datum['client_order_id']]);
+
+                }
+
+                $memcached->set(
+                    $key,
+                    $orders
+                );
+
+                echo PHP_EOL . 'Error Orders----------------------------------------------------------------------------------' . PHP_EOL;
+                foreach ($data['data'] as $order)
+                    echo '[' . date('Y-m-d H:i:s') . '] client_order_id: ' . $order['client_order_id'] . ' Symbol ' . $order['symbol'] . PHP_EOL;
+                echo 'Error Orders----------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
+
+            } else {
+
+                print_r($message); echo PHP_EOL;
+
+                echo '[ERROR] handler_orders Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+
+            }
 
         }
 
