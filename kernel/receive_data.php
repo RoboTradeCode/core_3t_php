@@ -9,7 +9,6 @@ use Src\Storage;
 use Src\Time;
 
 require dirname(__DIR__) . '/index.php';
-require dirname(__DIR__) . '/config/common_config.php';
 
 // memcached подключение
 $memcached = new Memcached();
