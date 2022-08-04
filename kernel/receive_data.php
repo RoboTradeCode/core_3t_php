@@ -17,15 +17,13 @@ $memcached->addServer('localhost', 11211);
 
 $balances = [];
 
-$common_config = CORES['receive_data'];
-
 // получаем конфиг от конфигуратора
-$config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
+$config = Configurator::getConfigForReceiveData(dirname(__DIR__) . '/config/receive_data.json');
 
 // Нужные классы для отправки данных на лог сервер
-if ($common_config['send_ping_to_log_server']) {
+if ($config['send_ping_to_log_server']) {
 
-    $log = new Log($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
+    $log = new Log($config['exchange'], $config['algorithm'], $config['node'], $config['instance']);
 
     // нужен publisher, отправлять логи на сервер логов
     Aeron::checkConnection(
@@ -223,7 +221,7 @@ foreach ($config['aeron']['subscribers']['orders']['destinations'] as $destinati
 
 while (true) {
 
-    usleep($common_config['sleep']);
+    usleep($config['sleep']);
 
     $subscriber_orderbooks->poll();
 
@@ -231,7 +229,7 @@ while (true) {
 
     $subscriber_orders->poll();
 
-    if ($common_config['send_ping_to_log_server'] && isset($publisher) && isset($log) && Time::timeUp(1)) {
+    if ($config['send_ping_to_log_server'] && isset($publisher) && isset($log) && Time::timeUp(1)) {
 
         $mes = $log->sendWorkCore($i);
 

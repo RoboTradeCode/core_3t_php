@@ -7,6 +7,18 @@ class Configurator
 
     public static string $configurator_url = 'https://configurator.robotrade.io/';
 
+    public static function getConfigForReceiveData(string $file_path): array
+    {
+
+        $config = json_decode(file_get_contents($file_path), true);
+
+        return json_decode(
+            self::file_get_contents_ssl(self::$configurator_url . $config['exchange'] . '/' . $config['instance'] . '?only_new=false'),
+            true
+        )['data']['configs']['core_config'];
+
+    }
+
     public static function getConfig(string $exchange, string $instance): array
     {
 
