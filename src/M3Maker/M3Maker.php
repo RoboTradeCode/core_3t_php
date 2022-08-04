@@ -277,8 +277,23 @@ class M3Maker
 
         $all_orders = [];
 
-        foreach ($balances as $symbol => $balance)
-            $all_orders[$symbol] = intval(($balance[$field] * 0.98 - $this->config['max_deal_amounts'][$symbol]) / $this->config['deal_amounts'][$symbol]);
+        foreach ($balances as $symbol => $balance) {
+
+            foreach ($symbols as $market) {
+
+                list($base_asset, $quote_asset) = explode('/', $market);
+
+                if ($symbol == $base_asset || $symbol == $quote_asset) {
+
+                    $all_orders[$symbol] = intval(($balance[$field] * 0.98 - $config['max_deal_amounts'][$symbol]) / $config['deal_amounts'][$symbol]);
+
+                    break;
+
+                }
+
+            }
+
+        }
 
         foreach ($symbols as $market) {
 
