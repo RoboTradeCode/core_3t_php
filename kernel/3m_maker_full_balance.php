@@ -57,6 +57,9 @@ while (true) {
                 //DEBUG ONLY
                 $m3_maker->printBalances($balances[$exchange], $exchange);//DEBUG ONLY
 
+                // найти количество ордеров на продажу и количество ореров на покупку
+                [$sell_orders_all_markets, $buy_orders_all_markets] = $m3_maker->getTheNumberOfSellAndBuyOrdersByFullBalanceOnAllMarkets($balances[$exchange], array_keys($config['3m_maker_markets'][$exchange]));
+
                 // проходимся по всем рынкам
                 foreach ($config['3m_maker_markets'][$exchange] as $symbol => $symbols_for_profit_bid_and_ask) {
 
@@ -86,7 +89,7 @@ while (true) {
                             [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
 
                             // найти количество ордеров на продажу и количество ореров на покупку
-                            [$sell_orders, $buy_orders] = $m3_maker->getTheNumberOfSellAndBuyOrdersByFullBalance($balances, $exchange, $base_asset, $quote_asset);
+                            [$sell_orders, $buy_orders] = [$sell_orders_all_markets[$symbol], $buy_orders_all_markets[$symbol]];
 
                             //DEBUG ONLY
                             $m3_maker->printArray(
@@ -186,32 +189,6 @@ while (true) {
                                     }
 
                                 }
-
-                                // если существут переменная $micro-times для данной биржи, то
-//                                if (isset($microtimes[$exchange])) {
-//
-//                                    // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
-//                                    if ((microtime(true) - $microtimes[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
-//
-//                                        // пройтись по всем реальным ордерам
-//                                        foreach ($real_orders_for_symbol as $real_order) {
-//
-//                                            // отправить по aeron на получение статусов ордеров
-//                                            $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
-//
-//                                        }
-//
-//                                        // обновить время переменной $microtimes для данной биржи
-//                                        $microtimes[$exchange] = microtime(true);
-//
-//                                    }
-//
-//                                } else {
-//
-//                                    // зафиксировать первоначальное время переменной $microtimes для данной биржи
-//                                    $microtimes[$exchange] = microtime(true);
-//
-//                                }
 
                                 // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
                                 if (isset($was_send_create_orders[$exchange][$symbol]))
