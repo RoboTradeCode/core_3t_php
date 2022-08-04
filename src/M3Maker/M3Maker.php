@@ -285,7 +285,7 @@ class M3Maker
 
                 if ($symbol == $base_asset || $symbol == $quote_asset) {
 
-                    $all_orders[$symbol] = intval(($balance[$field] * 0.98 - $config['max_deal_amounts'][$symbol]) / $config['deal_amounts'][$symbol]);
+                    $all_orders[$symbol] = intval(($balance[$field] * 0.98 - $this->config['max_deal_amounts'][$symbol]) / $this->config['deal_amounts'][$symbol]);
 
                     break;
 
