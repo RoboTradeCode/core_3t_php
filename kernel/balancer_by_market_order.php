@@ -10,7 +10,6 @@ use Src\Log;
 use Src\Storage;
 
 require dirname(__DIR__) . '/index.php';
-require dirname(__DIR__) . '/config/common_config.php';
 
 // подключение к memcached
 $memcached = new Memcached();
@@ -19,17 +18,11 @@ $memcached->addServer('localhost', 11211);
 // очистить все, что есть в memcached
 $memcached->flush();
 
-$common_config = CORES['balancer_by_market_order'];
+$common_config = Configurator::getConfigApi(dirname(__DIR__) . '/config/balancer_by_market_order.json');
 
 $base_symbol = $common_config['main_asset'] ?? 'USDT';
 
-$config = (SOURCE == 'file') ? $common_config['config'] : Configurator::getConfig($common_config['exchange'], $common_config['instance']);
-
-$config_api = Configurator::getConfig($common_config['exchange'], $common_config['instance']);
-
-$config['assets_labels'] = $config_api['assets_labels'];
-
-$config['markets'] = $config_api['markets'];
+$config = $common_config['config'];
 
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);
@@ -123,7 +116,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         $precisions = '';
 
-        $reverse = !isset($rates[$assets_label['common'] . '/' . $base_symbol][EXCHANGE]);
+        $reverse = !isset($rates[$assets_label['common'] . '/' . $base_symbol][$common_config['exchange']]);
 
         $symbol_pair = $reverse ? $base_symbol . '/' . $assets_label['common'] : $assets_label['common'] . '/' . $base_symbol ;
 
@@ -144,7 +137,7 @@ foreach ($config['assets_labels'] as $assets_label) {
                 $reverse
                     ? $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free'] / $rates[$symbol_pair][$common_config['exchange']]['bids'][0][0]) / $precisions['amount_increment'])
                     : $precisions['amount_increment'] * floor(($balances[$common_config['exchange']][$assets_label['common']]['free']) * 0.98 / $precisions['amount_increment']),
-                $rates[$symbol_pair][EXCHANGE]['bids'][0][0],
+                $rates[$symbol_pair][$common_config['exchange']]['bids'][0][0],
                 'Create Balancer order'
             );
 
@@ -166,7 +159,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
         } else {
 
-            echo '[' . date('Y-m-d H:i:s') . '][ERROR] Empty precisions!!! ' . EXCHANGE . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '][ERROR] Empty precisions!!! ' . $common_config['exchange'] . PHP_EOL;
 
         }
 
@@ -209,7 +202,7 @@ foreach ($config['assets_labels'] as $assets_label) {
 
     $precisions = '';
 
-    $reverse = !isset($rates[$assets_label['common'] . '/' . $base_symbol][EXCHANGE]);
+    $reverse = !isset($rates[$assets_label['common'] . '/' . $base_symbol][$common_config['exchange']]);
 
     $symbol_pair = $reverse ? $base_symbol . '/' . $assets_label['common'] : $assets_label['common'] . '/' . $base_symbol ;
 

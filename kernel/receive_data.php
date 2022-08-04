@@ -17,7 +17,7 @@ $memcached->addServer('localhost', 11211);
 $balances = [];
 
 // получаем конфиг от конфигуратора
-$config = Configurator::getConfigForReceiveData(dirname(__DIR__) . '/config/receive_data.json');
+$config = Configurator::getConfigApi(dirname(__DIR__) . '/config/receive_data.json');
 
 // Нужные классы для отправки данных на лог сервер
 if ($config['send_ping_to_log_server']) {
