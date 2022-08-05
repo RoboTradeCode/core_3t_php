@@ -20,9 +20,15 @@ $memcached->flush();
 
 $common_config = Configurator::getConfigApi(dirname(__DIR__) . '/config/balancer_by_market_order.json');
 
-$base_symbol = $common_config['main_asset'] ?? 'USDT';
+$config = $common_config['configs']['core_config']['config'];
 
-$config = $common_config['config'];
+$config['assets_labels'] = $common_config['assets_labels'];
+
+$config['markets'] = $common_config['markets'];
+
+$common_config = $common_config['configs']['core_config'];
+
+$base_symbol = $common_config['main_asset'] ?? 'USDT';
 
 // API для формирования сообщения для отправки по aeron
 $robotrade_api = new Api($common_config['exchange'], $common_config['algorithm'], $common_config['node'], $common_config['instance']);

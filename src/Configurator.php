@@ -15,6 +15,18 @@ class Configurator
         return json_decode(
             self::file_get_contents_ssl(self::$configurator_url . $config['exchange'] . '/' . $config['instance'] . '?only_new=false'),
             true
+        )['data'];
+
+    }
+
+    public static function getCoreConfigApi(string $file_path): array
+    {
+
+        $config = json_decode(file_get_contents($file_path), true);
+
+        return json_decode(
+            self::file_get_contents_ssl(self::$configurator_url . $config['exchange'] . '/' . $config['instance'] . '?only_new=false'),
+            true
         )['data']['configs']['core_config'];
 
     }
