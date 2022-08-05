@@ -15,7 +15,7 @@ $memcached->addServer('localhost', 11211);
 $memcached->flush();
 
 // создание класса для m3 maker
-$m3_maker = new M3Maker(dirname(__DIR__) . '/config/3m_maker.json');
+$m3_maker = new M3Maker(dirname(__DIR__) . '/config/3m_maker_full_balance.json');
 
 // получение конфигов
 $config = $m3_maker->getConfig();
@@ -52,11 +52,13 @@ while (true) {
         // проходимся по каждой бирже
         foreach ($config['exchanges'] as $exchange) {
 
-
             if (isset($balances[$exchange])) {
 
                 //DEBUG ONLY
                 $m3_maker->printBalances($balances[$exchange], $exchange);//DEBUG ONLY
+
+                // найти количество ордеров на продажу и количество ореров на покупку
+                [$sell_orders_all_markets, $buy_orders_all_markets] = $m3_maker->getTheNumberOfSellAndBuyOrdersByFullBalanceOnAllMarkets($balances[$exchange], array_keys($config['3m_maker_markets'][$exchange]));
 
                 // проходимся по всем рынкам
                 foreach ($config['3m_maker_markets'][$exchange] as $symbol => $symbols_for_profit_bid_and_ask) {
@@ -83,11 +85,11 @@ while (true) {
                             // считаем profit bid и profit ask (profit ask должен быть больше profit bid)
                             [$profit_bid, $profit_ask] = $m3_maker->countProfit($exchange, $orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset);
 
-                            // находим все, что в сетке ниже $profit_bid и выше $profit_ask
+                            // находим все, что в сетке ниже $profit_bid и выше $profit_ask+
                             [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
 
                             // найти количество ордеров на продажу и количество ореров на покупку
-                            [$sell_orders, $buy_orders] = $m3_maker->getTheNumberOfSellAndBuyOrders($balances, $exchange, $base_asset, $quote_asset, 'free');
+                            [$sell_orders, $buy_orders] = [$sell_orders_all_markets[$symbol], $buy_orders_all_markets[$symbol]];
 
                             //DEBUG ONLY
                             $m3_maker->printArray(
@@ -100,62 +102,61 @@ while (true) {
                                 'Profit bid, ask, Best Orderbook'
                             ); //DEBUG ONLY
 
-                            // если в сумме количество ордеров верно, то делать расчеты дальше
-                            if (($sell_orders + $buy_orders) == 2 * $config['order_pairs']) {
+                            // получаем массив ордеров на продажу и покупку
+                            $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
 
-                                // получаем массив ордеров на продажу и покупку
-                                $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
+                            //DEBUG ONLY
+                            $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
+
+                            // фильтруем ордера только для одного символа
+                            if (isset($real_orders[$exchange]))
+                                $real_orders_for_symbol = array_filter(
+                                    $real_orders[$exchange],
+                                    fn($real_order_for_symbol) => $real_order_for_symbol['symbol'] == $symbol
+                                );
+
+                            // если у нас есть реальные ордера
+                            if (isset($real_orders[$exchange]) && !empty($real_orders_for_symbol)) {
+
+                                // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
+                                [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
 
                                 //DEBUG ONLY
-                                $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
+                                $m3_maker->printOrders($real_orders_for_symbol, 'Real Orders'); //DEBUG ONLY
 
-                                // фильтруем ордера только для одного символа
-                                if (isset($real_orders[$exchange]))
-                                    $real_orders_for_symbol = array_filter(
-                                        $real_orders[$exchange],
-                                        fn($real_order_for_symbol) => $real_order_for_symbol['symbol'] == $symbol
-                                    );
+                                //DEBUG ONLY
+                                $m3_maker->printOrders($must_real_orders, 'Real Orders for Cancel'); //DEBUG ONLY
 
-                                // если у нас есть реальные ордера
-                                if (isset($real_orders[$exchange]) && !empty($real_orders_for_symbol)) {
+                                //DEBUG ONLY
+                                $m3_maker->printOrders($must_orders, 'Must Create Orders'); //DEBUG ONLY
 
-                                    // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
-                                    [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
+                                // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
+                                if (!empty($must_real_orders)) {
 
-                                    //DEBUG ONLY
-                                    $m3_maker->printOrders($real_orders_for_symbol, 'Real Orders'); //DEBUG ONLY
+                                    // пройтись по каждому элемента массива
+                                    foreach ($must_real_orders as $must_real_key => $must_real_order) {
 
-                                    //DEBUG ONLY
-                                    $m3_maker->printOrders($must_real_orders, 'Real Orders for Cancel'); //DEBUG ONLY
+                                        // если статус закрыт, отменен, истек или отклонён
+                                        if (in_array($must_real_order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
 
-                                    //DEBUG ONLY
-                                    $m3_maker->printOrders($must_orders, 'Must Create Orders'); //DEBUG ONLY
+                                            // удалить его из массива реальных ордеров
+                                            unset($real_orders_for_symbol[$must_real_key]);
 
-                                    // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
-                                    if (!empty($must_real_orders)) {
+                                        } else {
 
-                                        // пройтись по каждому элемента массива
-                                        foreach ($must_real_orders as $must_real_key => $must_real_order) {
-
-                                            // если статус закрыт, отменен, истек или отклонён
-                                            if (in_array($must_real_order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
-
-                                                // удалить его из массива реальных ордеров
-                                                unset($real_orders_for_symbol[$must_real_key]);
-
-                                            } else {
-
-                                                // отправить по aeron на отмену ордеров
-                                                $api->cancelOrder($exchange, $must_real_order['client_order_id'], $must_real_order['symbol']);
-
-                                            }
+                                            // отправить по aeron на отмену ордеров
+                                            $api->cancelOrder($exchange, $must_real_order['client_order_id'], $must_real_order['symbol']);
 
                                         }
 
                                     }
 
-                                    // если массив теоретических ордеров, которые должны быть поставлены не пуст
-                                    if (!empty($must_orders)) {
+                                }
+
+                                // если массив теоретических ордеров, которые должны быть поставлены не пуст
+                                if (!empty($must_orders)) {
+
+                                    if (!isset($real_orders_for_symbols_backup[$exchange][$symbol]) || count($real_orders_for_symbol) != $real_orders_for_symbols_backup[$exchange][$symbol]) {
 
                                         // пройтись по каждому элементу массива
                                         foreach ($must_orders as $must_key => $must_order) {
@@ -163,125 +164,76 @@ while (true) {
                                             // отправить по aeron на постановку ордеров
                                             $api->createOrder($exchange, $must_order['symbol'], $must_order['type'], $must_order['side'], $must_order['amount'], $must_order['price']);
 
+                                            break;
+
                                         }
 
-                                    }
+                                        $real_orders_for_symbols_backup[$exchange][$symbol] = count($real_orders_for_symbol);
 
-                                    // если существут переменная $micro-times для данной биржи, то
-                                    if (isset($microtimes[$exchange])) {
+                                    } else {
 
-                                        // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
-                                        if ((microtime(true) - $microtimes[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
+                                        if (isset($microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol])) {
 
-                                            // пройтись по всем реальным ордерам
-                                            foreach ($real_orders_for_symbol as $real_order) {
+                                            if ((microtime(true) - $microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol]) >= $config['expired_command_to_create_order'] / 1000000) {
 
-                                                // отправить по aeron на получение статусов ордеров
-                                                $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
+                                                unset($real_orders_for_symbols_backup[$exchange][$symbol]);
 
                                             }
 
-                                            // обновить время переменной $microtimes для данной биржи
-                                            $microtimes[$exchange] = microtime(true);
+                                        } else {
+
+                                            $microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol] = microtime(true);
 
                                         }
-
-                                    } else {
-
-                                        // зафиксировать первоначальное время переменной $microtimes для данной биржи
-                                        $microtimes[$exchange] = microtime(true);
-
-                                    }
-
-                                    // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
-                                    if (isset($was_send_create_orders[$exchange][$symbol]))
-                                        unset($was_send_create_orders[$exchange][$symbol]);
-
-                                } else {
-
-                                    // если нет переменной $was_send_create_orders для данной биржи, то это означает, что пока нет первой постановки ордеров
-                                    if (!isset($was_send_create_orders[$exchange][$symbol])) {
-
-                                        // пройтись по всем ордерам
-                                        foreach ($orders as $order) {
-
-                                            // отправить на постановку ордеров
-                                            $api->createOrder($exchange, $order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
-
-                                        }
-
-                                        // создать переменную $was_send_create_orders для биржи, чтобы понимать, что постановка на первоначальные ордера были выставлены
-                                        $was_send_create_orders[$exchange][$symbol] = true;
-
-                                    } else {
-
-                                        // выводит сообщение, что не может получить ордера от гейтов
-                                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates for exchange: ' . $exchange . ' and symbol: ' . $symbol . PHP_EOL;
-
-                                        sleep(1);
 
                                     }
 
                                 }
+
+                                // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
+                                if (isset($was_send_create_orders[$exchange][$symbol]))
+                                    unset($was_send_create_orders[$exchange][$symbol]);
 
                             } else {
 
-                                $sell_orders = $config['order_pairs'];
+                                // если нет переменной $was_send_create_orders для данной биржи, то это означает, что пока нет первой постановки ордеров
+                                if (!isset($was_send_create_orders[$exchange][$symbol])) {
 
-                                $buy_orders = $config['order_pairs'];
+                                    // пройтись по всем ордерам
+                                    foreach ($orders as $order) {
 
-                                // получаем массив ордеров на продажу и покупку
-                                $orders = $m3_maker->getOrders($sell_orders, $buy_orders, $symbol, $lower, $higher, $orderbooks[$symbol][$exchange]['asks'][0][0], $market['amount_increment']);
+                                        // отправить на постановку ордеров
+                                        $api->createOrder($exchange, $order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
 
-                                //DEBUG ONLY
-                                $m3_maker->printOrders($orders, 'Theoretical Orders'); //DEBUG ONLY
-
-                                // фильтруем ордера только для одного символа
-                                if (isset($real_orders[$exchange]))
-                                    $real_orders_for_symbol = array_filter(
-                                        $real_orders[$exchange],
-                                        fn($real_order_for_symbol) => $real_order_for_symbol['symbol'] == $symbol
-                                    );
-
-                                // если у нас есть реальные ордера
-                                if (isset($real_orders[$exchange]) && !empty($real_orders_for_symbol)) {
-
-                                    // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
-                                    [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
-
-                                    //DEBUG ONLY
-                                    $m3_maker->printOrders($real_orders_for_symbol, 'Real Orders'); //DEBUG ONLY
-
-                                    //DEBUG ONLY
-                                    $m3_maker->printOrders($must_real_orders, 'Real Orders for Cancel'); //DEBUG ONLY
-
-                                    // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
-                                    if (!empty($must_real_orders)) {
-
-                                        // пройтись по каждому элемента массива
-                                        foreach ($must_real_orders as $must_real_key => $must_real_order) {
-
-                                            // если статус закрыт, отменен, истек или отклонён
-                                            if (!in_array($must_real_order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
-
-                                                // отправить по aeron на отмену ордеров
-                                                $api->cancelOrder($exchange, $must_real_order['client_order_id'], $must_real_order['symbol']);
-
-                                            }
-
-                                        }
+                                        break;
 
                                     }
 
+                                    // создать переменную $was_send_create_orders для биржи, чтобы понимать, что постановка на первоначальные ордера были выставлены
+                                    $was_send_create_orders[$exchange][$symbol] = true;
+
+                                } else {
+
+                                    if (isset($microtimes_for_was_send_create_orders[$exchange][$symbol])) {
+
+                                        if ((microtime(true) - $microtimes_for_was_send_create_orders[$exchange][$symbol][$exchange]) >= $config['expired_command_to_create_order'] / 1000000) {
+
+                                            unset($was_send_create_orders[$exchange][$symbol]);
+
+                                        }
+
+                                    } else {
+
+                                        $microtimes_for_was_send_create_orders[$exchange][$symbol] = microtime(true);
+
+                                    }
+
+                                    // выводит сообщение, что не может получить ордера от гейтов
+                                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates for exchange: ' . $exchange . ' and symbol: ' . $symbol . PHP_EOL;
+
+                                    sleep(1);
+
                                 }
-
-                                // выводит, что сумма количества ордеров на продажу и покупку не соответствует суммарному количеству ордеров, которые необходимо поставить
-                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] ($sell_orders + $buy_orders) != 2 * $config[$order_pairs]' . PHP_EOL;
-
-                                // отправить на лог сервер ошибку
-                                $api->sendErrorToLogServer($exchange, '($sell_orders + $buy_orders) != 2 * $config[$order_pairs]');
-
-                                sleep(2);
 
                             }
 
