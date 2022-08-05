@@ -31,7 +31,7 @@ class M3Maker
 
     }
 
-    public function countProfit(string $exchange, array $orderbooks, array $symbols_for_profit_bid_and_ask, string $base_asset, string $quote_asset): array
+    public function countProfit(string $exchange, array $orderbooks, array $symbols_for_profit_bid_and_ask, string $base_asset, string $quote_asset, float $fee): array
     {
 
         list($base_asset_one, $quote_asset_one) = explode('/', $symbols_for_profit_bid_and_ask[0]);
@@ -69,7 +69,7 @@ class M3Maker
 
         }
 
-        return [$profits['bids'], $profits['asks']];
+        return [$profits['bids'] * (1 - $fee / 100), $profits['asks'] * (1 + $fee / 100)];
 
     }
 

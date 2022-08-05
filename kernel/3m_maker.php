@@ -83,7 +83,7 @@ while (true) {
                             list($base_asset, $quote_asset) = explode('/', $symbol);
 
                             // считаем profit bid и profit ask (profit ask должен быть больше profit bid)
-                            [$profit_bid, $profit_ask] = $m3_maker->countProfit($exchange, $orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset);
+                            [$profit_bid, $profit_ask] = $m3_maker->countProfit($exchange, $orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee']);
 
                             // находим все, что в сетке ниже $profit_bid и выше $profit_ask+
                             [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
