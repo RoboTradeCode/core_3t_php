@@ -15,7 +15,7 @@ $memcached->addServer('localhost', 11211);
 $memcached->flush();
 
 // создание класса для m3 maker
-$m3_maker = new M3Maker(dirname(__DIR__) . '/config/3m_maker_full_balance.json');
+$m3_maker = new M3Maker(dirname(__DIR__) . '/config/3m_maker.json');
 
 // получение конфигов
 $config = $m3_maker->getConfig();
