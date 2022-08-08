@@ -216,7 +216,7 @@ while (true) {
 
                                     if (isset($microtimes_for_was_send_create_orders[$exchange][$symbol])) {
 
-                                        if ((microtime(true) - $microtimes_for_was_send_create_orders[$exchange][$symbol][$exchange]) >= $config['expired_command_to_create_order'] / 1000000) {
+                                        if ((microtime(true) - $microtimes_for_was_send_create_orders[$exchange][$symbol]) >= $config['expired_command_to_create_order'] / 1000000) {
 
                                             unset($was_send_create_orders[$exchange][$symbol]);
 
