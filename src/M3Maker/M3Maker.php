@@ -41,9 +41,13 @@ class M3Maker
 
         foreach (['bids' => 'asks', 'asks' => 'bids'] as $item => $reverse_item) {
 
-            $first = $orderbooks[$symbols_for_profit_bid_and_ask[0]][$exchange][$item][0][0];
+            $firsts = array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], $item), 0), 0);
 
-            $second = $orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange][$reverse_item][0][0];
+            $seconds = array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], $reverse_item), 0), 0);
+
+            $first = ($item == 'bids') ? max($firsts) : min($firsts);
+
+            $second = ($reverse_item == 'bids') ? max($seconds) : min($seconds);
 
             $profits[$item] = (
                 ($base_asset_one != $base_asset && $base_asset_one != $quote_asset)
