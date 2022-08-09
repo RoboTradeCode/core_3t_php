@@ -257,12 +257,12 @@ while (true) {
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbol][$exchange]' . PHP_EOL;
 
                     // Выводит в консоль сообщения, что нет $orderbooks["ETH/USDT"][$exchange]
-                    if (!isset($orderbooks[$symbols_for_profit_bid_and_ask[0]][$exchange]))
-                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbols_for_profit_bid_and_ask[0]][$exchange])' . PHP_EOL;
+                    if (!isset($orderbooks[$symbols_for_profit_bid_and_ask[0]]))
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbols_for_profit_bid_and_ask[0]])' . PHP_EOL;
 
                     // Выводит в консоль сообщения, что нет $orderbooks["ETH/BTC"][$exchange]
-                    if (!isset($orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange]))
-                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange])' . PHP_EOL;
+                    if (!isset($orderbooks[$symbols_for_profit_bid_and_ask[1]]))
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbols_for_profit_bid_and_ask[1]])' . PHP_EOL;
 
                     sleep(1);
 
