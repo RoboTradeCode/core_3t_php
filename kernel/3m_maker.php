@@ -55,7 +55,7 @@ while (true) {
         if (isset($balances[$exchange])) {
 
             //DEBUG ONLY
-            $m3_maker->printBalances($balances[$exchange], $exchange);//DEBUG ONLY
+            $m3_maker->printBalances($balances[$exchange]);//DEBUG ONLY
 
             // найти количество ордеров на продажу и количество ореров на покупку
             [$sell_orders_all_markets, $buy_orders_all_markets] = $m3_maker->getTheNumberOfSellAndBuyOrdersByFullBalanceOnAllMarkets($balances[$exchange], array_keys($config['3m_maker_markets'][$exchange]));
@@ -67,8 +67,8 @@ while (true) {
                 if (
                     count($symbols_for_profit_bid_and_ask) == 2 &&
                     isset($orderbooks[$symbol][$exchange]) &&
-                    isset($orderbooks[$symbols_for_profit_bid_and_ask[0]][$exchange]) &&
-                    isset($orderbooks[$symbols_for_profit_bid_and_ask[1]][$exchange])
+                    isset($orderbooks[$symbols_for_profit_bid_and_ask[0]]) &&
+                    isset($orderbooks[$symbols_for_profit_bid_and_ask[1]])
                 ) {
 
                     echo PHP_EOL . $exchange . ' ' . $symbol . ' [START][START][START][START][START][START][START][START][START][START][START][START][START][START]-------------------------------------------' . PHP_EOL;
@@ -77,7 +77,7 @@ while (true) {
                     $market = $m3_maker->getMarket($exchange, $symbol);
 
                     // если существует сетка для данной биржи и рынка, иначе создать эту сетку
-                    if (isset($grids[$exchange][$symbol])) {
+                    if (isset($grids[$symbol])) {
 
                         // берем base_asset и quote_asset для данного рынка
                         list($base_asset, $quote_asset) = explode('/', $symbol);
@@ -86,7 +86,7 @@ while (true) {
                         [$profit_bid, $profit_ask] = $m3_maker->countProfit($exchange, $orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee']);
 
                         // находим все, что в сетке ниже $profit_bid и выше $profit_ask+
-                        [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$exchange][$symbol], $profit_bid, $profit_ask);
+                        [$lower, $higher] = $m3_maker->getLowerAndHigherGrids($grids[$symbol], $profit_bid, $profit_ask);
 
                         // найти количество ордеров на продажу и количество ореров на покупку
                         [$sell_orders, $buy_orders] = [$sell_orders_all_markets[$symbol], $buy_orders_all_markets[$symbol]];
@@ -94,10 +94,10 @@ while (true) {
                         //DEBUG ONLY
                         $m3_maker->printArray(
                             [
-                                'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0],
                                 'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0],
-                                'profit_ask' => $profit_ask,
+                                'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0],
                                 'profit_bid' => $profit_bid,
+                                'profit_ask' => $profit_ask,
                             ],
                             'Profit bid, ask, Best Orderbook'
                         ); //DEBUG ONLY
@@ -116,7 +116,7 @@ while (true) {
                             );
 
                         // если у нас есть реальные ордера
-                        if (isset($real_orders[$exchange]) && !empty($real_orders_for_symbol)) {
+                        if (!empty($real_orders_for_symbol)) {
 
                             // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
                             [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
@@ -240,7 +240,7 @@ while (true) {
                     } else {
 
                         // строит сетку для данной биржи и данного рынка
-                        $grids[$exchange][$symbol] = $m3_maker->getGrids($orderbooks[$symbol][$exchange], $market['price_increment']);
+                        $grids[$symbol] = $m3_maker->getGrids($orderbooks[$symbol][$exchange], $market['price_increment']);
 
                     }
 
