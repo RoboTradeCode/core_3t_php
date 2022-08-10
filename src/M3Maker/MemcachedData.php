@@ -86,7 +86,7 @@ class MemcachedData
                     array_column($this->markets[$exchange], 'common_symbol')
                 ),
                 [$exchange . '_balances'], // добавить еще к массиву ключ баланса
-                [$exchange . '_orders'] // добавить еще к массиву ключ для получения ордеров
+                [$exchange . '_orders']
             );
 
         return $keys;
