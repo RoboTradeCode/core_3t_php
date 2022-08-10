@@ -104,6 +104,14 @@ class Api
 
     }
 
+    public function cancelAllOrders(): void
+    {
+
+        // отправляем на гейт, закрыть все ордера
+        $this->gate->cancelAllOrders()->send();
+
+    }
+
     private function madeRobotradesApiAndGateClasses(): void
     {
 
