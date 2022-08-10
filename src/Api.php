@@ -1,13 +1,9 @@
 <?php
 
-namespace Src\M3Maker;
+namespace Src;
 
-use Exception;
-use Src\Aeron;
-use Src\Gate;
-use Src\Log;
 use Aeron\Publisher;
-use Src\Storage;
+use Exception;
 
 class Api
 {

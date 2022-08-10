@@ -1,8 +1,8 @@
 <?php
 
-use Src\M3Maker\Api;
-use Src\M3Maker\MemcachedData;
+use Src\Api;
 use Src\M3Maker\M3Maker;
+use Src\M3Maker\MemcachedData;
 use Src\Time;
 
 require dirname(__DIR__) . '/index.php';
