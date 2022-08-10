@@ -6,6 +6,7 @@ class Core
 {
 
     private array $config;
+    private array $keys;
 
     /**
      * @param array $config Вся конфигурация приходящяя от агента
@@ -15,12 +16,14 @@ class Core
 
         $this->config = $config;
 
+        $this->keys = $this->getAllMemcachedKeys();
+
     }
 
     public function getFormatData($memcached): array
     {
 
-        return $this->reformatAndSeparateData($memcached->getMulti($this->getAllMemcachedKeys()) ?? []);
+        return $this->reformatAndSeparateData($memcached->getMulti($this->keys) ?? []);
 
     }
 
@@ -43,7 +46,7 @@ class Core
                     array_column($this->config['markets'], 'common_symbol')
                 ),
                 [$exchange . '_balances'], // добавить еще к массиву ключ баланса
-                [$exchange . '_orders'] // добавить еще к массиву ключ для получения ордеров
+                [$exchange . '_orders']
             );
 
         return $keys;
