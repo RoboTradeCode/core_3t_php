@@ -229,6 +229,9 @@ if (isset($precisions)) {
 
             } else {
 
+                print_r($all_data['orders'][$exchange]);
+                echo PHP_EOL;
+
                 echo '[' . date('Y-m-d H:i:s') . '] Can not real orders not empty' . PHP_EOL;
 
             }
