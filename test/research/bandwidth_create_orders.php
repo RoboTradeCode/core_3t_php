@@ -114,9 +114,9 @@ if (isset($precisions)) {
 
     echo PHP_EOL . 'Create Orders [END]----------------------------------------------------------------------------------' . PHP_EOL;
 
-    echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 10 seconds' . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 30 seconds' . PHP_EOL;
 
-    sleep(10);
+    sleep(30);
 
     // берем реальные ордера
     do {
@@ -129,7 +129,7 @@ if (isset($precisions)) {
             // реальные ордера
             if (isset($all_data['orders'])) {
 
-                $real_orders = $all_data['orders'];
+                $real_orders = $all_data['orders'][$exchange];
 
                 break;
 
