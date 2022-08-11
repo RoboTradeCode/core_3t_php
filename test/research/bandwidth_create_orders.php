@@ -17,6 +17,8 @@ $memcached->flush();
 // получить конфигурацию
 $config = Configurator::getConfigApiByFile('research');
 
+$config['configs']['core_config']['assets_labels'][$config['configs']['core_config']['exchange']] = $config['assets_labels'];
+
 $core_config = $config['configs']['core_config'];
 
 $core_config['markets'][$config['configs']['core_config']['exchange']] = $config['markets'];
