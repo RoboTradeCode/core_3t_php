@@ -126,7 +126,7 @@ class Api
         $exchange = $this->config['exchange'];
 
         // API для формирования сообщения для отправки по aeron
-        $this->robotrade_api = new \robotrade\Api($exchange, $this->config['algorithm'], $this->config['node'], $this->config['instances'][$exchange]);
+        $this->robotrade_api = new \robotrade\Api($exchange, $this->config['algorithm'], $this->config['node'], $this->config['instance']);
 
         echo '[' . date('Y-m-d H:i:s') . '] Try ' . $exchange . ' ' . $this->config['aeron']['publishers']['gates'][$exchange]['channel'] . ' ' . $this->config['aeron']['publishers']['gates'][$exchange]['stream_id'] . PHP_EOL;
 
