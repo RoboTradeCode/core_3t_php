@@ -114,9 +114,9 @@ if (isset($precisions)) {
 
     echo PHP_EOL . 'Create Orders [END]----------------------------------------------------------------------------------' . PHP_EOL;
 
-    echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 30 seconds' . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 10 seconds' . PHP_EOL;
 
-    sleep(30);
+    sleep(10);
 
     // берем реальные ордера
     do {
