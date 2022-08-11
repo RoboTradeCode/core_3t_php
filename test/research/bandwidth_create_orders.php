@@ -59,7 +59,7 @@ if (isset($precisions[$symbol])) {
 
     do {
 
-        echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 1 seconds' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 1 seconds to get balances and orderbook for symbol: ' . $symbol . PHP_EOL;
 
         sleep(1);
 
