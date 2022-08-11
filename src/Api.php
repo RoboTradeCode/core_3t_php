@@ -112,6 +112,14 @@ class Api
 
     }
 
+    public function getBalances(): void
+    {
+
+        // отправляем на гейт, закрыть все ордера
+        $this->gate->getBalances(array_column($this->config['assets_labels'][$this->config['exchange']], 'common'))->send();
+
+    }
+
     private function madeRobotradesApiAndGateClasses(): void
     {
 
