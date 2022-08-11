@@ -155,9 +155,9 @@ function handler_orders(string $message): void
 
             } else {
 
-                if ($data['event'] == 'error' && $data['node'] == 'gate') {
+                if ($data['event'] == 'error' && $data['node'] == 'gate' && $data['action'] == 'create_orders') {
 
-
+                    echo '[' . date('Y-m-d H:i:s') . '] Error Create order: ' . $data['message'] . PHP_EOL;
 
                 } else {
 

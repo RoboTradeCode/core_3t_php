@@ -225,13 +225,11 @@ if (isset($precisions)) {
                     echo '[' . date('Y-m-d H:i:s') . '] ' . $asset . ' (free: ' . $balance['free'] . ' | used: ' . $balance['used'] . ' | total: ' . $balance['total'] . ') ' . PHP_EOL;
                 echo 'Balances: ----------------------------------------------------------------------------------' . PHP_EOL;
 
-                $real_orders = $all_data['orders'][$exchange];
-
                 break;
 
             } else {
 
-                echo '[' . date('Y-m-d H:i:s') . '] Can not get real orders or balances' . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] Can not real orders not empty' . PHP_EOL;
 
             }
 
