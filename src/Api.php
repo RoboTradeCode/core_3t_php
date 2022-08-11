@@ -38,37 +38,39 @@ class Api
 
     }
 
-    public function getOrderStatus(string $client_order_id, string $symbol): void
+    public function getOrderStatus(string $client_order_id, string $symbol, bool $echo = true): void
     {
 
         $message = $this->robotrade_api->getOrderStatus($client_order_id, $symbol, 'Get status order ' . $client_order_id);
 
         // отправить гейту сообщение
-        $this->sendCommandToGate($message);
+        $this->sendCommandToGate($message, $echo);
 
-        echo '[' . date('Y-m-d H:i:s') . '] Send to gate get status order. Id: ' .
-            $client_order_id .
-            ' Symbol: ' . $symbol .
-            PHP_EOL;
+        if ($echo)
+            echo '[' . date('Y-m-d H:i:s') . '] Send to gate get status order. Id: ' .
+                $client_order_id .
+                ' Symbol: ' . $symbol .
+                PHP_EOL;
 
     }
 
-    public function cancelOrder(string $client_order_id, string $symbol): void
+    public function cancelOrder(string $client_order_id, string $symbol, bool $echo = true): void
     {
 
         $message = $this->robotrade_api->cancelOrder($client_order_id, $symbol, 'Cancel order ' . $client_order_id);
 
         // отправить гейту сообщение
-        $this->sendCommandToGate($message);
+        $this->sendCommandToGate($message, $echo);
 
-        echo '[' . date('Y-m-d H:i:s') . '] Send to gate cancel order. Id: ' .
-            $client_order_id .
-            ' Symbol: ' . $symbol .
-            PHP_EOL;
+        if ($echo)
+            echo '[' . date('Y-m-d H:i:s') . '] Send to gate cancel order. Id: ' .
+                $client_order_id .
+                ' Symbol: ' . $symbol .
+                PHP_EOL;
 
     }
 
-    public function createOrder(string $symbol, string $type, string $side, float $amount, float $price): void
+    public function createOrder(string $symbol, string $type, string $side, float $amount, float $price, bool $echo = true): void
     {
 
         if (in_array($type, ['limit', 'market']) && in_array($side, ['buy', 'sell'])) {
@@ -84,17 +86,18 @@ class Api
             );
 
             // отправить гейту сообщение
-            $this->sendCommandToGate($message);
+            $this->sendCommandToGate($message, $echo);
 
             // отправить в лог сервер
-            $this->sendToLog($message);
+            $this->sendToLog($message, $echo);
 
-            echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' .
-                $symbol .
-                ' Side: ' . $side .
-                ' Amount: ' . $amount .
-                ' Price: ' . $price .
-                PHP_EOL;
+            if ($echo)
+                echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' .
+                    $symbol .
+                    ' Side: ' . $side .
+                    ' Amount: ' . $amount .
+                    ' Price: ' . $price .
+                    PHP_EOL;
 
         } else {
 
@@ -171,7 +174,7 @@ class Api
 
     }
 
-    private function sendCommandToGate(string $message): void
+    private function sendCommandToGate(string $message, bool $echo = true): void
     {
 
         try {
@@ -188,7 +191,8 @@ class Api
 
             }
 
-            echo '[' . date('Y-m-d H:i:s') . '] Send to gate message. Code: ' . $code . PHP_EOL;
+            if ($echo)
+                echo '[' . date('Y-m-d H:i:s') . '] Send to gate message. Code: ' . $code . PHP_EOL;
 
         } catch (Exception $e) {
 
@@ -198,7 +202,7 @@ class Api
 
     }
 
-    private function sendToLog(string $message): void
+    private function sendToLog(string $message, bool $echo = true): void
     {
 
         try {
@@ -215,7 +219,8 @@ class Api
 
             }
 
-            echo '[' . date('Y-m-d H:i:s') . '] Send to log server message. Code: ' . $code . PHP_EOL;
+            if ($echo)
+                echo '[' . date('Y-m-d H:i:s') . '] Send to log server message. Code: ' . $code . PHP_EOL;
 
         } catch (Exception $e) {
 
