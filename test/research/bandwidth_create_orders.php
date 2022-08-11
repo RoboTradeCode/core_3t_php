@@ -49,7 +49,7 @@ foreach ($core_config['markets'][$exchange] as $key => $market) {
 
 }
 
-if (isset($precisions[$symbol])) {
+if (isset($precisions)) {
 
     // класс Api для работы с гейтами и лог сервером
     $api = new Api($config['configs']['core_config']);
