@@ -38,7 +38,7 @@ foreach ($core_config['markets'][$exchange] as $key => $market) {
 
     if ($market['common_symbol'] == $symbol) {
 
-        $precisions[$symbol] = [
+        $precisions = [
             'price_increment' => $market['price_increment'],
             'amount_increment' => $market['amount_increment'],
         ];
