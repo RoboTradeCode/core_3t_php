@@ -108,7 +108,7 @@ if (isset($precisions)) {
 
         echo '[' . date('Y-m-d H:i:s') . '] Create Order Price: ' . $price . PHP_EOL;
 
-        usleep(1000);
+        usleep(10000);
 
     } while(!Time::timeUp(1));
 
