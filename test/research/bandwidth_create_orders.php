@@ -74,7 +74,7 @@ if (isset($precisions)) {
 
         }
 
-    } while(!isset($all_data['balances'][$exchange]) || !isset($all_data['orderbooks'][$symbol][$exchange]));
+    } while(empty($all_data['balances'][$exchange]) || empty($all_data['orderbooks'][$symbol][$exchange]));
 
     // баланс
     $balance = $all_data['balances'][$exchange];
@@ -102,11 +102,11 @@ if (isset($precisions)) {
 
         }
 
-        $api->createOrder($symbol, 'limit', $side, $amount, $price);
+        $api->createOrder($symbol, 'limit', $side, $amount, $price, false);
 
         $i++;
 
-        echo '[' . date('Y-m-d H:i:s') . '] Create Order Price: ' . $price . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] Create Order ' . $i . ' Price: ' . $price . PHP_EOL;
 
         usleep(10000);
 
@@ -114,12 +114,12 @@ if (isset($precisions)) {
 
     echo PHP_EOL . 'Create Orders [END]----------------------------------------------------------------------------------' . PHP_EOL;
 
-    echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 10 seconds' . PHP_EOL;
-
-    sleep(10);
-
     // берем реальные ордера
     do {
+
+        echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 10 seconds' . PHP_EOL;
+
+        sleep(10);
 
         if ($memcached_data = $memcached->getMulti($core->keys)) {
 
@@ -127,7 +127,7 @@ if (isset($precisions)) {
             $all_data = $core->reformatAndSeparateData($memcached_data);
 
             // реальные ордера
-            if (isset($all_data['orders'])) {
+            if (!empty($all_data['orders'])) {
 
                 $real_orders = $all_data['orders'][$exchange];
 
@@ -164,7 +164,12 @@ if (isset($precisions)) {
             $all_data = $core->reformatAndSeparateData($memcached_data);
 
             // реальные ордера
-            if (isset($all_data['balances'])) {
+            if (!empty($all_data['balances'])) {
+
+                echo 'Balances: ----------------------------------------------------------------------------------' . PHP_EOL;
+                foreach ($all_data['balances'][$exchange] as $asset => $balance)
+                    echo '[' . date('Y-m-d H:i:s') . '] ' . $asset . ' (free: ' . $balance['free'] . ' | used: ' . $balance['used'] . ' | total: ' . $balance['total'] . ') ' . PHP_EOL;
+                echo 'Balances: ----------------------------------------------------------------------------------' . PHP_EOL;
 
                 foreach ($all_data['balances'][$exchange] as $balance) {
 
@@ -196,6 +201,43 @@ if (isset($precisions)) {
         } else {
 
             echo '[' . date('Y-m-d H:i:s') . '] Can not gat memcached data' . PHP_EOL;
+
+        }
+
+    } while(true);
+
+    do {
+
+        echo '[' . date('Y-m-d H:i:s') . '] [WAIT] 1 seconds' . PHP_EOL;
+
+        sleep(1);
+
+        if ($memcached_data = $memcached->getMulti($core->keys)) {
+
+            // получаем все данные из memcached
+            $all_data = $core->reformatAndSeparateData($memcached_data);
+
+            // реальные ордера
+            if (empty($all_data['orders'])) {
+
+                echo 'Balances: ----------------------------------------------------------------------------------' . PHP_EOL;
+                foreach ($all_data['balances'][$exchange] as $asset => $balance)
+                    echo '[' . date('Y-m-d H:i:s') . '] ' . $asset . ' (free: ' . $balance['free'] . ' | used: ' . $balance['used'] . ' | total: ' . $balance['total'] . ') ' . PHP_EOL;
+                echo 'Balances: ----------------------------------------------------------------------------------' . PHP_EOL;
+
+                $real_orders = $all_data['orders'][$exchange];
+
+                break;
+
+            } else {
+
+                echo '[' . date('Y-m-d H:i:s') . '] Can not get real orders or balances' . PHP_EOL;
+
+            }
+
+        } else {
+
+            echo '[' . date('Y-m-d H:i:s') . '] Can not get memcached data' . PHP_EOL;
 
         }
 

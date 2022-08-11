@@ -81,11 +81,6 @@ function handler_balances(string $message): void
                 $balances[$data['exchange']]
             );
 
-            echo $data['exchange'] . '----------------------------------------------------------------------------------' . PHP_EOL;
-            foreach ($balances[$data['exchange']] as $asset => $balance)
-                echo '[' . date('Y-m-d H:i:s') . '] ' . $asset . ' (free: ' . $balance['free'] . ' | used: ' . $balance['used'] . ' | total: ' . $balance['total'] . ') ' . PHP_EOL;
-            echo $data['exchange'] . '----------------------------------------------------------------------------------' . PHP_EOL;
-
         } else {
 
             echo '[ERROR] Balances data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
@@ -127,7 +122,7 @@ function handler_orders(string $message): void
                 }
             }
 
-            echo PHP_EOL . 'Real Orders Count: ' . count($orders) . '----------------------------------------------------------------------------------' . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] Real Orders Count: ' . count($orders) . PHP_EOL;
 
             $memcached->set(
                 $key,
@@ -160,9 +155,17 @@ function handler_orders(string $message): void
 
             } else {
 
-                print_r($message); echo PHP_EOL;
+                if ($data['event'] == 'error' && $data['node'] == 'gate') {
 
-                echo '[ERROR] handler_orders Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+
+
+                } else {
+
+                    print_r($message); echo PHP_EOL;
+
+                    echo '[ERROR] handler_orders Data broken. Node: ' . ($data['node'] ?? 'null') . PHP_EOL;
+
+                }
 
             }
 
