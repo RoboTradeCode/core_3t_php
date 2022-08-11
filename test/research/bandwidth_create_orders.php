@@ -182,6 +182,9 @@ if (isset($precisions)) {
 
                 }
 
+                if (!$do)
+                    break;
+
             } else {
 
                 $api->getBalances();
@@ -196,7 +199,7 @@ if (isset($precisions)) {
 
         }
 
-    } while($do);
+    } while(true);
 
 } else {
 
