@@ -55,7 +55,7 @@ if (isset($precisions[$symbol])) {
     $api = new Api($config['configs']['core_config']);
 
     // создаем ядро, для работы с данными из memcached
-    $core = new MemcachedData($exchange, $core_config['markets'], $core_config['expired_orderbook_time']);
+    $core = new MemcachedData([$exchange], $core_config['markets'], $core_config['expired_orderbook_time']);
 
     do {
 
