@@ -218,7 +218,7 @@ if (isset($precisions)) {
             $all_data = $core->reformatAndSeparateData($memcached_data);
 
             // реальные ордера
-            if (empty($all_data['orders'])) {
+            if (empty($all_data['orders'][$exchange])) {
 
                 echo 'Balances: ----------------------------------------------------------------------------------' . PHP_EOL;
                 foreach ($all_data['balances'][$exchange] as $asset => $balance)
