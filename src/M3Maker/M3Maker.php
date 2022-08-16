@@ -2,6 +2,8 @@
 
 namespace Src\M3Maker;
 
+use Src\FloatRound;
+
 class M3Maker
 {
 
@@ -138,14 +140,9 @@ class M3Maker
             // пройтись по всем реальным ордерам, которые должны уже поставлены
             foreach ($must_real_orders as $must_real_key => $real_order) {
 
-                $a = intval($real_order['price']);
-
-                $b = intval($must_order['price']);
-
                 // если цена уже поставленного ордера совпадает с теоретическим и статус этого ордера open
                 if (
-                    $a == $b &&
-                    bccomp(number_format($real_order['price'] - $a, 8), number_format($must_order['price'] - $b, 8), 8) == 0  &&
+                    FloatRound::compare($real_order['price'], $must_order['price'])  &&
                     $real_order['side'] == $must_order['side'] &&
                     $real_order['status'] == 'open'
                 ) {
