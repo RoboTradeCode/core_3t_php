@@ -140,7 +140,7 @@ class M3Maker
 
                 // если цена уже поставленного ордера совпадает с теоретическим и статус этого ордера open
                 if (
-                    bccomp($real_order['price'], $must_order['price'], 8) == 0  &&
+                    bccomp(number_format($real_order['price'], 8), number_format($must_order['price'], 8), 8) == 0  &&
                     $real_order['side'] == $must_order['side'] &&
                     $real_order['status'] == 'open'
                 ) {
