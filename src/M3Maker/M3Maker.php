@@ -36,45 +36,45 @@ class M3Maker
     public function countProfit(array $orderbooks, array $symbols_for_profit_bid_and_ask, string $base_asset, string $quote_asset, float $fee): array
     {
 
-        list($base_asset_one, $quote_asset_one) = explode('/', $symbols_for_profit_bid_and_ask[0]);
+        list(, $quote_asset_one) = explode('/', $symbols_for_profit_bid_and_ask[0]);
 
-        list($base_asset_two) = explode('/', $symbols_for_profit_bid_and_ask[1]);
+        list(, $quote_asset_two) = explode('/', $symbols_for_profit_bid_and_ask[1]);
 
-        foreach (['bids' => 'asks', 'asks' => 'bids'] as $item => $reverse_item) {
+        $first_bids = max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'bids'), 0), 0));
+        $first_asks = min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'asks'), 0), 0));
 
-            $firsts = array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], $item), 0), 0);
+        $second_bids = max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'bids'), 0), 0));
+        $second_asks = min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'asks'), 0), 0));
 
-            $seconds = array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], $reverse_item), 0), 0);
+        if ($quote_asset_one != $quote_asset) {
 
-            $first = ($item == 'bids') ? max($firsts) : min($firsts);
+            $first['bids'] = 1 / $first_asks;
 
-            $second = ($reverse_item == 'bids') ? max($seconds) : min($seconds);
+            $first['asks'] = 1 / $first_bids;
 
-            $profits[$item] = (
-                ($base_asset_one != $base_asset && $base_asset_one != $quote_asset)
-                    ? (
-                        ($base_asset_one == $base_asset_two)
-                            ? (
-                                ($quote_asset_one == $quote_asset) ? $first / $second : $second / $first
-                            )
-                            : (
-                                ($quote_asset_one == $quote_asset) ? $first * $second : 1 / ($first * $second)
-                            )
-                )
-                    : (
-                        ($quote_asset_one == $base_asset_two)
-                            ? (
-                                ($base_asset_one == $quote_asset) ? 1 / ($first * $second) : $first * $second
-                            )
-                            : (
-                                ($base_asset_one == $quote_asset) ? $second / $first : $first / $second
-                            )
-                )
-            );
+        } else {
+
+            $first['bids'] = $first_bids;
+
+            $first['asks'] = $first_asks;
 
         }
 
-        return [$profits['bids'] * (1 - $fee / 100), $profits['asks'] * (1 + $fee / 100)];
+        if ($quote_asset_two != $base_asset) {
+
+            $second['bids'] = 1 / $second_asks;
+
+            $second['asks'] = 1 / $second_bids;
+
+        } else {
+
+            $second['bids'] = $second_bids;
+
+            $second['asks'] = $second_asks;
+
+        }
+
+        return [$first['bids'] / $second['asks'] * (1 - $fee / 100), $first['asks'] / $second['bids'] * (1 + $fee / 100)];
 
     }
 
