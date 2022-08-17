@@ -92,7 +92,7 @@ while (true) {
                         [$sell_orders, $buy_orders] = [$sell_orders_all_markets[$symbol], $buy_orders_all_markets[$symbol]];
 
                         // если мы не вышли засетку, то идти по алгоритму, иначе удалить сетку
-                        if ($sell_orders >= count($lower) || $buy_orders >= count($higher)) {
+                        if ($sell_orders <= count($lower) || $buy_orders <= count($higher)) {
 
                             //DEBUG ONLY
                             $m3_maker->printArray(
