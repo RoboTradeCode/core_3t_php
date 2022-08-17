@@ -91,28 +91,58 @@ class M3Maker
         // создаем сетку начиная с нулевого уровня
         $grids[] = $zero;
 
-        // проходимся по 1000 циклов
-        for ($i = 0; $i < 1000; $i++) {
+        // шаг цены меньше price_increment?
+        $is_step_below_price_increment = ($zero * ((100 + $this->config['interval']) / 100 - 1) < $price_increment) || ($zero * (1 - (100 - $this->config['interval']) / 100) < $price_increment);
 
-            // если не был достигнут нулевой уровень
-            if ($zero * (100 - ($this->config['interval'] * ($i + 1))) / 100 >= 0) {
+        // проходимся по 10000 циклов
+        for ($i = 0; $i < 10000; $i++) {
 
-                // добавить в сетку элемент на один уровень выше
-                $grids[] = $this->incrementNumber(
-                    $zero * (100 + ($this->config['interval'] * ($i + 1))) / 100,
-                    $price_increment
-                );
+            if ($is_step_below_price_increment) {
 
-                // добавить в сетку элемент на один уровень ниже
-                $grids[] = $this->incrementNumber(
-                    $zero * (100 - ($this->config['interval'] * ($i + 1))) / 100,
-                    $price_increment
-                );
+                $level_down = $zero - $price_increment;
+
+                // если не был достигнут нулевой уровень
+                if ($level_down > 0) {
+
+                    // добавить в сетку элемент на один уровень выше
+                    $grids[] = $this->incrementNumber(
+                        $zero + $price_increment,
+                        $price_increment
+                    );
+
+                    // добавить в сетку элемент на один уровень ниже
+                    $grids[] = $this->incrementNumber(
+                        $level_down,
+                        $price_increment
+                    );
+
+                }
 
             } else {
 
-                // если был достигнут нулевой уровень цены, то остановить рассчет
-                break;
+                $level_down = $zero * (100 - ($this->config['interval'] * ($i + 1))) / 100 >= 0;
+
+                // если не был достигнут нулевой уровень
+                if ($level_down > 0) {
+
+                    // добавить в сетку элемент на один уровень выше
+                    $grids[] = $this->incrementNumber(
+                        $zero * (100 + ($this->config['interval'] * ($i + 1))) / 100,
+                        $price_increment
+                    );
+
+                    // добавить в сетку элемент на один уровень ниже
+                    $grids[] = $this->incrementNumber(
+                        $level_down,
+                        $price_increment
+                    );
+
+                } else {
+
+                    // если был достигнут нулевой уровень цены, то остановить рассчет
+                    break;
+
+                }
 
             }
 
