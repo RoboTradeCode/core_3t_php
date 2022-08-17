@@ -99,14 +99,14 @@ class M3Maker
 
             if ($is_step_below_price_increment) {
 
-                $level_down = $zero - $price_increment;
+                $level_down = $zero - $price_increment * $i;
 
                 // если не был достигнут нулевой уровень
                 if ($level_down > 0) {
 
                     // добавить в сетку элемент на один уровень выше
                     $grids[] = $this->incrementNumber(
-                        $zero + $price_increment,
+                        $zero + $price_increment * $i,
                         $price_increment
                     );
 
@@ -120,7 +120,7 @@ class M3Maker
 
             } else {
 
-                $level_down = $zero * (100 - ($this->config['interval'] * ($i + 1))) / 100 >= 0;
+                $level_down = $zero * (100 - ($this->config['interval'] * ($i + 1))) / 100;
 
                 // если не был достигнут нулевой уровень
                 if ($level_down > 0) {
