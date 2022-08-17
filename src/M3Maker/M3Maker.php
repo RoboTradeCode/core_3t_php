@@ -33,13 +33,12 @@ class M3Maker
 
     }
 
-    public function countProfit(string $exchange, array $orderbooks, array $symbols_for_profit_bid_and_ask, string $base_asset, string $quote_asset, float $fee): array
+    public function countProfit(array $orderbooks, array $symbols_for_profit_bid_and_ask, string $base_asset, string $quote_asset, float $fee): array
     {
 
         list($base_asset_one, $quote_asset_one) = explode('/', $symbols_for_profit_bid_and_ask[0]);
 
         list($base_asset_two) = explode('/', $symbols_for_profit_bid_and_ask[1]);
-
 
         foreach (['bids' => 'asks', 'asks' => 'bids'] as $item => $reverse_item) {
 
