@@ -34,9 +34,6 @@ while (true) {
     // задержка между каждым циклом
     usleep($config['sleep']);
 
-    //DEBUG ONLY
-    $m3_maker->sleepDebug(); //DEBUG ONLY
-
     // берем данные из memcached
     if ($memcached_data = $memcached->getMulti($multi_core->keys)) {
 
