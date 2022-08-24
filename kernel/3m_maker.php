@@ -84,7 +84,7 @@ while (true) {
 
                         if ($orderbooks[$symbol][$exchange]['bids'][0][0] <= $profit_bid) {
 
-                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] bid less than profit_bid. Old: ' . $profit_bid . "\033[0m" . PHP_EOL;
+                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] bid less than profit_bid. Use taker fee. Old: ' . $profit_bid . "\033[0m" . PHP_EOL;
 
                             [$profit_bid, ] = $m3_maker->countProfit($orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee_taker']);
 
@@ -92,7 +92,7 @@ while (true) {
 
                         if ($orderbooks[$symbol][$exchange]['asks'][0][0] >= $profit_ask) {
 
-                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] ask high than profit_ask. Old: ' . $profit_ask . "\033[0m" . PHP_EOL;
+                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] ask high than profit_ask. Use taker fee. Old: ' . $profit_ask . "\033[0m" . PHP_EOL;
 
                             [, $profit_ask] = $m3_maker->countProfit($orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee_taker']);
 
