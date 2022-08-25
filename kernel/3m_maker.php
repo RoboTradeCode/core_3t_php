@@ -323,7 +323,7 @@ while (true) {
                             if (!in_array($real_order['client_order_id'], array_keys($saved_real_orders[$exchange])) && ($time_now - $real_order['timestamp'] / 1000000) > 60) {
 
                                 // отправить по aeron на получение статусов ордеров
-                                $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
+                                $api->getOrderStatus($real_order['client_order_id'], $real_order['symbol']);
 
                                 // сохраненные реальный ордер, который проверили
                                 $saved_real_orders[$exchange][$real_order['client_order_id']] = $time_now;
