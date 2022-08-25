@@ -293,6 +293,54 @@ while (true) {
 
                 }
 
+                // Запрос статусов ордеров на проверку, протухают ли ордера или нет
+                if (isset($real_orders[$exchange])) {
+
+                    // если существут переменная $micro-times для данной биржи, то
+                    $microtimes_order_status[$exchange] = $microtimes_order_status[$exchange] ?? microtime(true);
+
+                    // время сейчас
+                    $time_now = microtime(true);
+
+                    // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
+                    if (($time_now - $microtimes_order_status[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
+
+                        // сортировка реальных ордеров по timestamp по возрастанию
+                        usort($real_orders[$exchange], function ($item_one, $item_two) {
+                            return $item_one['timestamp'] <=> $item_two['timestamp'];
+                        });
+
+                        // отфильтруем ордера, которые были проверены меньше минуты
+                        $saved_real_orders[$exchange] = array_filter(
+                            $saved_real_orders[$exchange] ?? [],
+                            fn($saved_real_order) => ($time_now - $saved_real_order) < 60
+                        );
+
+                        // пройтись по всем реальным ордерам
+                        foreach ($real_orders[$exchange] as $real_order) {
+
+                            // если ордер не был уже проверен в сохранненых реальных ордерах и ордер был выставлен больше 60 секунд
+                            if (!in_array($real_order['client_order_id'], array_keys($saved_real_orders[$exchange])) && ($time_now - $real_order['timestamp'] / 1000000) > 60) {
+
+                                // отправить по aeron на получение статусов ордеров
+                                $api->getOrderStatus($exchange, $real_order['client_order_id'], $real_order['symbol']);
+
+                                // сохраненные реальный ордер, который проверили
+                                $saved_real_orders[$exchange][$real_order['client_order_id']] = $time_now;
+
+                                break;
+
+                            }
+
+                        }
+
+                        // обновить время переменной $microtimes_order_status[$exchange] для данной биржи
+                        $microtimes_order_status[$exchange] = $time_now;
+
+                    }
+
+                }
+
             }
 
         } else {
