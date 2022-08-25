@@ -159,7 +159,7 @@ function handler_orders(string $message): void
 
         } else {
 
-            if ($data['event'] == 'error' && $data['node'] == 'gate' && $data['action'] == 'cancel_orders' && isset($data['data'])) {
+            if ($data['event'] == 'error' && $data['node'] == 'gate' && in_array($data['action'], ['cancel_orders', 'get_orders']) && isset($data['data'])) {
 
                 $key = $data['exchange'] . '_orders';
 
