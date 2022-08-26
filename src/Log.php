@@ -42,6 +42,13 @@ class Log
 
     }
 
+    public function send3MMakerTakerFromMaker(array $data): bool|string
+    {
+
+        return $this->generateMessage('algo_stats', $data, 'Limit order is taker', 'data');
+
+    }
+
     public function sendExpectedTriangle(array $data, string $message = null): bool|string
     {
 

@@ -415,14 +415,6 @@ class M3Maker
 
     }
 
-    public function sleepDebug(): void
-    {
-
-        if ($this->debugMode())
-            sleep(1);
-
-    }
-
     private function debugMode(): bool
     {
 

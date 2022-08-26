@@ -123,6 +123,24 @@ class Api
 
     }
 
+    public function send3MMakerTakerFromMaker(array $orderbooks, float $profit_bid_old, float $profit_ask_old, float $profit_bid, float $profit_ask, float $fee_maker, float $fee_taker): void
+    {
+
+        $this->sendToLog(
+            $this->log->send3MMakerTakerFromMaker([
+                'orderbooks' => $orderbooks,
+                'profit_bid_old' => $profit_bid_old,
+                'profit_ask_old' => $profit_ask_old,
+                'profit_bid' => $profit_bid,
+                'profit_ask' => $profit_ask,
+                'fee_maker' => $fee_maker,
+                'fee_taker' => $fee_taker
+            ]),
+            false
+        );
+
+    }
+
     private function madeRobotradesApiAndGateClasses(): void
     {
 

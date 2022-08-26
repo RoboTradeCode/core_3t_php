@@ -82,19 +82,59 @@ while (true) {
                         // считаем profit bid и profit ask (profit ask должен быть больше profit bid)
                         [$profit_bid, $profit_ask] = $m3_maker->countProfit($orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee_maker']);
 
+                        // если profit ask выполняется как тейкер, пересчитать его с тейкерской комиссией
                         if ($orderbooks[$symbol][$exchange]['bids'][0][0] >= $profit_ask) {
 
-                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] bid high than profit_ask. Use taker fee. Old: ' . $profit_ask . "\033[0m" . PHP_EOL;
+                            // зафиксируем старое значение
+                            $profit_ask_old = $profit_ask;
 
+                            // пересчитываем profit ask
                             [, $profit_ask] = $m3_maker->countProfit($orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee_taker']);
+
+                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] bid high than profit_ask. Use taker fee. Old: ' . $profit_ask_old . "\033[0m" . PHP_EOL;
+
+                            // отправим на лог сервер сообщение о тейкер ордере
+                            $api->send3MMakerTakerFromMaker(
+                                [
+                                    'main' => ['symbol' => $symbol, 'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0], 'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0]],
+                                    'first' => ['symbol' => $symbols_for_profit_bid_and_ask[0], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'asks'), 0), 0))],
+                                    'second' => ['symbol' => $symbols_for_profit_bid_and_ask[1], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'asks'), 0), 0))]
+                                ],
+                                $profit_bid,
+                                $profit_ask_old,
+                                $profit_bid,
+                                $profit_ask,
+                                $config['fee_maker'],
+                                $config['fee_taker']
+                            );
 
                         }
 
+                        // если profit bid выполняется как тейкер, пересчитать его с тейкерской комиссией
                         if ($orderbooks[$symbol][$exchange]['asks'][0][0] <= $profit_bid) {
 
-                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] ask less than profit_bid. Use taker fee. Old: ' . $profit_bid . "\033[0m" . PHP_EOL;
+                            // зафиксируем старое значение
+                            $profit_bid_old = $profit_ask;
 
+                            // пересчитываем profit bid
                             [$profit_bid, ] = $m3_maker->countProfit($orderbooks, $symbols_for_profit_bid_and_ask, $base_asset, $quote_asset, $config['fee_taker']);
+
+                            echo "\033[31m" . '[' . date('Y-m-d H:i:s') . '] [WARNING] ask less than profit_bid. Use taker fee. Old: ' . $profit_bid_old . "\033[0m" . PHP_EOL;
+
+                            // отправим на лог сервер сообщение о тейкер ордере
+                            $api->send3MMakerTakerFromMaker(
+                                [
+                                    'main' => ['symbol' => $symbol, 'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0], 'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0]],
+                                    'first' => ['symbol' => $symbols_for_profit_bid_and_ask[0], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'asks'), 0), 0))],
+                                    'second' => ['symbol' => $symbols_for_profit_bid_and_ask[1], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'asks'), 0), 0))]
+                                ],
+                                $profit_bid_old,
+                                $profit_ask,
+                                $profit_bid,
+                                $profit_ask,
+                                $config['fee_maker'],
+                                $config['fee_taker']
+                            );
 
                         }
 
