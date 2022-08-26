@@ -95,11 +95,10 @@ while (true) {
 
                             // отправим на лог сервер сообщение о тейкер ордере
                             $api->send3MMakerTakerFromMaker(
-                                [
-                                    'main' => ['symbol' => $symbol, 'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0], 'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0]],
-                                    'first' => ['symbol' => $symbols_for_profit_bid_and_ask[0], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'asks'), 0), 0))],
-                                    'second' => ['symbol' => $symbols_for_profit_bid_and_ask[1], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'asks'), 0), 0))]
-                                ],
+                                $symbol,
+                                $exchange,
+                                $orderbooks,
+                                $symbols_for_profit_bid_and_ask,
                                 $profit_bid,
                                 $profit_ask_old,
                                 $profit_bid,
@@ -123,11 +122,10 @@ while (true) {
 
                             // отправим на лог сервер сообщение о тейкер ордере
                             $api->send3MMakerTakerFromMaker(
-                                [
-                                    'main' => ['symbol' => $symbol, 'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0], 'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0]],
-                                    'first' => ['symbol' => $symbols_for_profit_bid_and_ask[0], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'asks'), 0), 0))],
-                                    'second' => ['symbol' => $symbols_for_profit_bid_and_ask[1], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'asks'), 0), 0))]
-                                ],
+                                $symbol,
+                                $exchange,
+                                $orderbooks,
+                                $symbols_for_profit_bid_and_ask,
                                 $profit_bid_old,
                                 $profit_ask,
                                 $profit_bid,

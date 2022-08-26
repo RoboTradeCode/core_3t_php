@@ -123,12 +123,17 @@ class Api
 
     }
 
-    public function send3MMakerTakerFromMaker(array $orderbooks, float $profit_bid_old, float $profit_ask_old, float $profit_bid, float $profit_ask, float $fee_maker, float $fee_taker): void
+    public function send3MMakerTakerFromMaker(string $symbol, string $exchange, array $orderbooks, array $symbols_for_profit_bid_and_ask, float $profit_bid_old, float $profit_ask_old, float $profit_bid, float $profit_ask, float $fee_maker, float $fee_taker): void
     {
 
         $this->sendToLog(
             $this->log->send3MMakerTakerFromMaker([
-                'orderbooks' => $orderbooks,
+                'orderbooks' =>
+                    [
+                        'main' => ['symbol' => $symbol, 'best_bid' => $orderbooks[$symbol][$exchange]['bids'][0][0], 'best_ask' => $orderbooks[$symbol][$exchange]['asks'][0][0]],
+                        'first' => ['symbol' => $symbols_for_profit_bid_and_ask[0], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[0]], 'asks'), 0), 0))],
+                        'second' => ['symbol' => $symbols_for_profit_bid_and_ask[1], 'best_bid' => max(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'bids'), 0), 0)), 'best_ask' => min(array_column(array_column(array_column($orderbooks[$symbols_for_profit_bid_and_ask[1]], 'asks'), 0), 0))]
+                    ],
                 'profit_bid_old' => $profit_bid_old,
                 'profit_ask_old' => $profit_ask_old,
                 'profit_bid' => $profit_bid,
