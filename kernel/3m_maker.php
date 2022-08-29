@@ -51,6 +51,8 @@ while (true) {
 
         if (isset($balances[$exchange])) {
 
+            $m3_maker->filterBalanceByMaxDealAmount($balances[$exchange]);
+
             //DEBUG ONLY
             $m3_maker->printBalances($balances[$exchange]);//DEBUG ONLY
 
@@ -215,6 +217,9 @@ while (true) {
                                         // пройтись по каждому элементу массива
                                         foreach ($must_orders as $must_key => $must_order) {
 
+                                            // пересчитать баланс, учтя постановку ордера, также использовать весь баланс если есть остаток
+                                            $must_order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances, $must_order['symbol'], $must_order['side'], $must_order['amount'], $must_order['price']) ?: $must_order['amount'];
+
                                             // отправить по aeron на постановку ордеров
                                             $api->createOrder($must_order['symbol'], $must_order['type'], $must_order['side'], $must_order['amount'], $must_order['price']);
 
@@ -255,6 +260,9 @@ while (true) {
 
                                     // пройтись по всем ордерам
                                     foreach ($orders as $order) {
+
+                                        // пересчитать баланс, учтя постановку ордера, также использовать весь баланс если есть остаток
+                                        $order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances, $order['symbol'], $order['side'], $order['amount'], $order['price']) ?: $order['amount'];
 
                                         // отправить на постановку ордеров
                                         $api->createOrder($order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
@@ -326,8 +334,6 @@ while (true) {
                     // Выводит в консоль сообщения, что нет $orderbooks["ETH/BTC"][$exchange]
                     if (!isset($orderbooks[$symbols_for_profit_bid_and_ask[1]]))
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbols_for_profit_bid_and_ask[1]])' . PHP_EOL;
-
-                    sleep(1);
 
                 }
 

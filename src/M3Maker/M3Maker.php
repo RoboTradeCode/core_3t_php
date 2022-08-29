@@ -246,6 +246,24 @@ class M3Maker
 
     }
 
+    public function filterBalanceByMaxDealAmount(array &$balances, string $field = 'total'): void
+    {
+
+        foreach ($this->config['max_deal_amounts'] as $symbol => $reserve) {
+
+            if (isset($balances[$symbol])) {
+
+                $balances[$symbol][$field] = $balances[$symbol][$field] * 0.99 - $reserve;
+
+                if ($balances[$symbol][$field] < 0)
+                    $balances[$symbol][$field] = 0;
+
+            }
+
+        }
+
+    }
+
     public function getTheNumberOfSellAndBuyOrdersByFullBalance(array $balances, string $exchange, string $base_asset, string $quote_asset, string $field = 'total'): array
     {
 
@@ -253,13 +271,40 @@ class M3Maker
         $balance_exchange = $balances[$exchange];
 
         // смотрим сколько хватит поставить ордеров на покупку
-        $buy_orders = intval(($balance_exchange[$quote_asset][$field] * 0.98 - $this->config['max_deal_amounts'][$quote_asset]) / $this->config['deal_amounts'][$quote_asset]);
+        $buy_orders = intval($balance_exchange[$quote_asset][$field] / $this->config['deal_amounts'][$quote_asset]);
 
         // количество ордеров на продажу ставим столько сколько максимально возможно
-        $sell_orders = intval(($balance_exchange[$base_asset][$field] * 0.98 - $this->config['max_deal_amounts'][$base_asset]) / $this->config['deal_amounts'][$base_asset]);
+        $sell_orders = intval($balance_exchange[$base_asset][$field] / $this->config['deal_amounts'][$base_asset]);
 
         // в случае нехватк балансов, возвращаются нули
         return [$sell_orders, $buy_orders];
+
+    }
+
+    public function remainingBalanceIsLessThanDealAmount(array &$balances, string $symbol, string $side, float $amount, float $price, string $field = 'total'): float
+    {
+
+        list($base_asset, $quote_asset) = explode('/', $symbol);
+
+        $is_sell = $side == 'sell';
+
+        $asset = $is_sell ? $base_asset : $quote_asset;
+
+        $amount = $is_sell ? $amount : $amount * $price;
+
+        if ($balances[$asset][$field] * 2 >= $amount) {
+
+            $balances[$asset][$field] -= $amount;
+
+            return false;
+
+        }
+
+        $use_max_balance = $balances[$asset][$field];
+
+        $balances[$asset][$field] = 0;
+
+        return $use_max_balance;
 
     }
 
@@ -276,7 +321,7 @@ class M3Maker
 
                 if ($symbol == $base_asset || $symbol == $quote_asset) {
 
-                    $all_orders[$symbol] = intval(($balance[$field] * 0.98 - $this->config['max_deal_amounts'][$symbol]) / $this->config['deal_amounts'][$symbol]);
+                    $all_orders[$symbol] = intval($balance[$field] / $this->config['deal_amounts'][$symbol]);
 
                     break;
 
