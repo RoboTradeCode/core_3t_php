@@ -4,6 +4,7 @@ use Src\Cross3T;
 use Src\Multi\MultiConfigurator;
 use Src\Multi\MultiFirstData;
 use Aeron\Publisher;
+use Src\OrderBookCorrect;
 use Src\Storage;
 use Src\Time;
 
@@ -116,8 +117,18 @@ while (true) {
                 // удаляем из memcached данные о балансе
                 $memcached->delete($best_result[$step]['exchange'] . '_balances');
 
-                // удаляем из memcached данные об ордербуке
-                $memcached->delete($best_result[$step]['exchange'] . '_orderbook_' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset']);
+                // делаем корректировку ордербука с перерасчетом и сохраняем в memcached измененные данные об ордербуке
+                OrderBookCorrect::beforeRealCreateOrder(
+                    $orderbooks[$best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset']][$best_result[$step]['exchange']],
+                    'market',
+                    $best_result[$step]['orderType'],
+                    $best_result[$step]['amount'],
+                    $best_result[$step]['price']
+                );
+                $memcached->set(
+                    $best_result[$step]['exchange'] . '_orderbook_' . $best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset'],
+                    $orderbooks[$best_result[$step]['amountAsset'] . '/' . $best_result[$step]['priceAsset']][$best_result[$step]['exchange']]
+                );
 
                 // Запрос на получение баланса
                 $gates[$best_result[$step]['exchange']]->getBalances(array_column($config['assets_labels'], 'common'))->send();

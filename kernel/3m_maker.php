@@ -3,6 +3,7 @@
 use Src\Api;
 use Src\M3Maker\M3Maker;
 use Src\M3Maker\MemcachedData;
+use Src\OrderBookCorrect;
 use Src\Time;
 
 require dirname(__DIR__) . '/index.php';
@@ -203,6 +204,12 @@ while (true) {
                                             // отправить по aeron на отмену ордеров
                                             $api->cancelOrder($must_real_order['client_order_id'], $must_real_order['symbol']);
 
+                                            OrderBookCorrect::beforeRealCancelOrder($orderbooks[$must_real_order['symbol']][$exchange], $must_real_order['amount'], $must_real_order['price']);
+                                            $memcached->set(
+                                                $exchange . '_orderbook_' . $must_real_order['symbol'],
+                                                $orderbooks[$must_real_order['symbol']][$exchange]
+                                            );
+
                                         }
 
                                     }
@@ -222,6 +229,18 @@ while (true) {
 
                                             // отправить по aeron на постановку ордеров
                                             $api->createOrder($must_order['symbol'], $must_order['type'], $must_order['side'], $must_order['amount'], $must_order['price']);
+
+                                            OrderBookCorrect::beforeRealCreateOrder(
+                                                $orderbooks[$must_order['symbol']][$exchange],
+                                                $must_order['type'],
+                                                $must_order['side'],
+                                                $must_order['amount'],
+                                                $must_order['price']
+                                            );
+                                            $memcached->set(
+                                                $exchange . '_orderbook_' . $must_order['symbol'],
+                                                $orderbooks[$must_order['symbol']][$exchange]
+                                            );
 
                                             break;
 
@@ -266,6 +285,18 @@ while (true) {
 
                                         // отправить на постановку ордеров
                                         $api->createOrder($order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
+
+                                        OrderBookCorrect::beforeRealCreateOrder(
+                                            $orderbooks[$order['symbol']][$exchange],
+                                            $order['type'],
+                                            $order['side'],
+                                            $order['amount'],
+                                            $order['price']
+                                        );
+                                        $memcached->set(
+                                            $exchange . '_orderbook_' . $order['symbol'],
+                                            $orderbooks[$order['symbol']][$exchange]
+                                        );
 
                                         break;
 
