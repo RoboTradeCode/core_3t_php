@@ -246,17 +246,19 @@ class M3Maker
 
     }
 
-    public function filterBalanceByMaxDealAmount(array &$balances, string $field = 'total'): void
+    public function filterBalanceByMaxDealAmount(array &$balances): void
     {
 
         foreach ($this->config['max_deal_amounts'] as $symbol => $reserve) {
 
             if (isset($balances[$symbol])) {
 
-                $balances[$symbol][$field] = $balances[$symbol][$field] * 0.99 - $reserve;
+                $balances[$symbol]['total'] = $balances[$symbol]['total'] * 0.99 - $reserve;
 
-                if ($balances[$symbol][$field] < 0)
-                    $balances[$symbol][$field] = 0;
+                if ($balances[$symbol]['total'] < 0)
+                    $balances[$symbol]['total'] = 0;
+
+                $balances[$symbol]['free'] = $balances[$symbol]['total'] + $balances[$symbol]['used'];
 
             }
 
