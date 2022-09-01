@@ -52,7 +52,7 @@ while (true) {
 
         if (isset($balances[$exchange])) {
 
-            $m3_maker->filterBalanceByMaxDealAmount($balances[$exchange]);
+            //$m3_maker->filterBalanceByMaxDealAmount($balances[$exchange]);
 
             //DEBUG ONLY
             $m3_maker->printBalances($balances[$exchange]);//DEBUG ONLY
@@ -225,7 +225,7 @@ while (true) {
                                         foreach ($must_orders as $must_key => $must_order) {
 
                                             // пересчитать баланс, учтя постановку ордера, также использовать весь баланс если есть остаток
-                                            $must_order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances[$exchange], $must_order['symbol'], $must_order['side'], $must_order['amount'], $must_order['price'], 'used') ?: $must_order['amount'];
+                                            //$must_order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances[$exchange], $must_order['symbol'], $must_order['side'], $must_order['amount'], $must_order['price'], 'used') ?: $must_order['amount'];
 
                                             // отправить по aeron на постановку ордеров
                                             $api->createOrder($must_order['symbol'], $must_order['type'], $must_order['side'], $must_order['amount'], $must_order['price']);
@@ -281,7 +281,7 @@ while (true) {
                                     foreach ($orders as $order) {
 
                                         // пересчитать баланс, учтя постановку ордера, также использовать весь баланс если есть остаток
-                                        $order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances[$exchange], $order['symbol'], $order['side'], $order['amount'], $order['price'], 'used') ?: $order['amount'];
+                                        //$order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances[$exchange], $order['symbol'], $order['side'], $order['amount'], $order['price'], 'used') ?: $order['amount'];
 
                                         // отправить на постановку ордеров
                                         $api->createOrder($order['symbol'], $order['type'], $order['side'], $order['amount'], $order['price']);
