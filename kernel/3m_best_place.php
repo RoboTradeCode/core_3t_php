@@ -35,8 +35,9 @@ $rates = $core_config['rates'];
 $max_depth = $core_config['max_depth'];
 $fees = $core_config['fees'];
 $publishers = $core_config['aeron']['publishers'];
+$markets[$exchange] = $config['markets'];
 
-//$api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
+$api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
 
 $multi_core = new MemcachedData([$exchange], $markets, $expired_orderbook_time);
 
@@ -57,6 +58,95 @@ while (true) {
     if (isset($balances[$exchange])) {
 
         $results = $m3_best_place->run($routes, $balances, $orderbooks, true);
+
+        foreach ($results as $result) {
+
+            if (isset($result['results'][0])) {
+
+                $full_info = $result['results'][0];
+
+                if ($full_info['result_in_main_asset'] >= 0) {
+
+                    $id_triangle_assets = [
+                        $full_info['step_one']['amountAsset'] . '/' . $full_info['step_one']['priceAsset'] . '-' . $full_info['step_one']['orderType'],
+                        $full_info['step_two']['amountAsset'] . '/' . $full_info['step_two']['priceAsset'] . '-' . $full_info['step_two']['orderType'],
+                        $full_info['step_three']['amountAsset'] . '/' . $full_info['step_three']['priceAsset'] . '-' . $full_info['step_three']['orderType'],
+                    ];
+
+                    asort($id_triangle_assets);
+
+                    $id_triangle = implode('-', $id_triangle_assets);
+
+                    if (!isset($positions[$id_triangle]['time'])) {
+
+                        foreach (['step_one', 'step_two', 'step_three'] as $item) {
+
+                            $positions[$id_triangle] = [
+                                $item => [
+                                    'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
+                                    'type' => 'limit',
+                                    'side' => $full_info[$item]['amountAsset'],
+                                    'amount' => $full_info[$item]['orderType'],
+                                    'price' => $full_info[$item]['amount'],
+                                ]
+                            ];
+
+                            // send all to create order
+                            foreach ($positions[$id_triangle] as $position) {
+
+                                $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price']);
+
+                            }
+
+                        }
+
+                        $positions[$id_triangle]['time'] = time();
+
+                    }
+
+                    if ((time() - $positions[$id_triangle]['time']) >= 300) {
+
+                        $api->cancelAllOrders();
+
+                        unset($positions[$id_triangle]['time']);
+
+                    } elseif (isset($real_orders[$exchange])) {
+
+                        foreach ($real_orders[$exchange] as $real_order) {
+
+                            if (
+                                $real_order['symbol'] == $full_info['step_one']['amountAsset'] . '/' . $full_info['step_one']['priceAsset'] && $real_order['side'] == $full_info['step_one']['side'] ||
+                                $real_order['symbol'] == $full_info['step_two']['amountAsset'] . '/' . $full_info['step_two']['priceAsset'] && $real_order['side'] == $full_info['step_two']['side'] ||
+                                $real_order['symbol'] == $full_info['step_three']['amountAsset'] . '/' . $full_info['step_three']['priceAsset'] && $real_order['side'] == $full_info['step_three']['side']
+                            ) {
+
+                                $isset_open_order = true;
+
+                                break;
+
+                            }
+
+                        }
+
+                        if (isset($isset_open_order)) {
+
+                            unset($isset_open_order);
+
+                        } else {
+
+                            $api->cancelAllOrders();
+
+                            unset($positions[$id_triangle]['time']);
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
 
     } else {
 

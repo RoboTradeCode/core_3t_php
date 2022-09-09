@@ -79,6 +79,13 @@ class ApiV2
 
     }
 
+    public function cancelAllOrders(): void
+    {
+
+        $this->gate->cancelAllOrders()->send();
+
+    }
+
     public function createOrder(string $symbol, string $type, string $side, float $amount, float $price, bool $echo = true): void
     {
 
@@ -127,8 +134,8 @@ class ApiV2
         // нужены publisher, отправлять команды на сервер гейта
         Aeron::checkConnection(
             $this->gate_publisher = new Publisher(
-                $this->publishers[$this->exchange]['channel'],
-                $this->publishers[$this->exchange]['stream_id']
+                $this->publishers['gates'][$this->exchange]['channel'],
+                $this->publishers['gates'][$this->exchange]['stream_id']
             )
         );
 

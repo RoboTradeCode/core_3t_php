@@ -192,6 +192,8 @@ class M3BestPlace extends Main
                     'exchange' => $best_exchange
                 ];
 
+                array_unshift($best_orderbooks[$source['common_symbol']][$operation] , $orderbooks[$source['common_symbol']][$best_exchange][($operation == 'bids') ? 'asks' : 'bids'][0]);
+
             }
 
         }
