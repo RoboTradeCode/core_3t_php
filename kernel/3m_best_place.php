@@ -94,6 +94,8 @@ while (true) {
                             // send all to create order
                             foreach ($positions[$id_triangle] as $position) {
 
+                                echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['type'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+
                                 $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price']);
 
                             }
@@ -106,6 +108,8 @@ while (true) {
 
                     if ((time() - $positions[$id_triangle]['time']) >= 300) {
 
+                        echo '[' . date('Y-m-d H:i:s') . '] Cancel All Orders Expired Time' . PHP_EOL;
+
                         $api->cancelAllOrders();
 
                         unset($positions[$id_triangle]['time']);
@@ -115,9 +119,9 @@ while (true) {
                         foreach ($real_orders[$exchange] as $real_order) {
 
                             if (
-                                $real_order['symbol'] == $full_info['step_one']['amountAsset'] . '/' . $full_info['step_one']['priceAsset'] && $real_order['side'] == $full_info['step_one']['side'] ||
-                                $real_order['symbol'] == $full_info['step_two']['amountAsset'] . '/' . $full_info['step_two']['priceAsset'] && $real_order['side'] == $full_info['step_two']['side'] ||
-                                $real_order['symbol'] == $full_info['step_three']['amountAsset'] . '/' . $full_info['step_three']['priceAsset'] && $real_order['side'] == $full_info['step_three']['side']
+                                $real_order['symbol'] == $full_info['step_one']['amountAsset'] . '/' . $full_info['step_one']['priceAsset'] && $real_order['side'] == $full_info['step_one']['orderType'] ||
+                                $real_order['symbol'] == $full_info['step_two']['amountAsset'] . '/' . $full_info['step_two']['priceAsset'] && $real_order['side'] == $full_info['step_two']['orderType'] ||
+                                $real_order['symbol'] == $full_info['step_three']['amountAsset'] . '/' . $full_info['step_three']['priceAsset'] && $real_order['side'] == $full_info['step_three']['orderType']
                             ) {
 
                                 $isset_open_order = true;
@@ -134,17 +138,13 @@ while (true) {
 
                         } else {
 
+                            echo '[' . date('Y-m-d H:i:s') . '] Cancel All Orders Because no orders' . PHP_EOL;
+
                             $api->cancelAllOrders();
 
                             unset($positions[$id_triangle]['time']);
 
                         }
-
-                    } else {
-
-                        $api->cancelAllOrders();
-
-                        unset($positions[$id_triangle]['time']);
 
                     }
 
@@ -167,7 +167,7 @@ while (true) {
     if (Time::timeUp(1)) {
 
         // отправить пинг на лог сервер
-        //$api->sendPingToLogServer(1);
+        $api->sendPingToLogServer(1);
 
     }
 
