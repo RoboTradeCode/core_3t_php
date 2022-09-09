@@ -140,6 +140,12 @@ while (true) {
 
                         }
 
+                    } else {
+
+                        $api->cancelAllOrders();
+
+                        unset($positions[$id_triangle]['time']);
+
                     }
 
                 }
