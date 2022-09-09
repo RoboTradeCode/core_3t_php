@@ -85,9 +85,9 @@ while (true) {
                                 $item => [
                                     'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
                                     'type' => 'limit',
-                                    'side' => $full_info[$item]['amountAsset'],
-                                    'amount' => $full_info[$item]['orderType'],
-                                    'price' => $full_info[$item]['amount'],
+                                    'side' => $full_info[$item]['orderType'],
+                                    'amount' => $full_info[$item]['amount'],
+                                    'price' => $full_info[$item]['price']
                                 ]
                             ];
 
