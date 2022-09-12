@@ -2,6 +2,7 @@
 
 use Src\ApiV2;
 use Src\Configurator;
+use Src\FloatRound;
 use Src\M3BestPlace\Filter;
 use Aeron\Publisher;
 use Src\M3BestPlace\M3BestPlace;
@@ -67,86 +68,77 @@ while (true) {
 
                 if ($full_info['result_in_main_asset'] >= 0) {
 
-                    $id_triangle_assets = [
-                        $full_info['step_one']['amountAsset'] . '/' . $full_info['step_one']['priceAsset'] . '-' . $full_info['step_one']['orderType'],
-                        $full_info['step_two']['amountAsset'] . '/' . $full_info['step_two']['priceAsset'] . '-' . $full_info['step_two']['orderType'],
-                        $full_info['step_three']['amountAsset'] . '/' . $full_info['step_three']['priceAsset'] . '-' . $full_info['step_three']['orderType'],
-                    ];
+                    $positions = [];
 
-                    asort($id_triangle_assets);
+                    foreach (['step_one', 'step_two', 'step_three'] as $item) {
 
-                    $id_triangle = implode('-', $id_triangle_assets);
+                        $positions[] = [
+                            $item => [
+                                'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
+                                'type' => 'limit',
+                                'side' => $full_info[$item]['orderType'],
+                                'amount' => $full_info[$item]['amount'],
+                                'price' => $full_info[$item]['price']
+                            ]
+                        ];
 
-                    if (!isset($positions[$id_triangle]['time'])) {
+                    }
 
-                        foreach (['step_one', 'step_two', 'step_three'] as $item) {
+                    $similar_orders = false;
 
-                            $positions[$id_triangle] = [
-                                $item => [
-                                    'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
-                                    'type' => 'limit',
-                                    'side' => $full_info[$item]['orderType'],
-                                    'amount' => $full_info[$item]['amount'],
-                                    'price' => $full_info[$item]['price']
-                                ]
-                            ];
+                    if (isset($real_orders[$exchange])) {
 
-                            // send all to create order
-                            foreach ($positions[$id_triangle] as $position) {
+                        foreach ($positions as $position) {
 
-                                echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['type'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+                            foreach ($real_orders[$exchange] as $real_order) {
 
-                                $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
+                                if (
+                                    $position['symbol'] == $real_order['symbol'] &&
+                                    $position['side'] == $real_order['side'] &&
+                                    FloatRound::compare($position['price'], $real_order['price'])
+                                ) {
+
+                                    echo '[' . date('Y-m-d H:i:s') . '] It has similar order: ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['price'] . PHP_EOL;
+
+                                    $similar_orders = true;
+
+                                    break 2;
+
+                                }
 
                             }
 
                         }
 
-                        $api->sendExpectedTriangleToLogServer($full_info);
+                    }
 
-                        $positions[$id_triangle]['time'] = time();
+                    if (!$similar_orders) {
+
+                        foreach ($positions as $position) {
+
+                            echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['type'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+
+                            $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
+
+                        }
 
                     }
 
-                    if ((time() - $positions[$id_triangle]['time']) >= 300) {
-
-                        echo '[' . date('Y-m-d H:i:s') . '] Cancel All Orders Expired Time' . PHP_EOL;
-
-                        $api->cancelAllOrders();
-
-                        unset($positions[$id_triangle]['time']);
-
-                    } elseif (isset($real_orders[$exchange])) {
+                    if (isset($real_orders[$exchange])) {
 
                         foreach ($real_orders[$exchange] as $real_order) {
 
-                            if (
-                                $real_order['symbol'] == $full_info['step_one']['amountAsset'] . '/' . $full_info['step_one']['priceAsset'] && $real_order['side'] == $full_info['step_one']['orderType'] ||
-                                $real_order['symbol'] == $full_info['step_two']['amountAsset'] . '/' . $full_info['step_two']['priceAsset'] && $real_order['side'] == $full_info['step_two']['orderType'] ||
-                                $real_order['symbol'] == $full_info['step_three']['amountAsset'] . '/' . $full_info['step_three']['priceAsset'] && $real_order['side'] == $full_info['step_three']['orderType']
-                            ) {
+                            if ((time() - $real_order['timestamp'] / 1000000) >= 300) {
 
-                                $isset_open_order = true;
-
-                                break;
+                                $api->cancelOrder($real_order['client_order_id'], $real_order['symbol']);
 
                             }
 
                         }
 
-                        if (isset($isset_open_order)) {
-
-                            unset($isset_open_order);
-
-                        } elseif ((time() - $positions[$id_triangle]['time']) >= 5) {
-
-                            echo '[' . date('Y-m-d H:i:s') . '] No orders for triangle: ' . $id_triangle . ', create a new' . PHP_EOL;
-
-                            unset($positions[$id_triangle]['time']);
-
-                        }
-
                     }
+
+                    $api->sendExpectedTriangleToLogServer($full_info);
 
                 }
 
