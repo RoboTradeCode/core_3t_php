@@ -102,7 +102,7 @@ while (true) {
 
                         }
 
-                        $api->sendExpectedTriangleToLogServer($result);
+                        $api->sendExpectedTriangleToLogServer($full_info);
 
                         $positions[$id_triangle]['time'] = time();
 
