@@ -126,7 +126,7 @@ while (true) {
 
                         foreach ($real_orders[$exchange] as $real_order) {
 
-                            if ((microtime() - $real_order['core_timestamp_receive_update_of_order']) >= 300) {
+                            if ((microtime() - $real_order['timestamp'] / 1000000) >= 300) {
 
                                 $api->cancelOrder($real_order['client_order_id'], $real_order['symbol']);
 
