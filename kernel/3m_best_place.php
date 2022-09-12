@@ -138,7 +138,7 @@ while (true) {
 
                             unset($isset_open_order);
 
-                        } else {
+                        } elseif ((time() - $positions[$id_triangle]['time']) >= 5) {
 
                             echo '[' . date('Y-m-d H:i:s') . '] No orders for triangle: ' . $id_triangle . ', create a new' . PHP_EOL;
 
