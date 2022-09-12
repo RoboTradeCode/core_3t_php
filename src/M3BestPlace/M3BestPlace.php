@@ -35,18 +35,26 @@ class M3BestPlace extends Main
 
                 if ($orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi)) {
 
-                    $results[] = $this->getResults(
-                        $this->max_depth,
-                        $this->rates,
-                        $this->max_deal_amounts,
-                        $combinations,
-                        $orderbook,
-                        [
-                            $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
-                            $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
-                            $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
-                        ]
-                    );
+                    if (
+                        ($balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']]['free'] > $this->max_deal_amounts[$combinations['main_asset_name']]) ||
+                        ($balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']]['free'] > $this->max_deal_amounts[$combinations['asset_one_name']]) ||
+                        ($balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']]['free'] > $this->max_deal_amounts[$combinations['asset_two_name']])
+                    ) {
+
+                        $results[] = $this->getResults(
+                            $this->max_depth,
+                            $this->rates,
+                            $this->max_deal_amounts,
+                            $combinations,
+                            $orderbook,
+                            [
+                                $combinations['main_asset_name'] => $balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']],
+                                $combinations['asset_one_name'] => $balances[$orderbook['step_two']['exchange']][$combinations['asset_one_name']],
+                                $combinations['asset_two_name'] => $balances[$orderbook['step_three']['exchange']][$combinations['asset_two_name']],
+                            ]
+                        );
+
+                    }
 
                 }
 
