@@ -47,6 +47,13 @@ class ApiV2
 
     }
 
+    public function sendExpectedTriangleToLogServer(array $result): void
+    {
+
+        $this->sendToLog($this->log->sendExpectedTriangle($result));
+
+    }
+
     public function getOrderStatus(string $client_order_id, string $symbol, bool $echo = true): void
     {
 
