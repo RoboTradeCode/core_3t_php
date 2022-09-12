@@ -138,9 +138,7 @@ while (true) {
 
                         } else {
 
-                            echo '[' . date('Y-m-d H:i:s') . '] Cancel All Orders Because no orders' . PHP_EOL;
-
-                            $api->cancelAllOrders();
+                            echo '[' . date('Y-m-d H:i:s') . '] No orders, create a new' . PHP_EOL;
 
                             unset($positions[$id_triangle]['time']);
 
