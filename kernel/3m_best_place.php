@@ -138,7 +138,7 @@ while (true) {
 
                         } else {
 
-                            echo '[' . date('Y-m-d H:i:s') . '] No orders, create a new' . PHP_EOL;
+                            echo '[' . date('Y-m-d H:i:s') . '] No orders for triangle: ' . $id_triangle . ', create a new' . PHP_EOL;
 
                             unset($positions[$id_triangle]['time']);
 
