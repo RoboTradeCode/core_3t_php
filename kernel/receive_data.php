@@ -137,6 +137,8 @@ function handler_orders(string $message): void
 
             foreach ($data['data'] as $datum) {
 
+                $datum['core_timestamp_receive_update_of_order'] = microtime(true);
+
                 $orders[$datum['client_order_id']] = $datum;
 
             }
