@@ -72,14 +72,12 @@ while (true) {
 
                     foreach (['step_one', 'step_two', 'step_three'] as $item) {
 
-                        $positions[] = [
-                            $item => [
-                                'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
-                                'type' => 'limit',
-                                'side' => $full_info[$item]['orderType'],
-                                'amount' => $full_info[$item]['amount'],
-                                'price' => $full_info[$item]['price']
-                            ]
+                        $positions[$item] = [
+                            'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
+                            'type' => 'limit',
+                            'side' => $full_info[$item]['orderType'],
+                            'amount' => $full_info[$item]['amount'],
+                            'price' => $full_info[$item]['price']
                         ];
 
                     }
