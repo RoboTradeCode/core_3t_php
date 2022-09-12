@@ -40,10 +40,10 @@ class ApiV2
 
     }
 
-    public function sendPingToLogServer(int $interation): void
+    public function sendPingToLogServer(int $interation, bool $echo = true): void
     {
 
-        $this->sendToLog($this->log->sendWorkCore($interation));
+        $this->sendToLog($this->log->sendWorkCore($interation), $echo);
 
     }
 
