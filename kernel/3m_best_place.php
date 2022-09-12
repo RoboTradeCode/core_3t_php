@@ -96,8 +96,6 @@ while (true) {
                                     FloatRound::compare($position['price'], $real_order['price'])
                                 ) {
 
-                                    echo '[' . date('Y-m-d H:i:s') . '] It has similar order: ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['price'] . PHP_EOL;
-
                                     $similar_orders = true;
 
                                     break 2;
