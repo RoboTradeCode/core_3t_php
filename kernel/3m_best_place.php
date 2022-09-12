@@ -157,7 +157,7 @@ while (true) {
     if (Time::timeUp(1)) {
 
         // отправить пинг на лог сервер
-        //$api->sendPingToLogServer(1, false);
+        $api->sendPingToLogServer(1, false);
 
     }
 
