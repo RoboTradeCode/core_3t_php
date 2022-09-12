@@ -112,6 +112,8 @@ while (true) {
 
                         foreach ($positions as $position) {
 
+                            echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+
                             $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
 
                         }
