@@ -126,9 +126,11 @@ while (true) {
 
                         foreach ($real_orders[$exchange] as $real_order) {
 
-                            if ((microtime(true) - $real_order['timestamp'] / 1000000) >= 300) {
+                            if ((microtime(true) - $real_order['timestamp'] / 1000) >= 300) {
 
-                                $api->cancelOrder($real_order['client_order_id'], $real_order['symbol']);
+                                echo '[' . date('Y-m-d H:i:s') . '] Cancel Order: ' . $real_order['client_order_id'] . PHP_EOL;
+
+                                $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
 
                             }
 
