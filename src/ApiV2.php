@@ -93,6 +93,13 @@ class ApiV2
 
     }
 
+    public function getBalances(): void
+    {
+
+        $this->gate->getBalances()->send();
+
+    }
+
     public function createOrder(string $symbol, string $type, string $side, float $amount, float $price, bool $echo = true): void
     {
 

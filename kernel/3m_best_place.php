@@ -34,6 +34,7 @@ $sleep = $core_config['sleep'];
 $max_deal_amounts = $core_config['max_deal_amounts'];
 $rates = $core_config['rates'];
 $max_depth = $core_config['max_depth'];
+$expired_open_order = $core_config['expired_open_order'];
 $fees = $core_config['fees'];
 $publishers = $core_config['aeron']['publishers'];
 $markets[$exchange] = $config['markets'];
@@ -126,7 +127,7 @@ while (true) {
 
                         foreach ($real_orders[$exchange] as $real_order) {
 
-                            if ((microtime(true) - $real_order['timestamp'] / 1000) >= 300) {
+                            if ((microtime(true) - $real_order['timestamp'] / 1000) >= $expired_open_order) {
 
                                 echo '[' . date('Y-m-d H:i:s') . '] Cancel Order: ' . $real_order['client_order_id'] . PHP_EOL;
 
