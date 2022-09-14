@@ -300,7 +300,8 @@ class M3BestPlace extends Main
                     'exchange' => $best_exchange
                 ];
 
-                array_unshift($best_orderbooks[$source['common_symbol']][$operation] , $orderbooks[$source['common_symbol']][$best_exchange][($operation == 'bids') ? 'asks' : 'bids'][0]);
+                // [20000, 0.1]
+                array_unshift($best_orderbooks[$source['common_symbol']][$operation] , [$orderbooks[$source['common_symbol']][$best_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0], $this->max_deal_amounts[$source['common_symbol']] * 1.05]);
 
             }
 
