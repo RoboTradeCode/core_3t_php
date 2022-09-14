@@ -2,6 +2,8 @@
 
 namespace Src\M3BestPlace;
 
+use Src\ApiV2;
+use Src\FloatRound;
 use Src\Main;
 
 class M3BestPlace extends Main
@@ -63,6 +65,104 @@ class M3BestPlace extends Main
         }
 
         return $results ?? [];
+
+    }
+
+    public function getFullInfoByResult(array $result, float $profit): array
+    {
+
+        if (isset($result['results'][0])) {
+
+            $full_info = $result['results'][0];
+
+            if ($full_info['result_in_main_asset'] >= $profit)
+                return $full_info;
+
+        }
+
+        return [];
+
+    }
+
+    public function getPositions(array $full_info): array
+    {
+
+        foreach (['step_one', 'step_two', 'step_three'] as $item) {
+
+            $positions[$item] = [
+                'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
+                'type' => 'limit',
+                'side' => $full_info[$item]['orderType'],
+                'amount' => $full_info[$item]['amount'],
+                'price' => $full_info[$item]['price']
+            ];
+
+        }
+
+        return $positions ?? [];
+
+    }
+
+    public function hasSimilarOrder(string $exchange, array $real_orders, array $positions): bool
+    {
+
+        if (isset($real_orders[$exchange])) {
+
+            foreach ($positions as $position) {
+
+                foreach ($real_orders[$exchange] as $real_order) {
+
+                    if (
+                        $position['symbol'] == $real_order['symbol'] &&
+                        $position['side'] == $real_order['side'] &&
+                        FloatRound::compare($position['price'], $real_order['price'])
+                    )
+                        return true;
+
+                }
+
+            }
+
+        }
+
+        return false;
+
+    }
+
+    public function create3MBestPlaceOrders(ApiV2 $api, array $positions, array $full_info)
+    {
+
+        foreach ($positions as $position) {
+
+            echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+
+            $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
+
+        }
+
+        $api->sendExpectedTriangleToLogServer($full_info);
+
+    }
+
+    public function cancelExpiredOpenOrders(ApiV2 $api, string $exchange, array $real_orders, float $expired_open_order)
+    {
+
+        if (isset($real_orders[$exchange])) {
+
+            foreach ($real_orders[$exchange] as $real_order) {
+
+                if ((microtime(true) - $real_order['timestamp'] / 1000) >= $expired_open_order) {
+
+                    echo '[' . date('Y-m-d H:i:s') . '] Cancel Order: ' . $real_order['client_order_id'] . PHP_EOL;
+
+                    $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
+
+                }
+
+            }
+
+        }
+
 
     }
 

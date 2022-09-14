@@ -40,10 +40,11 @@ class ApiV2
 
     }
 
-    public function sendPingToLogServer(int $interation, bool $echo = true): void
+    public function sendPingToLogServer(int $interation, float $period, bool $echo = true): void
     {
 
-        $this->sendToLog($this->log->sendWorkCore($interation), $echo);
+        if (Time::timeUp($period))
+            $this->sendToLog($this->log->sendWorkCore($interation), $echo);
 
     }
 

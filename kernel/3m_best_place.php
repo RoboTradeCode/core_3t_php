@@ -2,12 +2,10 @@
 
 use Src\ApiV2;
 use Src\Configurator;
-use Src\FloatRound;
 use Src\M3BestPlace\Filter;
 use Aeron\Publisher;
 use Src\M3BestPlace\M3BestPlace;
 use Src\MemcachedData;
-use Src\Time;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -20,6 +18,7 @@ $memcached->flush();
 // получаем конфиг от конфигуратора
 $config = Configurator::getConfigApiByFile('3m_best_place');
 
+// all settings
 $markets = $config['markets'];
 $assets = array_column($config['assets_labels'], 'common');
 $routes_new_format = Filter::routeOnlyDirectAndReverse($config['routes']);
@@ -51,11 +50,7 @@ while (true) {
 
     $all_data = $multi_core->reformatAndSeparateData($memcached->getMulti($multi_core->keys));
 
-    $balances = $all_data['balances'];
-
-    $orderbooks = $all_data['orderbooks'];
-
-    $real_orders = $all_data['orders'];
+    [$orderbooks, $balances, $real_orders] = [$all_data['balances'], $all_data['orderbooks'], $all_data['orders']];
 
     if (isset($balances[$exchange])) {
 
@@ -63,83 +58,14 @@ while (true) {
 
         foreach ($results as $result) {
 
-            if (isset($result['results'][0])) {
+            if ($full_info = $m3_best_place->getFullInfoByResult($result, 0)) {
 
-                $full_info = $result['results'][0];
+                $positions = $m3_best_place->getPositions($full_info);
 
-                if ($full_info['result_in_main_asset'] >= 0) {
+                if (!$m3_best_place->hasSimilarOrder($exchange, $real_orders, $positions))
+                    $m3_best_place->create3MBestPlaceOrders($api, $positions, $full_info);
 
-                    $positions = [];
-
-                    foreach (['step_one', 'step_two', 'step_three'] as $item) {
-
-                        $positions[$item] = [
-                            'symbol' => $full_info[$item]['amountAsset'] . '/' . $full_info[$item]['priceAsset'],
-                            'type' => 'limit',
-                            'side' => $full_info[$item]['orderType'],
-                            'amount' => $full_info[$item]['amount'],
-                            'price' => $full_info[$item]['price']
-                        ];
-
-                    }
-
-                    $similar_orders = false;
-
-                    if (isset($real_orders[$exchange])) {
-
-                        foreach ($positions as $position) {
-
-                            foreach ($real_orders[$exchange] as $real_order) {
-
-                                if (
-                                    $position['symbol'] == $real_order['symbol'] &&
-                                    $position['side'] == $real_order['side'] &&
-                                    FloatRound::compare($position['price'], $real_order['price'])
-                                ) {
-
-                                    $similar_orders = true;
-
-                                    break 2;
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    if (!$similar_orders) {
-
-                        foreach ($positions as $position) {
-
-                            echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
-
-                            $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
-
-                        }
-
-                        $api->sendExpectedTriangleToLogServer($full_info);
-
-                    }
-
-                    if (isset($real_orders[$exchange])) {
-
-                        foreach ($real_orders[$exchange] as $real_order) {
-
-                            if ((microtime(true) - $real_order['timestamp'] / 1000) >= $expired_open_order) {
-
-                                echo '[' . date('Y-m-d H:i:s') . '] Cancel Order: ' . $real_order['client_order_id'] . PHP_EOL;
-
-                                $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
-
-                            }
-
-                        }
-
-                    }
-
-                }
+                $m3_best_place->cancelExpiredOpenOrders($api, $exchange, $real_orders, $expired_open_order);
 
             }
 
@@ -154,12 +80,7 @@ while (true) {
 
     }
 
-    // каждую секунду выполняется условие
-    if (Time::timeUp(1)) {
-
-        // отправить пинг на лог сервер
-        $api->sendPingToLogServer(1, false);
-
-    }
+    // каждую секунду отправить пинг на лог сервер
+    $api->sendPingToLogServer(1, 1,false);
 
 }
