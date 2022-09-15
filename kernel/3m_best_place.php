@@ -50,7 +50,7 @@ while (true) {
 
     $all_data = $multi_core->reformatAndSeparateData($memcached->getMulti($multi_core->keys));
 
-    [$orderbooks, $balances, $real_orders] = [$all_data['balances'], $all_data['orderbooks'], $all_data['orders']];
+    [$balances, $orderbooks, $real_orders] = [$all_data['balances'], $all_data['orderbooks'], $all_data['orders']];
 
     if (isset($balances[$exchange])) {
 
