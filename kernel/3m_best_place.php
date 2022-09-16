@@ -3,7 +3,6 @@
 use Src\ApiV2;
 use Src\Configurator;
 use Src\M3BestPlace\Filter;
-use Aeron\Publisher;
 use Src\M3BestPlace\M3BestPlace;
 use Src\MemcachedData;
 
@@ -30,6 +29,7 @@ $algorithm = $core_config['algorithm'];
 $instance = $core_config['instance'];
 $expired_orderbook_time = $core_config['expired_orderbook_time'];
 $sleep = $core_config['sleep'];
+$delta_exchange = $core_config['delta_exchange'] ?? '';
 $max_deal_amounts = $core_config['max_deal_amounts'];
 $rates = $core_config['rates'];
 $max_depth = $core_config['max_depth'];
@@ -42,7 +42,7 @@ $api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
 
 $multi_core = new MemcachedData([$exchange], $markets, $expired_orderbook_time);
 
-$m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets);
+$m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets, $exchange, $delta_exchange);
 
 while (true) {
 

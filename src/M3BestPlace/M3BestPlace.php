@@ -14,8 +14,10 @@ class M3BestPlace extends Main
     private array $max_deal_amounts;
     private array $fees;
     private array $markets;
+    private string $main_exchange;
+    private string $delta_exchange;
 
-    public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets)
+    public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets, string $main_exchange, string $delta_exchange = '')
     {
 
         $this->max_depth = $max_depth;
@@ -23,6 +25,8 @@ class M3BestPlace extends Main
         $this->max_deal_amounts = $max_deal_amounts;
         $this->fees = $fees;
         $this->markets = $markets;
+        $this->main_exchange = $main_exchange;
+        $this->delta_exchange = $delta_exchange;
 
     }
 
@@ -33,7 +37,7 @@ class M3BestPlace extends Main
 
             $combinations = $this->getCombinations($route);
 
-            if ($best_orderbooks = $this->findBestOrderbooks($route, $balances, $orderbooks)) {
+            if ($best_orderbooks = $this->findBestOrderbooks($route, $orderbooks)) {
 
                 if ($orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi)) {
 
@@ -216,93 +220,23 @@ class M3BestPlace extends Main
 
     }
 
-    private function findBestOrderbooks(array $route, array $balances, array $orderbooks): array
+    private function findBestOrderbooks(array $route, array $orderbooks): array
     {
 
         $best_orderbooks = [];
 
         foreach ($route as $source) {
 
-            $deal_amount_potential = $this->max_deal_amounts[$source['source_asset']];
-
-            $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
-
-            $potential_amounts = [];
-
-            // если не существует такого ордербука, возвращай пустой массив
-            if (!isset($orderbooks[$source['common_symbol']]))
-                return [];
-
-            foreach ($orderbooks[$source['common_symbol']] as $exchange => $orderbook) {
-
-                if (isset($balances[$exchange][$source['source_asset']])) {
-
-                    $amount = 0;
-
-                    if ($operation == 'bids') {
-
-                        $base_asset_amount = 0;
-
-                        foreach ($orderbook[$operation] as $price_and_amount) {
-
-                            if (($base_asset_amount + $price_and_amount[1]) < $deal_amount_potential) {
-
-                                $amount += $price_and_amount[0] * $price_and_amount[1];
-
-                                $base_asset_amount += $price_and_amount[1];
-
-                            } else {
-
-                                $amount += $price_and_amount[0] * ($deal_amount_potential - $base_asset_amount);
-
-                                break;
-
-                            }
-
-                        }
-
-                    } else {
-
-                        $quote_asset_amount = 0;
-
-                        foreach ($orderbook[$operation] as $price_and_amount) {
-
-                            if (($quote_asset_amount + $price_and_amount[0] * $price_and_amount[1]) < $deal_amount_potential) {
-
-                                $amount += $price_and_amount[1];
-
-                                $quote_asset_amount += $price_and_amount[0] * $price_and_amount[1];
-
-                            } else {
-
-                                $amount += ($deal_amount_potential - $quote_asset_amount) / $price_and_amount[0];
-
-                                break;
-
-                            }
-
-                        }
-
-                    }
-
-                    $potential_amounts[$exchange] = $amount * (1 - $this->fees[$exchange] / 100);
-
-                }
-
-            }
-
-            if ($potential_amounts) {
-
-                $best_exchange = array_keys($potential_amounts, max($potential_amounts))[0];
-
-                $best_orderbooks[$source['common_symbol']] = [
-                    $operation => $orderbooks[$source['common_symbol']][$best_exchange][$operation],
-                    'exchange' => $best_exchange
-                ];
+            if (isset($orderbooks[$source['common_symbol']][$this->main_exchange])) {
 
                 list($base_asset) = explode('/', $source['common_symbol']);
 
-                array_unshift($best_orderbooks[$source['common_symbol']][$operation] , [$orderbooks[$source['common_symbol']][$best_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0], $this->max_deal_amounts[$base_asset] * 1.05]);
+                $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
+
+                $best_orderbooks[$source['common_symbol']] = [
+                    $operation => [[$orderbooks[$source['common_symbol']][$this->main_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0], $this->max_deal_amounts[$base_asset] * 10]],
+                    'exchange' => $this->main_exchange
+                ];
 
             }
 
