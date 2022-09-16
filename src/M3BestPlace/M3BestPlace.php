@@ -255,12 +255,6 @@ class M3BestPlace extends Main
                     'exchange' => $this->main_exchange
                 ];
 
-                if ($this->delta_exchange) {
-
-
-
-                }
-
             }
 
         }
