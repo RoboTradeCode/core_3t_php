@@ -39,9 +39,11 @@ $fees = $core_config['fees'];
 $publishers = $core_config['aeron']['publishers'];
 $markets[$exchange] = $config['markets'];
 
+$exchanges = $delta_exchange ? [$exchange, $delta_exchange] : [$exchange];
+
 $api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
 
-$multi_core = new MemcachedData([$exchange], $markets, $expired_orderbook_time);
+$multi_core = new MemcachedData($exchanges, $markets, $expired_orderbook_time);
 
 $m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets, $exchange, $delta_exchange);
 
