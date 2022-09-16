@@ -57,7 +57,7 @@ class Delta
     public function get(string $symbol, string $exchange): array
     {
 
-        return $this->deltas[$symbol][$exchange];
+        return $this->deltas[$symbol][$exchange] ?? [];
 
     }
 
