@@ -5,6 +5,7 @@ namespace Src\M3BestPlace;
 use Src\ApiV2;
 use Src\FloatRound;
 use Src\Main;
+use Src\Signals\Delta;
 
 class M3BestPlace extends Main
 {
@@ -30,16 +31,16 @@ class M3BestPlace extends Main
 
     }
 
-    public function run(array $routes, array $balances, array $orderbooks, bool $multi = false): array
+    public function run(array $routes, array $balances, array $orderbooks, Delta $delta_signal): array
     {
 
         foreach ($routes as $route) {
 
             $combinations = $this->getCombinations($route);
 
-            if ($best_orderbooks = $this->findBestOrderbooks($route, $orderbooks)) {
+            if ($best_orderbooks = $this->findBestOrderbooks($route, $orderbooks, $delta_signal)) {
 
-                if ($orderbook = $this->getOrderbook($combinations, $best_orderbooks, $multi)) {
+                if ($orderbook = $this->getOrderbook($combinations, $best_orderbooks)) {
 
                     if (
                         ($balances[$orderbook['step_one']['exchange']][$combinations['main_asset_name']]['free'] > $this->max_deal_amounts[$combinations['main_asset_name']]) ||
@@ -170,7 +171,7 @@ class M3BestPlace extends Main
 
     }
 
-    private function getOrderbook(array $combinations, array $best_orderbooks, bool $multi): array
+    private function getOrderbook(array $combinations, array $best_orderbooks): array
     {
 
         foreach (
@@ -179,11 +180,9 @@ class M3BestPlace extends Main
 
             if (isset($best_orderbooks[$combinations[$step_symbol]]['exchange'])) {
 
-                $markets = $multi
-                    ? $this->markets[$best_orderbooks[$combinations[$step_symbol]]['exchange']]
-                    : $this->markets;
-
-                foreach ($markets as $market) {
+                foreach (
+                    $this->markets[$best_orderbooks[$combinations[$step_symbol]]['exchange']] as $market
+                ) {
 
                     if ($market['common_symbol'] == $combinations[$step_symbol]) {
 
@@ -195,18 +194,34 @@ class M3BestPlace extends Main
 
                 }
 
-                $orderbook[$step] = [
-                    'bids' => $best_orderbooks[$combinations[$step_symbol]]['bids'] ?? [],
-                    'asks' => $best_orderbooks[$combinations[$step_symbol]]['asks'] ?? [],
-                    'symbol' => $combinations[$step_symbol],
-                    'limits' => $market_config['limits'] ?? [],
-                    'price_increment' => $market_config['price_increment'] ?? 0,
-                    'amount_increment' => $market_config['amount_increment'] ?? 0,
-                    'amountAsset' => $market_config['base_asset'] ?? '',
-                    'priceAsset' => $market_config['quote_asset'] ?? '',
-                    'exchange' => $best_orderbooks[$combinations[$step_symbol]]['exchange'],
-                    'fee' => $this->fees[$best_orderbooks[$combinations[$step_symbol]]['exchange']],
-                ];
+                if (isset($market_config)) {
+
+                    if (isset($best_orderbooks[$combinations[$step_symbol]]['bids'][0][0]))
+                        $best_orderbooks[$combinations[$step_symbol]]['bids'][0][0] = $market_config['price_increment'] * floor($best_orderbooks[$combinations[$step_symbol]]['bids'][0][0] / $market_config['price_increment']);
+
+                    if (isset($best_orderbooks[$combinations[$step_symbol]]['asks'][0][0]))
+                        $best_orderbooks[$combinations[$step_symbol]]['asks'][0][0] = $market_config['price_increment'] * floor($best_orderbooks[$combinations[$step_symbol]]['asks'][0][0] / $market_config['price_increment']);
+
+                    $orderbook[$step] = [
+                        'bids' => $best_orderbooks[$combinations[$step_symbol]]['bids'] ?? [],
+                        'asks' => $best_orderbooks[$combinations[$step_symbol]]['asks'] ?? [],
+                        'symbol' => $combinations[$step_symbol],
+                        'limits' => $market_config['limits'] ?? [],
+                        'price_increment' => $market_config['price_increment'] ?? 0,
+                        'amount_increment' => $market_config['amount_increment'] ?? 0,
+                        'amountAsset' => $market_config['base_asset'] ?? '',
+                        'priceAsset' => $market_config['quote_asset'] ?? '',
+                        'exchange' => $best_orderbooks[$combinations[$step_symbol]]['exchange'],
+                        'fee' => $this->fees[$best_orderbooks[$combinations[$step_symbol]]['exchange']],
+                    ];
+
+                    unset($market_config);
+
+                } else {
+
+                    return [];
+
+                }
 
             } else {
 
@@ -220,7 +235,7 @@ class M3BestPlace extends Main
 
     }
 
-    private function findBestOrderbooks(array $route, array $orderbooks): array
+    private function findBestOrderbooks(array $route, array $orderbooks, Delta $delta_signal): array
     {
 
         $best_orderbooks = [];
@@ -233,10 +248,18 @@ class M3BestPlace extends Main
 
                 $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
 
+                $k = 1 + ($delta_signal->getDelta($source['common_symbol'], $this->delta_exchange) ?? 0);
+
                 $best_orderbooks[$source['common_symbol']] = [
-                    $operation => [[$orderbooks[$source['common_symbol']][$this->main_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0], $this->max_deal_amounts[$base_asset] * 10]],
+                    $operation => [[$orderbooks[$source['common_symbol']][$this->main_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0] * $k, $this->max_deal_amounts[$base_asset] * 10]],
                     'exchange' => $this->main_exchange
                 ];
+
+                if ($this->delta_exchange) {
+
+
+
+                }
 
             }
 

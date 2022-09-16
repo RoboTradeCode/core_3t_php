@@ -5,6 +5,7 @@ use Src\Configurator;
 use Src\M3BestPlace\Filter;
 use Src\M3BestPlace\M3BestPlace;
 use Src\MemcachedData;
+use Src\Signals\Delta;
 
 require dirname(__DIR__) . '/index.php';
 
@@ -44,6 +45,8 @@ $multi_core = new MemcachedData([$exchange], $markets, $expired_orderbook_time);
 
 $m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets, $exchange, $delta_exchange);
 
+$signal_delta = new Delta(5);
+
 while (true) {
 
     usleep($sleep);
@@ -52,9 +55,11 @@ while (true) {
 
     [$balances, $orderbooks, $real_orders] = [$all_data['balances'], $all_data['orderbooks'], $all_data['orders']];
 
+    $signal_delta->calc($delta_exchange, $orderbooks);
+
     if (isset($balances[$exchange])) {
 
-        $results = $m3_best_place->run($routes, $balances, $orderbooks, true);
+        $results = $m3_best_place->run($routes, $balances, $orderbooks, $signal_delta);
 
         foreach ($results as $result) {
 
