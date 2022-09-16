@@ -248,7 +248,7 @@ class M3BestPlace extends Main
 
                 $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
 
-                $k = 1 + ($delta_signal->getDelta($source['common_symbol'], $this->delta_exchange) ?? 0);
+                $k = 1 + ($delta_signal->getDelta($source['common_symbol'], $this->delta_exchange) ?? 0) / 100;
 
                 $best_orderbooks[$source['common_symbol']] = [
                     $operation => [[$orderbooks[$source['common_symbol']][$this->main_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0] * $k, $this->max_deal_amounts[$base_asset] * 10]],
