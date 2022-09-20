@@ -17,9 +17,10 @@ class M3BestPlace extends Main
     private array $markets;
     private string $main_exchange;
     private string $delta_exchange;
+    private array $profits;
     private array $expired_orders = [];
 
-    public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets, string $main_exchange, string $delta_exchange = '')
+    public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets, string $main_exchange, string $delta_exchange = '', array $options = [])
     {
 
         $this->max_depth = $max_depth;
@@ -29,6 +30,10 @@ class M3BestPlace extends Main
         $this->markets = $markets;
         $this->main_exchange = $main_exchange;
         $this->delta_exchange = $delta_exchange;
+
+        if (isset($options['min_profit']))
+            foreach ($max_deal_amounts as $asset => $max_deal_amount)
+                $this->profits[$asset] = $max_deal_amount * $options['min_profit'] / 100;
 
     }
 
@@ -74,14 +79,14 @@ class M3BestPlace extends Main
 
     }
 
-    public function getFullInfoByResult(array $result, float $profit): array
+    public function getFullInfoByResult(array $result): array
     {
 
         if (isset($result['results'][0])) {
 
             $full_info = $result['results'][0];
 
-            if ($full_info['result_in_main_asset'] >= $profit)
+            if ($full_info['result_in_main_asset'] >= $this->profits[$full_info['main_asset_name']])
                 return $full_info;
 
         }

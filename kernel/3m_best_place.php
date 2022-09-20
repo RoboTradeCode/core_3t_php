@@ -34,6 +34,7 @@ $sleep = $core_config['sleep'];
 $delta_exchange = $core_config['delta_exchange'] ?? '';
 $max_deal_amounts = $core_config['max_deal_amounts'];
 $rates = $core_config['rates'];
+$min_profit = $core_config['min_profit'];
 $max_depth = $core_config['max_depth'];
 $expired_open_order = $core_config['expired_open_order'];
 $fees = $core_config['fees'];
@@ -46,7 +47,7 @@ $api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
 
 $multi_core = new MemcachedData($exchange, $exchanges, $markets, $expired_orderbook_time);
 
-$m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets, $exchange, $delta_exchange);
+$m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets, $exchange, $delta_exchange, ['min_profit' => $min_profit]);
 
 $signal_delta = new Delta(5);
 
@@ -91,7 +92,7 @@ while (true) {
 
         foreach ($results as $result) {
 
-            if ($full_info = $m3_best_place->getFullInfoByResult($result, 0)) {
+            if ($full_info = $m3_best_place->getFullInfoByResult($result)) {
 
                 $positions = $m3_best_place->getPositions($full_info);
 
