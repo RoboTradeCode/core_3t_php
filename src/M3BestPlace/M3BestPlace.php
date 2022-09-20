@@ -140,7 +140,7 @@ class M3BestPlace extends Main
 
         foreach ($positions as $position) {
 
-            //echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
 
             $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
 
@@ -162,6 +162,8 @@ class M3BestPlace extends Main
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
 
                     $this->expired_orders[$real_order['client_order_id']] = $now;
+
+                    echo '[' . date('Y-m-d H:i:s') . '] [CANCEL] ' . $real_order['client_order_id'] . PHP_EOL;
                 }
             }
 
