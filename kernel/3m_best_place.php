@@ -109,11 +109,11 @@ while (true) {
                 if (!$m3_best_place->hasSimilarOrder($exchange, $real_orders, $positions))
                     $m3_best_place->create3MBestPlaceOrders($api, $positions, $full_info);
 
-                $m3_best_place->cancelExpiredOpenOrders($api, $exchange, $real_orders, $expired_open_order);
-
             }
 
         }
+
+        $m3_best_place->cancelExpiredOpenOrders($api, $exchange, $real_orders, $expired_open_order);
 
     } else {
 
