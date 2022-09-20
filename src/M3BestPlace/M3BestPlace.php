@@ -17,7 +17,7 @@ class M3BestPlace extends Main
     private array $markets;
     private string $main_exchange;
     private string $delta_exchange;
-    private array $expired_orders;
+    private array $expired_orders = [];
 
     public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets, string $main_exchange, string $delta_exchange = '')
     {
