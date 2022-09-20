@@ -139,7 +139,7 @@ class M3BestPlace extends Main
 
         foreach ($positions as $position) {
 
-            echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
+            //echo '[' . date('Y-m-d H:i:s') . '] ' . $position['symbol'] . ' ' . $position['side'] . ' ' . $position['amount'] . ' ' . $position['price'] . PHP_EOL;
 
             $api->createOrder($position['symbol'], $position['type'], $position['side'], $position['amount'], $position['price'], false);
 
@@ -156,11 +156,17 @@ class M3BestPlace extends Main
 
             foreach ($real_orders[$exchange] as $real_order) {
 
-                if ((microtime(true) - $real_order['timestamp'] / 1000) >= $expired_open_order) {
+                $order_lifetime = microtime(true) - $real_order['timestamp'] / 1000;
 
-                    echo '[' . date('Y-m-d H:i:s') . '] Cancel Order: ' . $real_order['client_order_id'] . PHP_EOL;
+                if ($order_lifetime >= $expired_open_order) {
+
+                    echo '[' . date('Y-m-d H:i:s') . '] [CANCEL] ' . $real_order['client_order_id'] . PHP_EOL;
 
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
+
+                } else {
+
+                    echo '[' . date('Y-m-d H:i:s') . '] [WAIT FOR CANCEL] ' . $real_order['client_order_id'] . ', Lifetime: ' . $order_lifetime . PHP_EOL;
 
                 }
 

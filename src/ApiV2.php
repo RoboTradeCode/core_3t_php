@@ -51,7 +51,7 @@ class ApiV2
     public function sendExpectedTriangleToLogServer(array $result): void
     {
 
-        $this->sendToLog($this->log->sendExpectedTriangle($result));
+        $this->sendToLog($this->log->sendExpectedTriangle($result), false);
 
     }
 
