@@ -32,6 +32,7 @@ $instance = $core_config['instance'];
 $expired_orderbook_time = $core_config['expired_orderbook_time'];
 $sleep = $core_config['sleep'];
 $delta_exchange = $core_config['delta_exchange'] ?? '';
+$delta_hypersensitivity = $core_config['delta_hypersensitivity'] ?? 1;
 $max_deal_amounts = $core_config['max_deal_amounts'];
 $rates = $core_config['rates'];
 $min_profit = $core_config['min_profit'];
@@ -47,7 +48,16 @@ $api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
 
 $multi_core = new MemcachedData($exchange, $exchanges, $markets, $expired_orderbook_time);
 
-$m3_best_place = new M3BestPlace($max_depth, $rates, $max_deal_amounts, $fees, $markets, $exchange, $delta_exchange, ['min_profit' => $min_profit]);
+$m3_best_place = new M3BestPlace(
+    $max_depth,
+    $rates,
+    $max_deal_amounts,
+    $fees,
+    $markets,
+    $exchange,
+    $delta_exchange,
+    ['min_profit' => $min_profit, 'delta_hypersensitivity' => $delta_hypersensitivity]
+);
 
 $signal_delta = new Delta(5);
 

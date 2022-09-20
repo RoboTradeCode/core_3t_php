@@ -11,6 +11,7 @@ class M3BestPlace extends Main
 {
 
     private int $max_depth;
+    private float $delta_hypersensitivity;
     private array $rates;
     private array $max_deal_amounts;
     private array $fees;
@@ -22,7 +23,6 @@ class M3BestPlace extends Main
 
     public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets, string $main_exchange, string $delta_exchange = '', array $options = [])
     {
-
         $this->max_depth = $max_depth;
         $this->rates = $rates;
         $this->max_deal_amounts = $max_deal_amounts;
@@ -35,6 +35,7 @@ class M3BestPlace extends Main
             foreach ($max_deal_amounts as $asset => $max_deal_amount)
                 $this->profits[$asset] = $max_deal_amount * $options['min_profit'] / 100;
 
+        $this->delta_hypersensitivity = $options['delta_hypersensitivity'] ?? 1;
     }
 
     public function run(array $routes, array $balances, array $orderbooks, Delta $delta_signal): array
@@ -255,7 +256,7 @@ class M3BestPlace extends Main
 
                 $operation = ($source['operation'] == 'sell') ? 'bids' : 'asks';
 
-                $k = 1 + ($delta_signal->getDelta($source['common_symbol'], $this->delta_exchange) ?? 0) / 100;
+                $k = 1 + ($delta_signal->getDelta($source['common_symbol'], $this->delta_exchange) ?? 0) * $this->delta_hypersensitivity / 100;
 
                 $best_orderbooks[$source['common_symbol']] = [
                     $operation => [[$orderbooks[$source['common_symbol']][$this->main_exchange][($operation == 'bids') ? 'asks' : 'bids'][0][0] * $k, $this->max_deal_amounts[$base_asset] * 10]],
