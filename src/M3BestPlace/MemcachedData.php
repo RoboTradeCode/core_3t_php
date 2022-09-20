@@ -65,7 +65,8 @@ class MemcachedData
 
                 } elseif ($action == 'orders') {
 
-                    $orders[$exchange] = $data;
+                    if ($exchange == $this->main_exchange)
+                        $orders[$exchange] = $data;
 
                 } else {
 
