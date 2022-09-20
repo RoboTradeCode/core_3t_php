@@ -72,7 +72,7 @@ do {
 
     echo '[' . date('Y-m-d H:i:s') . '] Try to close all orders' . PHP_EOL;
 
-    sleep(3);
+    sleep(5);
 } while(true);
 
 while (true) {
