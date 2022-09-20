@@ -17,6 +17,7 @@ class M3BestPlace extends Main
     private array $markets;
     private string $main_exchange;
     private string $delta_exchange;
+    private array $expired_orders;
 
     public function __construct(int $max_depth, array $rates, array $max_deal_amounts, array $fees, array $markets, string $main_exchange, string $delta_exchange = '')
     {
@@ -151,30 +152,23 @@ class M3BestPlace extends Main
 
     public function cancelExpiredOpenOrders(ApiV2 $api, string $exchange, array $real_orders, float $expired_open_order)
     {
-
         if (isset($real_orders[$exchange])) {
+            $now = microtime(true);
 
             foreach ($real_orders[$exchange] as $real_order) {
+                $order_lifetime = $now - $real_order['timestamp'] / 1000;
 
-                $order_lifetime = microtime(true) - $real_order['timestamp'] / 1000;
-
-                if ($order_lifetime >= $expired_open_order) {
-
-                    echo '[' . date('Y-m-d H:i:s') . '] [CANCEL] ' . $real_order['client_order_id'] . PHP_EOL;
-
+                if ($order_lifetime >= $expired_open_order && !isset($this->expired_orders[$real_order['client_order_id']])) {
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
 
-                } else {
-
-                    echo '[' . date('Y-m-d H:i:s') . '] [WAIT FOR CANCEL] ' . $real_order['client_order_id'] . ', Lifetime: ' . $order_lifetime . PHP_EOL;
-
+                    $this->expired_orders[$real_order['client_order_id']] = $now;
                 }
-
             }
 
+            foreach ($this->expired_orders as $client_order_id => $microtime)
+                if ($now - $microtime > 5)
+                    unset($this->expired_orders[$client_order_id]);
         }
-
-
     }
 
     private function getOrderbook(array $combinations, array $best_orderbooks): array
