@@ -87,7 +87,7 @@ class M3BestPlace extends Main
 
             $full_info = $result['results'][0];
 
-            if ($full_info['result_in_main_asset'] >= $this->profits[$full_info['main_asset_name']])
+            if ($full_info['result'] >= $this->profits[$full_info['main_asset_name']])
                 return $full_info;
 
         }
