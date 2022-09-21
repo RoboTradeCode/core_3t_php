@@ -135,6 +135,30 @@ class ApiV2
 
     }
 
+    public function cancelAllOrdersAndGetBalance(array $all_data, string $exchange): bool
+    {
+        [$balances, $real_orders] = [$all_data['balances'], $all_data['orders']];
+
+        if (isset($balances[$exchange])) {
+            $is_balance_used = false;
+
+            foreach ($balances[$exchange] as $balance)
+                if (!FloatRound::compare($balance['used'], 0)) {
+                    $is_balance_used = true;
+                    break;
+                }
+
+            if (!$is_balance_used && empty($real_orders[$exchange])) return true;
+
+            $this->cancelAllOrders();
+        } else
+            $this->getBalances();
+
+        echo '[' . date('Y-m-d H:i:s') . '] Try to close all orders' . PHP_EOL;
+
+        return false;
+    }
+
     private function madeRobotradesApiAndGateClasses(): void
     {
 

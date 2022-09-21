@@ -62,26 +62,12 @@ $m3_best_place = new M3BestPlace(
 $signal_delta = new Delta(5);
 
 do {
-    $all_data = $multi_core->reformatAndSeparateData($memcached->getMulti($multi_core->keys));
-
-    [$balances, $real_orders] = [$all_data['balances'], $all_data['orders']];
-
-    if (isset($balances[$exchange])) {
-        $is_balance_used = false;
-
-        foreach ($balances[$exchange] as $balance)
-            if (!FloatRound::compare($balance['used'], 0)) {
-                $is_balance_used = true;
-                break;
-            }
-
-        if (!$is_balance_used && empty($real_orders[$exchange])) break;
-
-        $api->cancelAllOrders();
-    } else
-        $api->getBalances();
-
-    echo '[' . date('Y-m-d H:i:s') . '] Try to close all orders' . PHP_EOL;
+    if (
+        $api->cancelAllOrdersAndGetBalance(
+            $multi_core->reformatAndSeparateData($memcached->getMulti($multi_core->keys)),
+            $exchange
+        )
+    ) break;
 
     sleep(5);
 } while(true);
