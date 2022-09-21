@@ -31,13 +31,11 @@ $multi_core = new MemcachedData($config['exchanges'], $config['markets'], $confi
 $exchange = $config['exchange'];
 
 while (true) {
-
     // задержка между каждым циклом
     usleep($config['sleep']);
 
     // берем данные из memcached
     if ($memcached_data = $memcached->getMulti($multi_core->keys)) {
-
         // получаем все данные из memcached
         $all_data = $multi_core->reformatAndSeparateData($memcached_data);
 
@@ -51,7 +49,6 @@ while (true) {
         $real_orders = $all_data['orders'];
 
         if (isset($balances[$exchange])) {
-
             //$m3_maker->filterBalanceByMaxDealAmount($balances[$exchange]);
 
             //DEBUG ONLY
@@ -62,7 +59,6 @@ while (true) {
 
             // проходимся по всем рынкам
             foreach ($config['3m_maker_markets'][$exchange] as $symbol => $symbols_for_profit_bid_and_ask) {
-
                 // если есть балансы данной биржи и ордербук данного рынка
                 if (
                     count($symbols_for_profit_bid_and_ask) == 2 &&
@@ -70,7 +66,6 @@ while (true) {
                     isset($orderbooks[$symbols_for_profit_bid_and_ask[0]]) &&
                     isset($orderbooks[$symbols_for_profit_bid_and_ask[1]])
                 ) {
-
                     echo PHP_EOL . $exchange . ' ' . $symbol . ' [START][START][START][START][START][START][START][START][START][START][START][START][START][START]-------------------------------------------' . PHP_EOL;
 
                     // берем данные price_increment и amount_increment для данной биржи и рынка
@@ -78,7 +73,6 @@ while (true) {
 
                     // если существует сетка для данной биржи и рынка, иначе создать эту сетку
                     if (isset($grids[$symbol])) {
-
                         // берем base_asset и quote_asset для данного рынка
                         list($base_asset, $quote_asset) = explode('/', $symbol);
 
@@ -87,7 +81,6 @@ while (true) {
 
                         // если profit ask выполняется как тейкер, пересчитать его с тейкерской комиссией
                         if ($orderbooks[$symbol][$exchange]['bids'][0][0] >= $profit_ask) {
-
                             // зафиксируем старое значение
                             $profit_ask_old = $profit_ask;
 
@@ -109,12 +102,10 @@ while (true) {
                                 $config['fee_maker'],
                                 $config['fee_taker']
                             );
-
                         }
 
                         // если profit bid выполняется как тейкер, пересчитать его с тейкерской комиссией
                         if ($orderbooks[$symbol][$exchange]['asks'][0][0] <= $profit_bid) {
-
                             // зафиксируем старое значение
                             $profit_bid_old = $profit_ask;
 
@@ -136,7 +127,6 @@ while (true) {
                                 $config['fee_maker'],
                                 $config['fee_taker']
                             );
-
                         }
 
                         // находим все, что в сетке ниже $profit_bid и выше $profit_ask+
@@ -147,7 +137,6 @@ while (true) {
 
                         // если мы не вышли засетку, то идти по алгоритму, иначе удалить сетку
                         if ($sell_orders <= count($lower) || $buy_orders <= count($higher)) {
-
                             //DEBUG ONLY
                             $m3_maker->printArray(
                                 [
@@ -174,7 +163,6 @@ while (true) {
 
                             // если у нас есть реальные ордера
                             if (!empty($real_orders_for_symbol)) {
-
                                 // теоретические ордера, которые должны быть поставлены и ордера, которые уже должны быть поставлены в реальности
                                 [$must_orders, $must_real_orders] = $m3_maker->getMustOrders($orders, $real_orders_for_symbol);
 
@@ -189,18 +177,13 @@ while (true) {
 
                                 // если массив реальных ордеров, которых не должны быть, не пуст (т. е. есть лишние ордера)
                                 if (!empty($must_real_orders)) {
-
                                     // пройтись по каждому элемента массива
                                     foreach ($must_real_orders as $must_real_key => $must_real_order) {
-
                                         // если статус закрыт, отменен, истек или отклонён
                                         if (in_array($must_real_order['status'], ['closed', 'canceled', 'expired', 'rejected'])) {
-
                                             // удалить его из массива реальных ордеров
                                             unset($real_orders_for_symbol[$must_real_key]);
-
                                         } else {
-
                                             // отправить по aeron на отмену ордеров
                                             $api->cancelOrder($must_real_order['client_order_id'], $must_real_order['symbol']);
 
@@ -209,21 +192,15 @@ while (true) {
                                                 $exchange . '_orderbook_' . $must_real_order['symbol'],
                                                 $orderbooks[$must_real_order['symbol']][$exchange]
                                             );
-
                                         }
-
                                     }
-
                                 }
 
                                 // если массив теоретических ордеров, которые должны быть поставлены не пуст
                                 if (!empty($must_orders)) {
-
                                     if (!isset($real_orders_for_symbols_backup[$exchange][$symbol]) || count($real_orders_for_symbol) != $real_orders_for_symbols_backup[$exchange][$symbol]) {
-
                                         // пройтись по каждому элементу массива
                                         foreach ($must_orders as $must_key => $must_order) {
-
                                             // пересчитать баланс, учтя постановку ордера, также использовать весь баланс если есть остаток
                                             //$must_order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances[$exchange], $must_order['symbol'], $must_order['side'], $must_order['amount'], $must_order['price'], 'used') ?: $must_order['amount'];
 
@@ -237,49 +214,35 @@ while (true) {
                                                 $must_order['amount'],
                                                 $must_order['price']
                                             );
+
                                             $memcached->set(
                                                 $exchange . '_orderbook_' . $must_order['symbol'],
                                                 $orderbooks[$must_order['symbol']][$exchange]
                                             );
 
                                             break;
-
                                         }
 
                                         $real_orders_for_symbols_backup[$exchange][$symbol] = count($real_orders_for_symbol);
-
                                     } else {
-
                                         if (isset($microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol])) {
-
                                             if ((microtime(true) - $microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol]) >= $config['expired_command_to_create_order'] / 1000000) {
-
                                                 unset($real_orders_for_symbols_backup[$exchange][$symbol]);
-
                                             }
-
                                         } else {
-
                                             $microtimes_for_real_orders_for_symbols_backup[$exchange][$symbol] = microtime(true);
-
                                         }
-
                                     }
-
                                 }
 
                                 // если есть переменная $was_send_create_orders для биржи, то удалить её, чтобы в случае закрытии всех ордеров, они поставились заново
                                 if (isset($was_send_create_orders[$exchange][$symbol]))
                                     unset($was_send_create_orders[$exchange][$symbol]);
-
                             } else {
-
                                 // если нет переменной $was_send_create_orders для данной биржи, то это означает, что пока нет первой постановки ордеров
                                 if (!isset($was_send_create_orders[$exchange][$symbol])) {
-
                                     // пройтись по всем ордерам
                                     foreach ($orders as $order) {
-
                                         // пересчитать баланс, учтя постановку ордера, также использовать весь баланс если есть остаток
                                         //$order['amount'] = $m3_maker->remainingBalanceIsLessThanDealAmount($balances[$exchange], $order['symbol'], $order['side'], $order['amount'], $order['price'], 'used') ?: $order['amount'];
 
@@ -293,63 +256,46 @@ while (true) {
                                             $order['amount'],
                                             $order['price']
                                         );
+
                                         $memcached->set(
                                             $exchange . '_orderbook_' . $order['symbol'],
                                             $orderbooks[$order['symbol']][$exchange]
                                         );
 
                                         break;
-
                                     }
 
                                     // создать переменную $was_send_create_orders для биржи, чтобы понимать, что постановка на первоначальные ордера были выставлены
                                     $was_send_create_orders[$exchange][$symbol] = true;
-
                                 } else {
-
                                     if (isset($microtimes_for_was_send_create_orders[$exchange][$symbol])) {
-
                                         if ((microtime(true) - $microtimes_for_was_send_create_orders[$exchange][$symbol]) >= $config['expired_command_to_create_order'] / 1000000) {
-
                                             unset($was_send_create_orders[$exchange][$symbol]);
-
                                         }
-
                                     } else {
-
                                         $microtimes_for_was_send_create_orders[$exchange][$symbol] = microtime(true);
-
                                     }
 
                                     // выводит сообщение, что не может получить ордера от гейтов
                                     echo '[' . date('Y-m-d H:i:s') . '] [WARNING] No orders were received from the gates for exchange: ' . $exchange . ' and symbol: ' . $symbol . PHP_EOL;
 
                                     sleep(1);
-
                                 }
-
                             }
-
                         } else {
-
                             echo '[' . date('Y-m-d H:i:s') . '] Delete grid for ' . $symbol . PHP_EOL;
 
                             // удалить сетку
                             unset($grids[$symbol]);
-
                         }
 
                     } else {
-
                         // строит сетку для данной биржи и данного рынка
                         $grids[$symbol] = $m3_maker->getGrids($orderbooks[$symbol][$exchange], $market['price_increment']);
-
                     }
 
                     echo PHP_EOL . $exchange . ' ' . $symbol . ' [END][END][END][END][END][END][END][END][END][END][END][END][END][END]-------------------------------------------' . PHP_EOL;
-
                 } else {
-
                     // Выводит в консоль сообщения, что нет $balances[$exchange]
                     if (count($symbols_for_profit_bid_and_ask) != 2)
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] count($symbols_for_profit_bid_and_ask) != 2' . PHP_EOL;
@@ -365,12 +311,10 @@ while (true) {
                     // Выводит в консоль сообщения, что нет $orderbooks["ETH/BTC"][$exchange]
                     if (!isset($orderbooks[$symbols_for_profit_bid_and_ask[1]]))
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($orderbooks[$symbols_for_profit_bid_and_ask[1]])' . PHP_EOL;
-
                 }
 
                 // Запрос статусов ордеров на проверку, протухают ли ордера или нет
                 if (isset($real_orders[$exchange])) {
-
                     // если существут переменная $micro-times для данной биржи, то
                     $microtimes_order_status[$exchange] = $microtimes_order_status[$exchange] ?? microtime(true);
 
@@ -379,7 +323,6 @@ while (true) {
 
                     // если прошло по времени более $config['send_command_to_get_status_time'] / 1000000 секунд, то
                     if (($time_now - $microtimes_order_status[$exchange]) >= $config['send_command_to_get_status_time'] / 1000000) {
-
                         // сортировка реальных ордеров по timestamp по возрастанию
                         usort($real_orders[$exchange], function ($item_one, $item_two) {
                             return $item_one['timestamp'] <=> $item_two['timestamp'];
@@ -393,10 +336,8 @@ while (true) {
 
                         // пройтись по всем реальным ордерам
                         foreach ($real_orders[$exchange] as $real_order) {
-
                             // если ордер не был уже проверен в сохранненых реальных ордерах и ордер был выставлен больше 60 секунд
                             if (!in_array($real_order['client_order_id'], array_keys($saved_real_orders[$exchange])) && ($time_now - $real_order['timestamp'] / 1000000) > 60) {
-
                                 // отправить по aeron на получение статусов ордеров
                                 $api->getOrderStatus($real_order['client_order_id'], $real_order['symbol']);
 
@@ -404,43 +345,29 @@ while (true) {
                                 $saved_real_orders[$exchange][$real_order['client_order_id']] = $time_now;
 
                                 break;
-
                             }
-
                         }
 
                         // обновить время переменной $microtimes_order_status[$exchange] для данной биржи
                         $microtimes_order_status[$exchange] = $time_now;
-
                     }
-
                 }
-
             }
-
         } else {
-
             // Выводит в консоль сообщения, что нет $balances[$exchange]
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Not isset: isset($balances[$exchange])' . PHP_EOL;
 
             sleep(1);
-
         }
 
         // каждую секунду выполняется условие
         if (Time::timeUp(1)) {
-
             // отправить пинг на лог сервер
             $api->sendPingToLogServer($m3_maker->getInteration());
-
         }
-
     } else {
-
         echo '[' . date('Y-m-d H:i:s') . '] No data in memcached' . PHP_EOL;
 
         sleep(1);
-
     }
-
 }
