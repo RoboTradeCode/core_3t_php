@@ -15,3 +15,9 @@ $instance = $core_config['instance'];
 $publishers = $core_config['aeron']['publishers'];
 
 $api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
+
+$api->cancelAllOrders();
+
+$api->getBalances();
+
+echo '[' . date('Y-m-d H:i:s') . '] All Orders Send To Cancel' . PHP_EOL;
