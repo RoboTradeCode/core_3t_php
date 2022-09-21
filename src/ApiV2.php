@@ -35,9 +35,6 @@ class ApiV2
         // сделать паблишер для лог сервера
         $this->madeLogPublisher();
 
-        // отправить первоначальные команды всем гейтам
-        $this->sendFirstCommandToAllGates();
-
     }
 
     public function sendPingToLogServer(int $interation, float $period, bool $echo = true): void
@@ -176,14 +173,6 @@ class ApiV2
         );
 
         echo '[' . date('Y-m-d H:i:s') . '] With log gate okay' . PHP_EOL;
-
-    }
-
-    private function sendFirstCommandToAllGates(): void
-    {
-
-        // отправляем на каждый гейт, закрыть все ордера и прислать балансы
-        $this->gate->cancelAllOrders()->getBalances()->send();
 
     }
 
