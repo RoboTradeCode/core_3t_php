@@ -162,7 +162,7 @@ class M3BestPlace extends Main
             $now = microtime(true);
 
             foreach ($real_orders[$exchange] as $real_order) {
-                $order_lifetime = $now - $real_order['timestamp'] / 1000;
+                $order_lifetime = $now - $real_order['timestamp'] / 1000000;
 
                 if ($order_lifetime >= $expired_open_order && !isset($this->expired_orders[$real_order['client_order_id']])) {
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
