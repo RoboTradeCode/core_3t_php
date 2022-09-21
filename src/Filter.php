@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\M3BestPlace;
+namespace Src;
 
 class Filter
 {

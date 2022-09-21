@@ -2,8 +2,8 @@
 
 use Src\ApiV2;
 use Src\Configurator;
+use Src\Filter;
 use Src\FloatRound;
-use Src\M3BestPlace\Filter;
 use Src\M3BestPlace\M3BestPlace;
 use Src\M3BestPlace\MemcachedData;
 use Src\Signals\Delta;
