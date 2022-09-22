@@ -164,7 +164,7 @@ class M3BestPlace extends Main
             foreach ($real_orders[$exchange] as $real_order) {
                 $order_lifetime = $now - $real_order['timestamp'] / 1000000;
 
-                if ($order_lifetime >= $expired_open_order && !isset($this->expired_orders[$real_order['client_order_id']])) {
+                if (($order_lifetime >= $expired_open_order) && !isset($this->expired_orders[$real_order['client_order_id']])) {
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
 
                     $this->expired_orders[$real_order['client_order_id']] = $now;
@@ -174,7 +174,7 @@ class M3BestPlace extends Main
             }
 
             foreach ($this->expired_orders as $client_order_id => $microtime)
-                if ($now - $microtime > 5)
+                if (($now - $microtime) > 5)
                     unset($this->expired_orders[$client_order_id]);
         }
     }
