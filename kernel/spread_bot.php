@@ -84,7 +84,7 @@ while (true) {
 
         if ($exchange_orderbook['bid'] <= $profit['bid']) {
             if ($balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset]) {
-                if (TimeV2::up(2, 'create_order_buy', true)) {
+                if (TimeV2::up(2, 'create_order_buy_' . $symbol, true)) {
                     Debug::printAll(
                         [
                             'symbol' => $symbol,
@@ -121,7 +121,7 @@ while (true) {
 
         if ($exchange_orderbook['ask'] >= $profit['ask']) {
             if ($balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset]) {
-                if (TimeV2::up(2, 'create_order_sell', true)) {
+                if (TimeV2::up(2, 'create_order_sell_' . $symbol, true)) {
                     Debug::printAll(
                         [
                             'symbol' => $symbol,
