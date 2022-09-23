@@ -143,7 +143,7 @@ function handler_orders(string $message): void
 
             echo PHP_EOL . 'Real Orders----------------------------------------------------------------------------------' . PHP_EOL;
             foreach ($orders as $order)
-                echo '[' . date('Y-m-d H:i:s') . '] Exchange: ' . $data['exchange'] . ' Client_order_id: ' . $order['client_order_id'] . ' Price ' . $order['price'] . ' Symbol ' . $order['symbol'] . ' Side ' . $order['side'] . ' Status ' . $order['status'] . ' Timestamp ' . $order['timestamp'] . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] ' . $data['exchange'] . ', ' . $order['client_order_id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . ', ' . date('Y-m-d H:i:s', $order['timestamp'] / 1000000) . PHP_EOL;
             echo 'Real Orders----------------------------------------------------------------------------------' . PHP_EOL . PHP_EOL;
 
             foreach ($orders as $k => $order) {
