@@ -111,7 +111,7 @@ while (true) {
                     $price = incrementNumber($exchange_orderbook['bid'] + $market['price_increment'], $market['price_increment']);
                     $amount = incrementNumber($balances[$exchange][$quote_asset]['free'] / $price, $market['amount_increment']);
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ': ' . $side . ': ' . $price . ': ' . $amount . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ', ' . $side . ', ' . $amount . ', ' . $price . PHP_EOL;
 
                     $api->createOrder($symbol, $type, $side, $amount, $price, false);
                 }
@@ -146,9 +146,9 @@ while (true) {
                     $type = 'limit';
                     $side = 'sell';
                     $price = incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment']);
-                    $amount = incrementNumber($balances[$exchange][$base_asset]['free'] / $price, $market['amount_increment']);
+                    $amount = $balances[$exchange][$base_asset]['free'];
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ': ' . $side . ': ' . $price . ': ' . $amount . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ', ' . $side . ', ' . $amount . ', ' . $price . PHP_EOL;
 
                     $api->createOrder($symbol, $type, $side, $amount, $price, false);
                 }
