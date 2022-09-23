@@ -185,7 +185,7 @@ while (true) {
                         $exchange
                     );
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel: ' . $real_order['client_order_id'] . ': ' . $symbol . ': ' . $real_order['price'] . ': ' . $real_order['side'] . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $symbol . ', ' . $real_order['price'] . ', ' . $real_order['side'] . PHP_EOL;
 
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
                 }
@@ -217,7 +217,7 @@ while (true) {
                         $exchange
                     );
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel: ' . $real_order['client_order_id'] . ': ' . $symbol . ': ' . $real_order['price'] . ': ' . $real_order['side'] . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $symbol . ', ' . $real_order['price'] . ', ' . $real_order['side'] . PHP_EOL;
 
                     $api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], false);
                 }
