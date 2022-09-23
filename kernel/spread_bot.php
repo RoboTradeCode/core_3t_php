@@ -18,6 +18,7 @@ $memcached->flush();
 $config = Configurator::getConfigApiByFile('spread_bot');
 
 $markets = $config['markets'];
+$assets = array_column($config['assets_labels'], 'common');
 $core_config = $config['configs']['core_config'];
 $node = $core_config['node'];
 $exchange = $core_config['exchange'];

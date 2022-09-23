@@ -15,7 +15,7 @@ class Debug
     {
         echo $head_message . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
 
-        foreach ($array as $key => $arr) echo '[' . date('Y-m-d H:i:s') . '] ' . $key . ' ' . $arr . PHP_EOL;
+        foreach ($array as $key => $arr) echo '[' . date('Y-m-d H:i:s') . '] ' . $key . ': ' . $arr . PHP_EOL;
 
         echo $head_message . ' [END]------------------------------------------------------------------------------------' . PHP_EOL;
     }
