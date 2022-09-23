@@ -84,7 +84,7 @@ while (true) {
 
         if ($exchange_orderbook['bid'] <= $profit['bid']) {
             if ($balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset]) {
-                if (TimeV2::up(1, 'create_order_buy', true)) {
+                if (TimeV2::up(2, 'create_order_buy', true)) {
                     Debug::printAll(
                         [
                             'symbol' => $symbol,
@@ -121,7 +121,7 @@ while (true) {
 
         if ($exchange_orderbook['ask'] >= $profit['ask']) {
             if ($balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset]) {
-                if (TimeV2::up(1, 'create_order_sell', true)) {
+                if (TimeV2::up(2, 'create_order_sell', true)) {
                     Debug::printAll(
                         [
                             'symbol' => $symbol,
@@ -161,7 +161,7 @@ while (true) {
                 if (
                     $real_order['side'] == 'sell' &&
                     (!FloatRound::compare($real_order['price'], $exchange_orderbook['ask']) || ($real_order['price'] < $profit['ask'])) &&
-                    TimeV2::up(1, $real_order['client_order_id'], true)
+                    TimeV2::up(5, $real_order['client_order_id'], true)
                 ) {
                     Debug::printAll(
                         [
@@ -193,7 +193,7 @@ while (true) {
                 if (
                     $real_order['side'] == 'buy' &&
                     (!FloatRound::compare($real_order['price'], $exchange_orderbook['bid']) || ($real_order['price'] > $profit['bid'])) &&
-                    TimeV2::up(31, $real_order['client_order_id'], true)
+                    TimeV2::up(5, $real_order['client_order_id'], true)
                 ) {
                     Debug::printAll(
                         [
