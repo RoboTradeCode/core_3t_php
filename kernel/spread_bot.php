@@ -113,7 +113,7 @@ while (true) {
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ': ' . $side . ': ' . $price . ': ' . $amount . PHP_EOL;
 
-                    $api->createOrder($symbol, $type, $side, $price, $amount, false);
+                    $api->createOrder($symbol, $type, $side, $amount, $price, false);
                 }
             }
         }
@@ -150,7 +150,7 @@ while (true) {
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ': ' . $side . ': ' . $price . ': ' . $amount . PHP_EOL;
 
-                    $api->createOrder($symbol, $type, $side, $price, $amount, false);
+                    $api->createOrder($symbol, $type, $side, $amount, $price, false);
                 }
             }
         }
