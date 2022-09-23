@@ -139,7 +139,7 @@ while (true) {
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
                         $balances,
-                        $real_orders[$exchange],
+                        $real_orders[$exchange] ?? [],
                         $exchange
                     );
 
@@ -180,7 +180,7 @@ while (true) {
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
                         $balances,
-                        $real_orders[$exchange],
+                        $real_orders[$exchange] ?? [],
                         $exchange
                     );
 
@@ -212,7 +212,7 @@ while (true) {
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
                         $balances,
-                        $real_orders[$exchange],
+                        $real_orders[$exchange] ?? [],
                         $exchange
                     );
 
@@ -251,7 +251,7 @@ while (true) {
                     'is_empty_real_orders' => !empty($real_orders[$exchange]),
                 ],
                 $balances,
-                $real_orders[$exchange],
+                $real_orders[$exchange] ?? [],
                 $exchange
             );
 
