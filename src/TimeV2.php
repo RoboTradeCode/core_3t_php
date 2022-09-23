@@ -26,6 +26,8 @@ class TimeV2
                 if ($now >= $item)
                     unset(self::$start[$pr]);
 
+            if ($first) return false;
+
             return true;
         }
 
