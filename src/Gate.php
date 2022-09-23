@@ -112,7 +112,7 @@ class Gate
      *
      * @return void
      */
-    public function send(): void
+    public function send(bool $echo = true): void
     {
 
         $message = 'Send commands: ';
@@ -120,7 +120,8 @@ class Gate
         foreach ($this->commands as $command)
             $message .=  $command . '. ';
 
-        $this->echo($message);
+        if ($echo)
+            $this->echo($message);
 
         $this->commands = [];
 

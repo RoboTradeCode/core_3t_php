@@ -84,17 +84,17 @@ class ApiV2
 
     }
 
-    public function cancelAllOrders(): void
+    public function cancelAllOrders(bool $echo = false): void
     {
 
-        $this->gate->cancelAllOrders()->send();
+        $this->gate->cancelAllOrders()->send($echo);
 
     }
 
-    public function getBalances(): void
+    public function getBalances(bool $echo = false): void
     {
 
-        $this->gate->getBalances()->send();
+        $this->gate->getBalances()->send($echo);
 
     }
 
@@ -148,13 +148,17 @@ class ApiV2
                     break;
                 }
 
-            if (!$is_balance_used && empty($real_orders[$exchange])) return true;
+            if (!$is_balance_used && empty($real_orders[$exchange])) {
+                echo '[' . date('Y-m-d H:i:s') . '] [OK] All orders canceled' . PHP_EOL;
+
+                return true;
+            }
 
             $this->cancelAllOrders();
         } else
             $this->getBalances();
 
-        echo '[' . date('Y-m-d H:i:s') . '] Try to close all orders' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [WAIT] Try to close all orders' . PHP_EOL;
 
         return false;
     }
