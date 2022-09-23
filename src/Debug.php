@@ -25,7 +25,7 @@ class Debug
         echo PHP_EOL . 'Orders: ' . $exchange . ' [START]----------------------------------------------------------------------------------' . PHP_EOL;
 
         foreach ($orders as $order) {
-            $message = '[' . date('Y-m-d H:i:s') . '] Price ' . $order['price'] . ' Side ' . $order['side'] . ' Amount: ' . ($order['amount'] ?? 'null');
+            $message = '[' . date('Y-m-d H:i:s') . '] Client Order Id ' . $order['client_order_id'] . ' Price ' . $order['price'] . ' Side ' . $order['side'] . ' Amount: ' . ($order['amount'] ?? 'null');
 
             if (isset($order['status'])) $message .= ' Status ' . $order['status'];
 
