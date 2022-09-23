@@ -76,8 +76,8 @@ while (true) {
         $profit['bid'] = $market_discovery['bid'] - ($market_discovery['bid'] * $min_profit['bid'] / 100);
         $profit['ask'] = $market_discovery['ask'] - ($market_discovery['ask'] * $min_profit['ask'] / 100);
 
-        $exchange_orderbook['bid'] = $orderbooks[$symbol][$market_discovery_exchange]['bids'][0][0];
-        $exchange_orderbook['ask'] = $orderbooks[$symbol][$market_discovery_exchange]['asks'][0][0];
+        $exchange_orderbook['bid'] = $orderbooks[$symbol][$exchange]['bids'][0][0];
+        $exchange_orderbook['ask'] = $orderbooks[$symbol][$exchange]['asks'][0][0];
 
         list($base_asset, $quote_asset) = explode('/', $symbol);
 
