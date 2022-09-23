@@ -101,7 +101,7 @@ while (true) {
                             'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
-                        $balances,
+                        $balances[$exchange],
                         $real_orders[$exchange],
                         $exchange
                     );
@@ -138,7 +138,7 @@ while (true) {
                             'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
-                        $balances,
+                        $balances[$exchange],
                         $real_orders[$exchange] ?? [],
                         $exchange
                     );
@@ -179,7 +179,7 @@ while (true) {
                             'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
-                        $balances,
+                        $balances[$exchange],
                         $real_orders[$exchange] ?? [],
                         $exchange
                     );
@@ -211,7 +211,7 @@ while (true) {
                             'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
                             'is_empty_real_orders' => !empty($real_orders[$exchange]),
                         ],
-                        $balances,
+                        $balances[$exchange],
                         $real_orders[$exchange] ?? [],
                         $exchange
                     );
