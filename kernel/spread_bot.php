@@ -267,6 +267,9 @@ while (true) {
         if (empty($orderbooks[$symbol][$market_discovery_exchange]))
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $orderbooks[$symbol][$market_discovery_exchange]' . PHP_EOL;
     }
+
+    if (TimeV2::up(5, 'balance'))
+        $api->getBalances();
 }
 
 function incrementNumber(float $number, float $increment): float
