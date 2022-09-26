@@ -54,7 +54,7 @@ class Filter
 
     }
 
-    public static function getMaxDealAmountByRate(array $rates, float $deal_amount): array
+    public static function getDealAmountByRate(array $rates, float $deal_amount): array
     {
         foreach ($rates as $asset => $rate)
             $max_deal_amounts[$asset] = round($deal_amount / $rate, 8);

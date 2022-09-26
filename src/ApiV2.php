@@ -68,19 +68,16 @@ class ApiV2
 
     }
 
-    public function cancelOrder(string $client_order_id, string $symbol, bool $echo = true): void
+    public function cancelOrder(array $real_order, bool $echo = true): void
     {
 
-        $message = $this->robotrade_api->cancelOrder($client_order_id, $symbol, 'Cancel order ' . $client_order_id);
+        $message = $this->robotrade_api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], 'Cancel order ' . $real_order['client_order_id']);
 
         // отправить гейту сообщение
         $this->sendCommandToGate($message, $echo);
 
         if ($echo)
-            echo '[' . date('Y-m-d H:i:s') . '] Send to gate cancel order. Id: ' .
-                $client_order_id .
-                ' Symbol: ' . $symbol .
-                PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['price'] . ', ' . $real_order['side'] . PHP_EOL;
 
     }
 
@@ -120,12 +117,7 @@ class ApiV2
             $this->sendToLog($message, $echo);
 
             if ($echo)
-                echo '[' . date('Y-m-d H:i:s') . '] Send to gate create order. Pair: ' .
-                    $symbol .
-                    ' Side: ' . $side .
-                    ' Amount: ' . $amount .
-                    ' Price: ' . $price .
-                    PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ', ' . $side . ', ' . $amount . ', ' . $price . PHP_EOL;
 
         } else {
 
