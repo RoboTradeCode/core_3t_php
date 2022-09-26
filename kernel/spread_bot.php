@@ -266,6 +266,8 @@ while (true) {
 
         if (empty($orderbooks[$symbol][$market_discovery_exchange]))
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $orderbooks[$symbol][$market_discovery_exchange]' . PHP_EOL;
+
+        sleep(1);
     }
 
     if (TimeV2::up(5, 'balance'))
