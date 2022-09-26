@@ -75,8 +75,7 @@ while (true) {
             !empty($orderbooks[$symbol][$exchange]) &&
             !empty($orderbooks[$symbol][$market_discovery_exchange])
         ) {
-
-            $market = getMarket($markets[$exchange], $symbol);
+            $market = $spread_bot->getMarket($markets[$exchange], $symbol);
 
             $market_discovery['bid'] = $orderbooks[$symbol][$market_discovery_exchange]['bids'][0][0];
             $market_discovery['ask'] = $orderbooks[$symbol][$market_discovery_exchange]['asks'][0][0];
@@ -111,17 +110,14 @@ while (true) {
                 $balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset] &&
                 TimeV2::up(2, 'create_order_buy_' . $symbol, true)
             ) {
-                Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange] ?? [], $exchange);
-
-                $price = incrementNumber($exchange_orderbook['bid'] + $market['price_increment'], $market['price_increment']);
+                $price = $spread_bot->incrementNumber($exchange_orderbook['bid'] + 2 * $market['price_increment'], $market['price_increment']);
 
                 $api->createOrder(
-                    $symbol,
-                    'limit',
-                    'buy',
-                    $price,
-                    incrementNumber($balances[$exchange][$quote_asset]['free'] / $price, $market['amount_increment'])
+                    $symbol, 'limit', 'buy', $price,
+                    $spread_bot->incrementNumber($balances[$exchange][$quote_asset]['free'] / $price, $market['amount_increment'])
                 );
+
+                Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange] ?? [], $exchange);
             }
 
             if (
@@ -129,18 +125,16 @@ while (true) {
                 $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset] &&
                 TimeV2::up(2, 'create_order_sell_' . $symbol, true)
             ) {
-                Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange] ?? [], $exchange);
-
                 $api->createOrder(
-                    $symbol,
-                    'limit',
-                    'sell',
-                    incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment']),
+                    $symbol, 'limit', 'sell',
+                    $spread_bot->incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment']),
                     $balances[$exchange][$base_asset]['free']
                 );
+
+                Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange] ?? [], $exchange);
             }
 
-            if (!empty($real_orders[$exchange])) {
+            if (!empty($real_orders[$exchange]))
                 foreach ($real_orders[$exchange] as $real_order) {
                     $is_cancel_sell_order = $real_order['side'] == 'sell' &&
                         (!FloatRound::compare($real_order['price'], $exchange_orderbook['ask']) || ($real_order['price'] < $profit['ask'])) &&
@@ -151,12 +145,11 @@ while (true) {
                         TimeV2::up(5, $real_order['client_order_id'], true);
 
                     if ($is_cancel_sell_order || $is_cancel_buy_order) {
-                        Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange], $exchange);
-
                         $api->cancelOrder($real_order);
+
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange], $exchange);
                     }
                 }
-            }
 
             $api->sendPingToLogServer($iteration++, 1, false);
         } elseif (TimeV2::up(1, 'empty_orderbooks' . $symbol)) {
@@ -166,18 +159,4 @@ while (true) {
     } elseif (TimeV2::up(1, 'empty_data')) echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $balances[$exchange]' . PHP_EOL;
 
     if (TimeV2::up(5, 'balance')) $api->getBalances();
-}
-
-function incrementNumber(float $number, float $increment): float
-{
-
-    return $increment * floor($number / $increment);
-
-}
-
-function getMarket(array $markets, string $symbol)
-{
-
-    return $markets[array_search($symbol, array_column($markets, 'common_symbol'))] ?? [];
-
 }
