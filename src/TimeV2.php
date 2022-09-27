@@ -21,9 +21,9 @@ class TimeV2
 
         $now = microtime(true);
 
-        if ($now >= self::$start[$prefix] + 60) {
+        if ($now >= self::$start[$prefix]) {
             foreach (self::$start as $pr => $item)
-                if ($now >= $item)
+                if ($now >= $item + 60)
                     unset(self::$start[$pr]);
 
             if ($first) return false;
