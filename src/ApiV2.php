@@ -29,10 +29,8 @@ class ApiV2
         $this->instance = $instance;
         $this->publishers = $publishers;
 
-        // сделать классы для работы с robotrade api и гейтами
         $this->madeRobotradesApiAndGateClasses();
 
-        // сделать паблишер для лог сервера
         $this->madeLogPublisher();
 
     }
@@ -57,7 +55,6 @@ class ApiV2
 
         $message = $this->robotrade_api->getOrderStatus($client_order_id, $symbol, 'Get status order ' . $client_order_id);
 
-        // отправить гейту сообщение
         $this->sendCommandToGate($message, $echo);
 
         if ($echo)
@@ -73,7 +70,6 @@ class ApiV2
 
         $message = $this->robotrade_api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], 'Cancel order ' . $real_order['client_order_id']);
 
-        // отправить гейту сообщение
         $this->sendCommandToGate($message, $echo);
 
         if ($echo)
@@ -110,10 +106,8 @@ class ApiV2
                 'Create order'
             );
 
-            // отправить гейту сообщение
             $this->sendCommandToGate($message, $echo);
 
-            // отправить в лог сервер
             $this->sendToLog($message, $echo);
 
             if ($echo)
@@ -158,12 +152,10 @@ class ApiV2
     private function madeRobotradesApiAndGateClasses(): void
     {
 
-        // API для формирования сообщения для отправки по aeron
         $this->robotrade_api = new \robotrade\Api($this->exchange, $this->algorithm, $this->node, $this->instance);
 
         echo '[' . date('Y-m-d H:i:s') . '] Try ' . $this->exchange . ' ' . $this->publishers['gates'][$this->exchange]['channel'] . ' ' . $this->publishers['gates'][$this->exchange]['stream_id'] . PHP_EOL;
 
-        // нужены publisher, отправлять команды на сервер гейта
         Aeron::checkConnection(
             $this->gate_publisher = new Publisher(
                 $this->publishers['gates'][$this->exchange]['channel'],
@@ -171,7 +163,6 @@ class ApiV2
             )
         );
 
-        // класс для работы с гейтом
         $this->gate = new Gate($this->gate_publisher, $this->robotrade_api);
 
         echo '[' . date('Y-m-d H:i:s') . '] With ' . $this->exchange . ' gates okay' . PHP_EOL;
@@ -181,10 +172,8 @@ class ApiV2
     private function madeLogPublisher(): void
     {
 
-        // Класс формата логов
         $this->log = new Log($this->exchange, $this->algorithm, $this->node, $this->instance);
 
-        // нужен publisher, отправлять логи на сервер логов
         Aeron::checkConnection(
             $this->log_publisher = new Publisher(
                 $this->publishers['log']['channel'],
