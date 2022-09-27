@@ -55,7 +55,7 @@ do {
     sleep(5);
 } while (true);
 
-$spread_bot = new SpreadBot();
+$spread_bot = new SpreadBot($exchange, $market_discovery_exchange);
 
 $iteration = 0;
 
@@ -66,122 +66,117 @@ while (true) {
 
     [$balances, $orderbooks, $real_orders] = [$all_data['balances'], $all_data['orderbooks'], $all_data['orders']];
 
-    $symbol = 'BTC/USDT';
-
     if (!empty($balances[$exchange])) {
         $must_orders = LimitationBalance::get($balances[$exchange], $assets, $common_symbols, $max_deal_amounts, $amount_limitations);
 
-        if (
-            !empty($orderbooks[$symbol][$exchange]) &&
-            !empty($orderbooks[$symbol][$market_discovery_exchange])
-        ) {
-            $market = $spread_bot->getMarket($markets[$exchange], $symbol);
-
-            $market_discovery['bid'] = $orderbooks[$symbol][$market_discovery_exchange]['bids'][0][0];
-            $market_discovery['ask'] = $orderbooks[$symbol][$market_discovery_exchange]['asks'][0][0];
-
-            $profit['bid'] = $market_discovery['bid'] - ($market_discovery['bid'] * $min_profit['bid'] / 100);
-            $profit['ask'] = $market_discovery['ask'] + ($market_discovery['ask'] * $min_profit['ask'] / 100);
-
-            $exchange_orderbook['bid'] = $orderbooks[$symbol][$exchange]['bids'][0][0];
-            $exchange_orderbook['ask'] = $orderbooks[$symbol][$exchange]['asks'][0][0];
-
-            list($base_asset, $quote_asset) = explode('/', $symbol);
-
-            $debug_data = [
-                'symbol' => $symbol,
-                'exchange_bid' => $exchange_orderbook['bid'],
-                'exchange_ask' => $exchange_orderbook['ask'],
-                'market_discovery_bid' => $market_discovery['bid'],
-                'market_discovery_ask' => $market_discovery['ask'],
-                'profit_bid' => $profit['bid'],
-                'profit_ask' => $profit['ask'],
-                'min_deal_amount_base_asset' => $min_deal_amounts[$base_asset] . ' ' . $base_asset,
-                'min_deal_amount_quote_asset' => $min_deal_amounts[$quote_asset] . ' ' . $quote_asset,
-                'is_exchange_bid_less_profit_bid' => $exchange_orderbook['bid'] <= $profit['bid'],
-                'has_enough_balance_quote_asset' => $balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset],
-                'is_exchange_ask_less_profit_ask' => $exchange_orderbook['ask'] >= $profit['ask'],
-                'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
-                'is_not_empty_real_orders' => !empty($real_orders[$exchange]),
-            ];
-
-            $real_orders_for_symbol = [
-                'buy' => isset($real_orders[$exchange]) ? array_filter($real_orders[$exchange], fn($real_order_for_symbol) => ($real_order_for_symbol['symbol'] == $symbol) && ($real_order_for_symbol['side'] == 'buy')) : [],
-                'sell' => isset($real_orders[$exchange]) ? array_filter($real_orders[$exchange], fn($real_order_for_symbol) => ($real_order_for_symbol['symbol'] == $symbol) && ($real_order_for_symbol['side'] == 'sell')) : []
-            ];
-
+        foreach ($common_symbols as $symbol) {
             if (
-                $exchange_orderbook['bid'] <= $profit['bid'] &&
-                $balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset] &&
-                count($real_orders_for_symbol['buy']) <= $must_orders[$symbol]['buy'] &&
-                TimeV2::up(1, 'create_order', true)
+                !empty($orderbooks[$symbol][$exchange]) &&
+                !empty($orderbooks[$symbol][$market_discovery_exchange])
             ) {
-                $price = $spread_bot->incrementNumber($exchange_orderbook['bid'] + 2 * $market['price_increment'], $market['price_increment']);
+                $market = $spread_bot->getMarket($markets, $symbol);
 
-                $api->createOrder(
-                    $symbol, 'limit', 'buy', $price,
-                    $spread_bot->incrementNumber($balances[$exchange][$quote_asset]['free'] / $price, $market['amount_increment'])
-                );
+                $market_discovery = $spread_bot->getBestOrderbook($orderbooks, $symbol, false);
 
-                Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['buy'], $exchange);
-            }
+                $profit = $spread_bot->getProfit($market_discovery, $min_profit);
 
-            if (
-                $exchange_orderbook['ask'] >= $profit['ask'] &&
-                $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset] &&
-                count($real_orders_for_symbol['sell']) <= $must_orders[$symbol]['sell'] &&
-                TimeV2::up(1, 'create_order', true)
-            ) {
-                $api->createOrder(
-                    $symbol, 'limit', 'sell',
-                    $spread_bot->incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment']),
-                    $balances[$exchange][$base_asset]['free']
-                );
+                $exchange_orderbook = $spread_bot->getBestOrderbook($orderbooks, $symbol);
 
-                Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
-            }
+                list($base_asset, $quote_asset) = explode('/', $symbol);
 
-            foreach ($real_orders_for_symbol['sell'] as $real_orders_for_symbol_sell)
+                $real_orders_for_symbol = $spread_bot->filterOrdersBySideAndSymbol($real_orders, $symbol);
+
+                $debug_data = [
+                    'symbol' => $symbol,
+                    'exchange_bid' => $exchange_orderbook['bid'],
+                    'exchange_ask' => $exchange_orderbook['ask'],
+                    'market_discovery_bid' => $market_discovery['bid'],
+                    'market_discovery_ask' => $market_discovery['ask'],
+                    'profit_bid' => $profit['bid'],
+                    'profit_ask' => $profit['ask'],
+                    'min_deal_amount_base_asset' => $min_deal_amounts[$base_asset] . ' ' . $base_asset,
+                    'min_deal_amount_quote_asset' => $min_deal_amounts[$quote_asset] . ' ' . $quote_asset,
+                    'is_exchange_bid_less_profit_bid' => $exchange_orderbook['bid'] <= $profit['bid'],
+                    'has_enough_balance_quote_asset' => $balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset],
+                    'is_exchange_ask_less_profit_ask' => $exchange_orderbook['ask'] >= $profit['ask'],
+                    'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
+                    'is_not_empty_real_orders' => !empty($real_orders[$exchange]),
+                    'real_orders_for_symbol_sell' => count($real_orders_for_symbol['sell']),
+                    'real_orders_for_symbol_buy' => count($real_orders_for_symbol['buy'])
+                ];
+
                 if (
-                    (count($real_orders_for_symbol_sell) >= $must_orders[$symbol]['sell'] || $real_orders_for_symbol_sell['price'] < $profit['ask']) &&
-                    TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
+                    $spread_bot->isCreateBuyOrder(
+                        $exchange_orderbook, $profit, $balances, $quote_asset,
+                        $min_deal_amounts, $real_orders_for_symbol, $must_orders[$symbol]
+                    )
                 ) {
-                    $api->cancelOrder($real_orders_for_symbol_sell);
+                    $api->createOrder(
+                        $symbol, 'limit', 'buy',
+                        $spread_bot->incrementNumber($exchange_orderbook['bid'] + 2 * $market['price_increment'], $market['price_increment']),
+                        $max_deal_amounts[$base_asset]
+                    );
 
-                    Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_sell, $exchange);
+                    Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['buy'], $exchange);
                 }
 
-            foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
                 if (
-                    (count($real_orders_for_symbol_buy) >= $must_orders[$symbol]['buy'] || $real_orders_for_symbol_buy['price'] > $profit['bid']) &&
-                    TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
+                    $spread_bot->isCreateSellOrder(
+                        $exchange_orderbook, $profit, $balances, $base_asset,
+                        $min_deal_amounts, $real_orders_for_symbol, $must_orders[$symbol]
+                    )
                 ) {
-                    $api->cancelOrder($real_orders_for_symbol_buy);
+                    $api->createOrder(
+                        $symbol, 'limit', 'sell',
+                        $spread_bot->incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment']),
+                        $max_deal_amounts[$base_asset]
+                    );
 
-                    Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_buy, $exchange);
+                    Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
                 }
 
-            if (!empty($real_orders[$exchange]))
-                foreach ($real_orders[$exchange] as $real_order) {
-                    $is_cancel_sell_order = $real_order['side'] == 'sell' &&
-                        (!FloatRound::compare($real_order['price'], $exchange_orderbook['ask']) || ($real_order['price'] < $profit['ask'])) &&
-                        TimeV2::up(5, $real_order['client_order_id'], true);
+                foreach ($real_orders_for_symbol['sell'] as $real_orders_for_symbol_sell)
+                    if (
+                        (count($real_orders_for_symbol_sell) >= $must_orders[$symbol]['sell'] || $real_orders_for_symbol_sell['price'] < $profit['ask']) &&
+                        TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
+                    ) {
+                        $api->cancelOrder($real_orders_for_symbol_sell);
 
-                    $is_cancel_buy_order = $real_order['side'] == 'buy' &&
-                        (!FloatRound::compare($real_order['price'], $exchange_orderbook['bid']) || ($real_order['price'] > $profit['bid'])) &&
-                        TimeV2::up(5, $real_order['client_order_id'], true);
-
-                    if ($is_cancel_sell_order || $is_cancel_buy_order) {
-                        $api->cancelOrder($real_order);
-
-                        Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange], $exchange);
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_sell, $exchange);
                     }
-                }
 
-            $api->sendPingToLogServer($iteration++, 1, false);
-        } elseif (TimeV2::up(1, 'empty_orderbooks' . $symbol)) {
-            if (empty($orderbooks[$symbol][$exchange])) Debug::echo('[WARNING] Empty $orderbooks[$symbol][$exchange]');
-            if (empty($orderbooks[$symbol][$market_discovery_exchange])) Debug::echo('[WARNING] Empty $orderbooks[$symbol][$market_discovery_exchange]');
+                foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
+                    if (
+                        (count($real_orders_for_symbol_buy) >= $must_orders[$symbol]['buy'] || $real_orders_for_symbol_buy['price'] > $profit['bid']) &&
+                        TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
+                    ) {
+                        $api->cancelOrder($real_orders_for_symbol_buy);
+
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_buy, $exchange);
+                    }
+
+                if (!empty($real_orders[$exchange]))
+                    foreach ($real_orders[$exchange] as $real_order) {
+                        $is_cancel_sell_order = $real_order['side'] == 'sell' &&
+                            (!FloatRound::compare($real_order['price'], $exchange_orderbook['ask']) || ($real_order['price'] < $profit['ask'])) &&
+                            TimeV2::up(5, $real_order['client_order_id'], true);
+
+                        $is_cancel_buy_order = $real_order['side'] == 'buy' &&
+                            (!FloatRound::compare($real_order['price'], $exchange_orderbook['bid']) || ($real_order['price'] > $profit['bid'])) &&
+                            TimeV2::up(5, $real_order['client_order_id'], true);
+
+                        if ($is_cancel_sell_order || $is_cancel_buy_order) {
+                            $api->cancelOrder($real_order);
+
+                            Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange], $exchange);
+                        }
+                    }
+
+                $api->sendPingToLogServer($iteration++, 1, false);
+            } elseif (TimeV2::up(1, 'empty_orderbooks' . $symbol)) {
+                if (empty($orderbooks[$symbol][$exchange])) Debug::echo('[WARNING] Empty $orderbooks[$symbol][$exchange]');
+                if (empty($orderbooks[$symbol][$market_discovery_exchange])) Debug::echo('[WARNING] Empty $orderbooks[$symbol][$market_discovery_exchange]');
+            }
         }
     } elseif (TimeV2::up(1, 'empty_data')) Debug::echo('[WARNING] Empty $balances[$exchange]');
 
