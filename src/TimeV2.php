@@ -5,6 +5,7 @@ namespace Src;
 class TimeV2
 {
     private static array $start;
+    private static float $lifetime = 10;
 
     public static function fixTimeUntil(float $seconds, string $prefix): void
     {
@@ -23,7 +24,7 @@ class TimeV2
 
         if ($now >= self::$start[$prefix]) {
             foreach (self::$start as $pr => $item)
-                if ($now >= $item + 60)
+                if ($now >= $item + self::$lifetime)
                     unset(self::$start[$pr]);
 
             if ($first) return false;
