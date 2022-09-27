@@ -4,6 +4,11 @@ namespace Src;
 
 class Debug
 {
+    public static function echo(string $message): void
+    {
+        echo '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+    }
+
     public static function printAll(array $array, array $balances, array $orders, string $exchange): void
     {
         self::printBalances($balances);

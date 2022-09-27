@@ -13,7 +13,7 @@ class LimitationBalance
 
         $max_count_buy_amount_limitations = [];
         foreach ($amount_limitations as $asset => $amount_limitation)
-            $max_count_buy_amount_limitations[$asset] = intval($amount_limitation / $max_deal_amounts[$asset]);
+            $max_count_buy_amount_limitations[$asset] = ($balances[$asset]['total'] <= $amount_limitation) ? intval($amount_limitation / $max_deal_amounts[$asset]) : 0;
 
         $count_orders = [];
         foreach ($common_symbols as $common_symbol) {

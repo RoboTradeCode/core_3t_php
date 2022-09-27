@@ -77,7 +77,7 @@ class ApiV2
         $this->sendCommandToGate($message, $echo);
 
         if ($echo)
-            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['price'] . ', ' . $real_order['side'] . PHP_EOL;
+            Debug::echo('[INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['price'] . ', ' . $real_order['side']);
 
     }
 
@@ -117,7 +117,7 @@ class ApiV2
             $this->sendToLog($message, $echo);
 
             if ($echo)
-                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create: ' . $symbol . ', ' . $side . ', ' . $amount . ', ' . $price . PHP_EOL;
+                Debug::echo('[INFO] Create: ' . $symbol . ', ' . $side . ', ' . $amount . ', ' . $price);
 
         } else {
 

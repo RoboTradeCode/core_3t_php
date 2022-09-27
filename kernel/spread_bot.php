@@ -69,7 +69,7 @@ while (true) {
     $symbol = 'BTC/USDT';
 
     if (!empty($balances[$exchange])) {
-        $count_orders = LimitationBalance::get($balances[$exchange], $assets, $common_symbols, $max_deal_amounts, $amount_limitations);
+        $must_orders = LimitationBalance::get($balances[$exchange], $assets, $common_symbols, $max_deal_amounts, $amount_limitations);
 
         if (
             !empty($orderbooks[$symbol][$exchange]) &&
@@ -105,10 +105,16 @@ while (true) {
                 'is_not_empty_real_orders' => !empty($real_orders[$exchange]),
             ];
 
+            $real_orders_for_symbol = [
+                'buy' => isset($real_orders[$exchange]) ? array_filter($real_orders[$exchange], fn($real_order_for_symbol) => ($real_order_for_symbol['symbol'] == $symbol) && ($real_order_for_symbol['side'] == 'buy')) : [],
+                'sell' => isset($real_orders[$exchange]) ? array_filter($real_orders[$exchange], fn($real_order_for_symbol) => ($real_order_for_symbol['symbol'] == $symbol) && ($real_order_for_symbol['side'] == 'sell')) : []
+            ];
+
             if (
                 $exchange_orderbook['bid'] <= $profit['bid'] &&
                 $balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset] &&
-                TimeV2::up(2, 'create_order_buy_' . $symbol, true)
+                count($real_orders_for_symbol['buy']) <= $must_orders[$symbol]['buy'] &&
+                TimeV2::up(1, 'create_order', true)
             ) {
                 $price = $spread_bot->incrementNumber($exchange_orderbook['bid'] + 2 * $market['price_increment'], $market['price_increment']);
 
@@ -117,13 +123,14 @@ while (true) {
                     $spread_bot->incrementNumber($balances[$exchange][$quote_asset]['free'] / $price, $market['amount_increment'])
                 );
 
-                Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange] ?? [], $exchange);
+                Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['buy'], $exchange);
             }
 
             if (
                 $exchange_orderbook['ask'] >= $profit['ask'] &&
                 $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset] &&
-                TimeV2::up(2, 'create_order_sell_' . $symbol, true)
+                count($real_orders_for_symbol['sell']) <= $must_orders[$symbol]['sell'] &&
+                TimeV2::up(1, 'create_order', true)
             ) {
                 $api->createOrder(
                     $symbol, 'limit', 'sell',
@@ -131,8 +138,28 @@ while (true) {
                     $balances[$exchange][$base_asset]['free']
                 );
 
-                Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange] ?? [], $exchange);
+                Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
             }
+
+            foreach ($real_orders_for_symbol['sell'] as $real_orders_for_symbol_sell)
+                if (
+                    (count($real_orders_for_symbol_sell) >= $must_orders[$symbol]['sell'] || $real_orders_for_symbol_sell['price'] < $profit['ask']) &&
+                    TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
+                ) {
+                    $api->cancelOrder($real_orders_for_symbol_sell);
+
+                    Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_sell, $exchange);
+                }
+
+            foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
+                if (
+                    (count($real_orders_for_symbol_buy) >= $must_orders[$symbol]['buy'] || $real_orders_for_symbol_buy['price'] > $profit['bid']) &&
+                    TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
+                ) {
+                    $api->cancelOrder($real_orders_for_symbol_buy);
+
+                    Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_buy, $exchange);
+                }
 
             if (!empty($real_orders[$exchange]))
                 foreach ($real_orders[$exchange] as $real_order) {
@@ -153,10 +180,10 @@ while (true) {
 
             $api->sendPingToLogServer($iteration++, 1, false);
         } elseif (TimeV2::up(1, 'empty_orderbooks' . $symbol)) {
-            if (empty($orderbooks[$symbol][$exchange])) echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $orderbooks[$symbol][$exchange]' . PHP_EOL;
-            if (empty($orderbooks[$symbol][$market_discovery_exchange])) echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $orderbooks[$symbol][$market_discovery_exchange]' . PHP_EOL;
+            if (empty($orderbooks[$symbol][$exchange])) Debug::echo('[WARNING] Empty $orderbooks[$symbol][$exchange]');
+            if (empty($orderbooks[$symbol][$market_discovery_exchange])) Debug::echo('[WARNING] Empty $orderbooks[$symbol][$market_discovery_exchange]');
         }
-    } elseif (TimeV2::up(1, 'empty_data')) echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty $balances[$exchange]' . PHP_EOL;
+    } elseif (TimeV2::up(1, 'empty_data')) Debug::echo('[WARNING] Empty $balances[$exchange]');
 
     if (TimeV2::up(5, 'balance')) $api->getBalances();
 }
