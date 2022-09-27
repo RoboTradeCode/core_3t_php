@@ -113,8 +113,8 @@ while (true) {
                 ) {
                     $api->createOrder(
                         $symbol, 'limit', 'buy',
-                        $spread_bot->incrementNumber($exchange_orderbook['bid'] + 2 * $market['price_increment'], $market['price_increment']),
-                        $max_deal_amounts[$base_asset]
+                        $max_deal_amounts[$base_asset],
+                        $spread_bot->incrementNumber($exchange_orderbook['bid'] + 2 * $market['price_increment'], $market['price_increment'])
                     );
 
                     Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['buy'], $exchange);
@@ -128,8 +128,8 @@ while (true) {
                 ) {
                     $api->createOrder(
                         $symbol, 'limit', 'sell',
-                        $spread_bot->incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment']),
-                        $max_deal_amounts[$base_asset]
+                        $max_deal_amounts[$base_asset],
+                        $spread_bot->incrementNumber($exchange_orderbook['ask'] - $market['price_increment'], $market['price_increment'])
                     );
 
                     Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
@@ -180,5 +180,5 @@ while (true) {
         }
     } elseif (TimeV2::up(1, 'empty_data')) Debug::echo('[WARNING] Empty $balances[$exchange]');
 
-    if (TimeV2::up(5, 'balance')) $api->getBalances();
+    if (TimeV2::up(5, 'balance')) $api->getBalances(true);
 }
