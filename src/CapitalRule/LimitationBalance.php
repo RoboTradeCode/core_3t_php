@@ -22,20 +22,21 @@ class LimitationBalance
         }
 
         foreach ($sell_assets as $asset => $count)
-            while (true)
-                foreach ($common_symbols as $common_symbol) {
-                    list($base_asset, $quote_asset) = explode('/', $common_symbol);
+            if ($count != 0)
+                while (true)
+                    foreach ($common_symbols as $common_symbol) {
+                        list($base_asset, $quote_asset) = explode('/', $common_symbol);
 
-                    if ($base_asset == $asset) {
-                        $count_orders[$common_symbol]['sell']++;
-                        $count--;
-                    } elseif ($quote_asset == $asset) {
-                        $count_orders[$common_symbol]['buy']++;
-                        $count--;
+                        if ($base_asset == $asset) {
+                            $count_orders[$common_symbol]['sell']++;
+                            $count--;
+                        } elseif ($quote_asset == $asset) {
+                            $count_orders[$common_symbol]['buy']++;
+                            $count--;
+                        }
+
+                        if ($count == 0) break 2;
                     }
-
-                    if ($count == 0) break 2;
-                }
 
         $count_buy_orders = [];
         foreach ($assets as $asset)
