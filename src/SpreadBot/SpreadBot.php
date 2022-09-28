@@ -46,12 +46,12 @@ class SpreadBot
         array $profit,
         array $balances,
         string $quote_asset,
-        array $min_deal_amounts,
+        array $max_deal_amounts,
         array $real_orders_for_symbol,
         array $must_orders
     ): bool
     {
-        return ($exchange_orderbook['bid'] <= $profit['bid']) && ($balances[$this->exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset]) &&
+        return ($exchange_orderbook['bid'] <= $profit['bid']) && ($balances[$this->exchange][$quote_asset]['free'] >= $max_deal_amounts[$quote_asset]) &&
             (count($real_orders_for_symbol['buy']) < $must_orders['buy']) && TimeV2::up(1, 'create_order', true);
     }
 
@@ -60,12 +60,12 @@ class SpreadBot
         array $profit,
         array $balances,
         string $base_asset,
-        array $min_deal_amounts,
+        array $max_deal_amounts,
         array $real_orders_for_symbol,
         array $must_orders
     ): bool
     {
-        return ($exchange_orderbook['ask'] >= $profit['ask']) && ($balances[$this->exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset]) &&
+        return ($exchange_orderbook['ask'] >= $profit['ask']) && ($balances[$this->exchange][$base_asset]['free'] >= $max_deal_amounts[$base_asset]) &&
             (count($real_orders_for_symbol['sell']) < $must_orders['sell']) && TimeV2::up(1, 'create_order', true);
     }
 

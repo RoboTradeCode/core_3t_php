@@ -96,12 +96,12 @@ while (true) {
                     'market_discovery_ask' => $market_discovery['ask'],
                     'profit_bid' => $profit['bid'],
                     'profit_ask' => $profit['ask'],
-                    'min_deal_amount_base_asset' => $min_deal_amounts[$base_asset] . ' ' . $base_asset,
-                    'min_deal_amount_quote_asset' => $min_deal_amounts[$quote_asset] . ' ' . $quote_asset,
+                    'max_deal_amount_base_asset' => $max_deal_amounts[$base_asset] . ' ' . $base_asset,
+                    'max_deal_amount_quote_asset' => $max_deal_amounts[$quote_asset] . ' ' . $quote_asset,
                     'is_exchange_bid_less_profit_bid' => $exchange_orderbook['bid'] <= $profit['bid'],
-                    'has_enough_balance_quote_asset' => $balances[$exchange][$quote_asset]['free'] >= $min_deal_amounts[$quote_asset],
+                    'has_enough_balance_quote_asset' => $balances[$exchange][$quote_asset]['free'] >= $max_deal_amounts[$quote_asset],
                     'is_exchange_ask_less_profit_ask' => $exchange_orderbook['ask'] >= $profit['ask'],
-                    'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
+                    'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $max_deal_amounts[$base_asset],
                     'is_not_empty_real_orders' => !empty($real_orders[$exchange]),
                     'real_orders_for_symbol_sell' => count($real_orders_for_symbol['sell']),
                     'real_orders_for_symbol_buy' => count($real_orders_for_symbol['buy']),
@@ -115,7 +115,7 @@ while (true) {
                 if (
                     $spread_bot->isCreateBuyOrder(
                         $exchange_orderbook, $profit, $balances, $quote_asset,
-                        $min_deal_amounts, $real_orders_for_symbol, $must_orders[$symbol]
+                        $max_deal_amounts, $real_orders_for_symbol, $must_orders[$symbol]
                     )
                 ) {
                     $api->createOrder(
@@ -130,7 +130,7 @@ while (true) {
                 if (
                     $spread_bot->isCreateSellOrder(
                         $exchange_orderbook, $profit, $balances, $base_asset,
-                        $min_deal_amounts, $real_orders_for_symbol, $must_orders[$symbol]
+                        $max_deal_amounts, $real_orders_for_symbol, $must_orders[$symbol]
                     )
                 ) {
                     $api->createOrder(
