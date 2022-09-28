@@ -107,11 +107,10 @@ while (true) {
                     'real_orders_for_symbol_buy' => count($real_orders_for_symbol['buy']),
                 ];
 
-                foreach ($must_orders as $as => $must_order)
-                    if ($as == $symbol) {
-                        $debug_data['must_order_' . $as . '_sell'] = $must_order['sell'];
-                        $debug_data['must_order_' . $as . '_buy'] = $must_order['buy'];
-                    }
+                foreach ($must_orders as $as => $must_order) {
+                    $debug_data['must_order_' . $as . '_sell'] = $must_order['sell'];
+                    $debug_data['must_order_' . $as . '_buy'] = $must_order['buy'];
+                }
 
                 if (
                     $spread_bot->isCreateBuyOrder(
