@@ -5,7 +5,6 @@ use Src\CapitalRule\LimitationBalance;
 use Src\Configurator;
 use Src\Debug;
 use Src\Filter;
-use Src\FloatRound;
 use Src\SpreadBot\MemcachedData;
 use Src\SpreadBot\SpreadBot;
 use Src\TimeV2;
@@ -26,6 +25,7 @@ $exchange = $core_config['exchange'];
 $algorithm = $core_config['algorithm'];
 $instance = $core_config['instance'];
 $expired_orderbook_time = $core_config['expired_orderbook_time'];
+$debug = $core_config['debug'];
 $sleep = $core_config['sleep'];
 $market_discovery_exchange = $core_config['market_discovery_exchange'];
 $min_profit = $core_config['min_profit'];
@@ -40,6 +40,8 @@ $common_symbols = array_column($markets[$exchange], 'common_symbol');
 
 $min_deal_amounts = Filter::getDealAmountByRate($rates, $min_deal_amount);
 $max_deal_amounts = Filter::getDealAmountByRate($rates, $max_deal_amount);
+
+Debug::switchOn($debug);
 
 $api = new ApiV2($exchange, $algorithm, $node, $instance, $publishers);
 
