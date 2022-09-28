@@ -146,13 +146,19 @@ while (true) {
                     if (
                         ((count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell']) || ($real_orders_for_symbol_sell['price'] < $profit['ask'])) &&
                         TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
-                    ) $api->cancelOrder($real_orders_for_symbol_sell);
+                    ) {
+                        $api->cancelOrder($real_orders_for_symbol_sell);
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
+                    }
 
                 foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
                     if (
                         ((count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy']) || ($real_orders_for_symbol_buy['price'] > $profit['bid'])) &&
                         TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
-                    ) $api->cancelOrder($real_orders_for_symbol_buy);
+                    ) {
+                        $api->cancelOrder($real_orders_for_symbol_buy);
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['buy'], $exchange);
+                    }
 
                 $api->sendPingToLogServer($iteration++, 1, false);
             } elseif (TimeV2::up(1, 'empty_orderbooks' . $symbol)) {
