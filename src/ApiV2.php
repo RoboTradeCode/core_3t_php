@@ -73,7 +73,7 @@ class ApiV2
         $this->sendCommandToGate($message);
 
         if ($echo)
-            Debug::echo('[INFO] Create: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['side'] . ', ' .  $real_order['amount'] . ', ' .  $real_order['price']);
+            Debug::echo('[INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['side'] . ', ' .  $real_order['amount'] . ', ' .  $real_order['price']);
 
     }
 
