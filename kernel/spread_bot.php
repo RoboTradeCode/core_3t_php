@@ -144,13 +144,13 @@ while (true) {
 
                 foreach ($real_orders_for_symbol['sell'] as $real_orders_for_symbol_sell)
                     if (
-                        (count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell'] || $real_orders_for_symbol_sell['price'] < $profit['ask']) &&
+                        ((count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell']) || ($real_orders_for_symbol_sell['price'] < $profit['ask'])) &&
                         TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
                     ) $api->cancelOrder($real_orders_for_symbol_sell);
 
                 foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
                     if (
-                        (count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy'] || $real_orders_for_symbol_buy['price'] > $profit['bid']) &&
+                        ((count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy']) || ($real_orders_for_symbol_buy['price'] > $profit['bid'])) &&
                         TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
                     ) $api->cancelOrder($real_orders_for_symbol_buy);
 
