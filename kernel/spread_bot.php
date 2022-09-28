@@ -102,8 +102,13 @@ while (true) {
                     'has_enough_balance_base_asset' => $balances[$exchange][$base_asset]['free'] >= $min_deal_amounts[$base_asset],
                     'is_not_empty_real_orders' => !empty($real_orders[$exchange]),
                     'real_orders_for_symbol_sell' => count($real_orders_for_symbol['sell']),
-                    'real_orders_for_symbol_buy' => count($real_orders_for_symbol['buy'])
+                    'real_orders_for_symbol_buy' => count($real_orders_for_symbol['buy']),
                 ];
+
+                foreach ($must_orders as $as => $must_order) {
+                    $debug_data['must_order_' . $as . '_sell'] = $must_order['sell'];
+                    $debug_data['must_order_' . $as . '_buy'] = $must_order['buy'];
+                }
 
                 if (
                     $spread_bot->isCreateBuyOrder(
@@ -137,40 +142,15 @@ while (true) {
 
                 foreach ($real_orders_for_symbol['sell'] as $real_orders_for_symbol_sell)
                     if (
-                        (count($real_orders_for_symbol_sell) >= $must_orders[$symbol]['sell'] || $real_orders_for_symbol_sell['price'] < $profit['ask']) &&
+                        (count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell'] || $real_orders_for_symbol_sell['price'] < $profit['ask']) &&
                         TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
-                    ) {
-                        $api->cancelOrder($real_orders_for_symbol_sell);
-
-                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_sell, $exchange);
-                    }
+                    ) $api->cancelOrder($real_orders_for_symbol_sell);
 
                 foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
                     if (
-                        (count($real_orders_for_symbol_buy) >= $must_orders[$symbol]['buy'] || $real_orders_for_symbol_buy['price'] > $profit['bid']) &&
+                        (count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy'] || $real_orders_for_symbol_buy['price'] > $profit['bid']) &&
                         TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
-                    ) {
-                        $api->cancelOrder($real_orders_for_symbol_buy);
-
-                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol_buy, $exchange);
-                    }
-
-                if (!empty($real_orders[$exchange]))
-                    foreach ($real_orders[$exchange] as $real_order) {
-                        $is_cancel_sell_order = $real_order['side'] == 'sell' &&
-                            (!FloatRound::compare($real_order['price'], $exchange_orderbook['ask']) || ($real_order['price'] < $profit['ask'])) &&
-                            TimeV2::up(5, $real_order['client_order_id'], true);
-
-                        $is_cancel_buy_order = $real_order['side'] == 'buy' &&
-                            (!FloatRound::compare($real_order['price'], $exchange_orderbook['bid']) || ($real_order['price'] > $profit['bid'])) &&
-                            TimeV2::up(5, $real_order['client_order_id'], true);
-
-                        if ($is_cancel_sell_order || $is_cancel_buy_order) {
-                            $api->cancelOrder($real_order);
-
-                            Debug::printAll($debug_data, $balances[$exchange], $real_orders[$exchange], $exchange);
-                        }
-                    }
+                    ) $api->cancelOrder($real_orders_for_symbol_buy);
 
                 $api->sendPingToLogServer($iteration++, 1, false);
             } elseif (TimeV2::up(1, 'empty_orderbooks' . $symbol)) {
@@ -180,5 +160,5 @@ while (true) {
         }
     } elseif (TimeV2::up(1, 'empty_data')) Debug::echo('[WARNING] Empty $balances[$exchange]');
 
-    if (TimeV2::up(5, 'balance')) $api->getBalances(true);
+    if (TimeV2::up(5, 'balance')) $api->getBalances();
 }

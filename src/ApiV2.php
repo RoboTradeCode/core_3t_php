@@ -39,14 +39,14 @@ class ApiV2
     {
 
         if (Time::timeUp($period))
-            $this->sendToLog($this->log->sendWorkCore($interation), $echo);
+            $this->sendToLog($this->log->sendWorkCore($interation));
 
     }
 
     public function sendExpectedTriangleToLogServer(array $result): void
     {
 
-        $this->sendToLog($this->log->sendExpectedTriangle($result), false);
+        $this->sendToLog($this->log->sendExpectedTriangle($result));
 
     }
 
@@ -55,7 +55,7 @@ class ApiV2
 
         $message = $this->robotrade_api->getOrderStatus($client_order_id, $symbol, 'Get status order ' . $client_order_id);
 
-        $this->sendCommandToGate($message, $echo);
+        $this->sendCommandToGate($message);
 
         if ($echo)
             echo '[' . date('Y-m-d H:i:s') . '] Send to gate get status order. Id: ' .
@@ -70,10 +70,10 @@ class ApiV2
 
         $message = $this->robotrade_api->cancelOrder($real_order['client_order_id'], $real_order['symbol'], 'Cancel order ' . $real_order['client_order_id']);
 
-        $this->sendCommandToGate($message, $echo);
+        $this->sendCommandToGate($message);
 
         if ($echo)
-            Debug::echo('[INFO] Cancel: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['price'] . ', ' . $real_order['side']);
+            Debug::echo('[INFO] Create: ' . $real_order['client_order_id'] . ', ' . $real_order['symbol'] . ', ' . $real_order['side'] . ', ' .  $real_order['amount'] . ', ' .  $real_order['price']);
 
     }
 
@@ -106,9 +106,9 @@ class ApiV2
                 'Create order'
             );
 
-            $this->sendCommandToGate($message, $echo);
+            $this->sendCommandToGate($message);
 
-            $this->sendToLog($message, $echo);
+            $this->sendToLog($message);
 
             if ($echo)
                 Debug::echo('[INFO] Create: ' . $symbol . ', ' . $side . ', ' . $amount . ', ' . $price);
@@ -185,7 +185,7 @@ class ApiV2
 
     }
 
-    private function sendCommandToGate(string $message, bool $echo = true): void
+    private function sendCommandToGate(string $message): void
     {
 
         try {
@@ -202,9 +202,6 @@ class ApiV2
 
             }
 
-            if ($echo)
-                echo '[' . date('Y-m-d H:i:s') . '] Send to gate message. Code: ' . $code . PHP_EOL;
-
         } catch (Exception $e) {
 
             Storage::recordLog('Src\M3Maker\Api.php sendCommandToGate() Aeron made a fatal error', ['$message' => $message, '$e->getMessage()' => $e->getMessage()]);
@@ -213,7 +210,7 @@ class ApiV2
 
     }
 
-    private function sendToLog(string $message, bool $echo = true): void
+    private function sendToLog(string $message): void
     {
 
         try {
@@ -229,9 +226,6 @@ class ApiV2
                 $this->log->sendErrorToLogServer($mes_array['action'] ?? 'error', $message, 'Can not sendCommandToGate in Api class');
 
             }
-
-            if ($echo)
-                echo '[' . date('Y-m-d H:i:s') . '] Send to log server message. Code: ' . $code . PHP_EOL;
 
         } catch (Exception $e) {
 
