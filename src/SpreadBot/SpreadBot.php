@@ -69,6 +69,28 @@ class SpreadBot
             (count($real_orders_for_symbol['sell']) < $must_orders['sell']) && TimeV2::up(1, 'create_order', true);
     }
 
+    public function cancelTheFarthestSellOrder(array $orders)
+    {
+
+        usort($orders, function ($a, $b) {
+            return $b['price'] <=> $a['price'];
+        });
+
+        return array_shift($orders);
+
+    }
+
+    public function cancelTheFarthestBuyOrder(array $orders)
+    {
+
+        usort($orders, function ($a, $b) {
+            return $a['price'] <=> $b['price'];
+        });
+
+        return array_shift($orders);
+
+    }
+
     public function incrementNumber(float $number, float $increment): float
     {
         return $increment * floor($number / $increment);

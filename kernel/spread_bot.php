@@ -142,18 +142,36 @@ while (true) {
                     Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
                 }
 
+                if (count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell']) {
+                    $cancel_the_farthest_sell_order = $spread_bot->cancelTheFarthestSellOrder($real_orders_for_symbol['sell']);
+
+                    if (TimeV2::up(5, $cancel_the_farthest_sell_order['client_order_id'], true)) {
+                        $api->cancelOrder($cancel_the_farthest_sell_order);
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
+                    }
+                }
+
                 foreach ($real_orders_for_symbol['sell'] as $real_orders_for_symbol_sell)
                     if (
-                        ((count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell']) || ($real_orders_for_symbol_sell['price'] < $profit['ask'])) &&
+                        ($real_orders_for_symbol_sell['price'] < $profit['ask']) &&
                         TimeV2::up(5, $real_orders_for_symbol_sell['client_order_id'], true)
                     ) {
                         $api->cancelOrder($real_orders_for_symbol_sell);
                         Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
                     }
 
+                if (count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy']) {
+                    $cancel_the_farthest_buy_order = $spread_bot->cancelTheFarthestBuyOrder($real_orders_for_symbol['buy']);
+
+                    if (TimeV2::up(5, $cancel_the_farthest_buy_order['client_order_id'], true)) {
+                        $api->cancelOrder($cancel_the_farthest_buy_order);
+                        Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
+                    }
+                }
+
                 foreach ($real_orders_for_symbol['buy'] as $real_orders_for_symbol_buy)
                     if (
-                        ((count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy']) || ($real_orders_for_symbol_buy['price'] > $profit['bid'])) &&
+                        ($real_orders_for_symbol_buy['price'] > $profit['bid']) &&
                         TimeV2::up(5, $real_orders_for_symbol_buy['client_order_id'], true)
                     ) {
                         $api->cancelOrder($real_orders_for_symbol_buy);
