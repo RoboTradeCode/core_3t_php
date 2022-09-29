@@ -3,12 +3,19 @@
     "ext-pdo": "*",
     "ext-memcached": "*",
     "ext-curl": "*",
-    "ext-bcmath": "*"
+    "ext-bcmath": "*",
+    "robotradecode/notifier": "^1.0"
   },
   "autoload": {
     "psr-4": {
       "Src\\": "src/",
       "robotrade\\": "libs/PHP-API"
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:RoboTradeCode/Notifier.git"
+    }
+  ]
 }

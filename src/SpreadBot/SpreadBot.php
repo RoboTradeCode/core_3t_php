@@ -71,24 +71,45 @@ class SpreadBot
 
     public function cancelTheFarthestSellOrder(array $orders)
     {
-
         usort($orders, function ($a, $b) {
             return $b['price'] <=> $a['price'];
         });
 
         return array_shift($orders);
-
     }
 
     public function cancelTheFarthestBuyOrder(array $orders)
     {
-
         usort($orders, function ($a, $b) {
             return $a['price'] <=> $b['price'];
         });
 
         return array_shift($orders);
+    }
 
+    public function getNotifyConfig(string $algorithm, string|float $max_deal_amount, array $min_profit, array $fees, array $rates, array $amount_limitations): string
+    {
+        $notify_about_settings = [
+            'Algorithm' => $algorithm,
+            'Deal Amount' => $max_deal_amount,
+            'Min Profit Bid' => $min_profit['bid'],
+            'Min Profit ASK' => $min_profit['ask'],
+        ];
+
+        foreach ($fees as $exchange => $fee)
+            $notify_about_settings[$exchange . ' Fee'] = $fee;
+
+        foreach ($rates as $asset => $rate)
+            $notify_about_settings[$asset . ' Rate'] = $rate;
+
+        foreach ($amount_limitations as $asset => $amount_limitation)
+            $notify_about_settings[$asset . ' Amount Limitation'] = $amount_limitation;
+
+        $message = '';
+        foreach ($notify_about_settings as $head => $body)
+            $message .= $head . ': ' . $body . "\n";
+
+        return $message;
     }
 
     public function incrementNumber(float $number, float $increment): float

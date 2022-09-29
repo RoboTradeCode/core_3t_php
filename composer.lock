@@ -4,8 +4,48 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "81ad5e338e68dfbb3af6c5f0105794b5",
-    "packages": [],
+    "content-hash": "9f3642ee04eb34ac7b2d8d058128bc5e",
+    "packages": [
+        {
+            "name": "RoboTradeCode/Notifier",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:RoboTradeCode/Notifier.git",
+                "reference": "f80ce7449dae5aa0b099644a4ec2b094d702aea1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/RoboTradeCode/Notifier/zipball/f80ce7449dae5aa0b099644a4ec2b094d702aea1",
+                "reference": "f80ce7449dae5aa0b099644a4ec2b094d702aea1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "Notifier.php"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "idv",
+                    "email": "idv@idv.su"
+                }
+            ],
+            "description": "Telegram notifier",
+            "support": {
+                "source": "https://github.com/RoboTradeCode/Notifier/tree/v1.0.3",
+                "issues": "https://github.com/RoboTradeCode/Notifier/issues"
+            },
+            "time": "2022-08-16T11:27:53+00:00"
+        }
+    ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
@@ -14,8 +54,10 @@
     "prefer-lowest": false,
     "platform": {
         "ext-pdo": "*",
-        "ext-memcached": "*"
+        "ext-memcached": "*",
+        "ext-curl": "*",
+        "ext-bcmath": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.3.0"
 }

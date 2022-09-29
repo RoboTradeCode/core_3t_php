@@ -1,5 +1,6 @@
 <?php
 
+use robotrade\Notifier;
 use Src\ApiV2;
 use Src\CapitalRule\LimitationBalance;
 use Src\Configurator;
@@ -58,6 +59,8 @@ do {
 } while (true);
 
 $spread_bot = new SpreadBot($exchange, $market_discovery_exchange);
+
+Notifier::sendMessage($spread_bot->getNotifyConfig($algorithm, $max_deal_amount, $min_profit, $fees, $rates, $amount_limitations));
 
 $iteration = 0;
 
@@ -142,7 +145,9 @@ while (true) {
                     Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
                 }
 
-                if (count($real_orders_for_symbol['sell']) >= $must_orders[$symbol]['sell']) {
+                $count_real_orders_for_symbol_sell = count($real_orders_for_symbol['sell']);
+
+                if (($count_real_orders_for_symbol_sell > 0) && ($count_real_orders_for_symbol_sell >= $must_orders[$symbol]['sell'])) {
                     $cancel_the_farthest_sell_order = $spread_bot->cancelTheFarthestSellOrder($real_orders_for_symbol['sell']);
 
                     if (TimeV2::up(5, $cancel_the_farthest_sell_order['client_order_id'], true)) {
@@ -160,7 +165,9 @@ while (true) {
                         Debug::printAll($debug_data, $balances[$exchange], $real_orders_for_symbol['sell'], $exchange);
                     }
 
-                if (count($real_orders_for_symbol['buy']) >= $must_orders[$symbol]['buy']) {
+                $count_real_orders_for_symbol_buy = count($real_orders_for_symbol['buy']);
+
+                if (($count_real_orders_for_symbol_buy > 0) && ($count_real_orders_for_symbol_buy >= $must_orders[$symbol]['buy'])) {
                     $cancel_the_farthest_buy_order = $spread_bot->cancelTheFarthestBuyOrder($real_orders_for_symbol['buy']);
 
                     if (TimeV2::up(5, $cancel_the_farthest_buy_order['client_order_id'], true)) {
